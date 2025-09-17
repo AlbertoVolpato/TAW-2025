@@ -1,0 +1,162 @@
+<div class="airline-dashboard">
+  <div class="dashboard-header">
+    <h1>Dashboard Compagnia Aerea</h1>
+    <p>Gestisci i tuoi voli e operazioni</p>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Caricamento dashboard...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="status-message error" *ngIf="error && !loading">
+    <mat-icon>error</mat-icon>
+    <span>{{ error }}</span>
+    <button class="btn-primary" (click)="loadAirlineData()">Riprova</button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div class="dashboard-content" *ngIf="!loading && !error">
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>flight</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ totalFlights }}</h3>
+            <p>Voli Totali</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>flight_takeoff</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ activeFlights }}</h3>
+            <p>Voli Attivi</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>today</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ todayFlights }}</h3>
+            <p>Voli Oggi</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="actions-section">
+      <h2>Azioni Rapide</h2>
+      <div class="actions-grid">
+        <mat-card class="action-card">
+          <mat-card-content>
+            <mat-icon>add_circle</mat-icon>
+            <h3>Nuovo Volo</h3>
+            <p>Aggiungi un nuovo volo al sistema</p>
+            <button class="btn-primary">Crea Volo</button>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="action-card" routerLink="/airline/flights">
+          <mat-card-content>
+            <mat-icon>edit</mat-icon>
+            <h3>Gestisci Voli</h3>
+            <p>Crea nuovi voli e gestisci le rotte</p>
+            <button class="btn-primary">Gestisci</button>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="action-card">
+          <mat-card-content>
+            <mat-icon>analytics</mat-icon>
+            <h3>Statistiche</h3>
+            <p>Visualizza report e analisi</p>
+            <button class="btn-secondary">Visualizza</button>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Recent Flights -->
+    <mat-card class="data-card">
+      <mat-card-header>
+        <mat-card-title>I Tuoi Voli</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="table-container">
+          <table mat-table [dataSource]="flights.slice(0, 10)" class="flights-table">
+            <!-- Flight Number Column -->
+            <ng-container matColumnDef="flightNumber">
+              <th mat-header-cell *matHeaderCellDef>Volo</th>
+              <td mat-cell *matCellDef="let flight">{{ flight.flightNumber }}</td>
+            </ng-container>
+
+            <!-- Route Column -->
+            <ng-container matColumnDef="route">
+              <th mat-header-cell *matHeaderCellDef>Rotta</th>
+              <td mat-cell *matCellDef="let flight">
+                {{ flight.departureAirport?.code }} → {{ flight.arrivalAirport?.code }}
+              </td>
+            </ng-container>
+
+            <!-- Departure Column -->
+            <ng-container matColumnDef="departure">
+              <th mat-header-cell *matHeaderCellDef>Partenza</th>
+              <td mat-cell *matCellDef="let flight">
+                {{ flight.departureTime | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+            </ng-container>
+
+            <!-- Arrival Column -->
+            <ng-container matColumnDef="arrival">
+              <th mat-header-cell *matHeaderCellDef>Arrivo</th>
+              <td mat-cell *matCellDef="let flight">
+                {{ flight.arrivalTime | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+            </ng-container>
+
+            <!-- Status Column -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Stato</th>
+              <td mat-cell *matCellDef="let flight">
+                <mat-chip [color]="getFlightStatusColor(flight.status)" selected>
+                  {{ getFlightStatusText(flight.status) }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Azioni</th>
+              <td mat-cell *matCellDef="let flight">
+                <button mat-icon-button class="btn-secondary">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button class="btn-danger">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="['flightNumber', 'route', 'departure', 'arrival', 'status', 'actions']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['flightNumber', 'route', 'departure', 'arrival', 'status', 'actions'];"></tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,93 @@
+<div class="date-suggestions-overlay" *ngIf="visible" (click)="onClose()">
+  <div class="date-suggestions-modal" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+          <mat-icon class="text-orange-600">event_busy</mat-icon>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">Data non disponibile</h3>
+          <p class="text-sm text-gray-600">{{ formatDate(targetDate) }}</p>
+        </div>
+      </div>
+      <button 
+        type="button" 
+        (click)="onClose()"
+        class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors">
+        <mat-icon class="text-gray-600" style="font-size: 18px; width: 18px; height: 18px;">close</mat-icon>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="modal-content">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-state">
+        <mat-spinner diameter="32"></mat-spinner>
+        <p class="text-gray-600 mt-3">Cerco date alternative...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error && !loading" class="error-state">
+        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <mat-icon class="text-red-600">error_outline</mat-icon>
+        </div>
+        <p class="text-red-600 text-center">{{ error }}</p>
+      </div>
+
+      <!-- Suggestions -->
+      <div *ngIf="!loading && !error && suggestions.length > 0">
+        <div class="mb-4">
+          <h4 class="text-md font-medium text-gray-900 mb-2">Date alternative disponibili:</h4>
+          <p class="text-sm text-gray-600">Abbiamo trovato {{ suggestions.length }} alternativa{{ suggestions.length > 1 ? 'e' : '' }} per il tuo viaggio.</p>
+        </div>
+
+        <div class="suggestions-list space-y-3">
+          <div 
+            *ngFor="let suggestion of suggestions; trackBy: trackBySuggestion"
+            class="suggestion-card"
+            (click)="onSuggestionSelected(suggestion)">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="suggestion-icon">
+                  <mat-icon>{{ getSuggestionIcon(suggestion.daysDifference) }}</mat-icon>
+                </div>
+                <div>
+                  <div class="font-medium text-gray-900">{{ formatDate(suggestion.date) }}</div>
+                  <div class="text-sm text-gray-600">{{ getDifferenceText(suggestion.daysDifference) }}</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="font-semibold text-primary-600">{{ formatPrice(suggestion.minPrice) }}</div>
+                <div class="text-xs text-gray-500">{{ suggestion.flightCount }} volo{{ suggestion.flightCount > 1 ? 'i' : '' }}</div>
+              </div>
+            </div>
+            <div class="suggestion-reason">
+              <mat-icon class="text-blue-500" style="font-size: 16px; width: 16px; height: 16px;">info</mat-icon>
+              <span class="text-sm text-blue-700">{{ suggestion.reason }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Suggestions -->
+      <div *ngIf="!loading && !error && suggestions.length === 0" class="no-suggestions">
+        <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <mat-icon class="text-gray-500">search_off</mat-icon>
+        </div>
+        <p class="text-gray-600 text-center mb-2">Nessuna data alternativa trovata</p>
+        <p class="text-sm text-gray-500 text-center">Prova a modificare i parametri di ricerca o seleziona un periodo diverso.</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button 
+        type="button" 
+        (click)="onClose()"
+        class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+        Chiudi
+      </button>
+    </div>
+  </div>
+</div>

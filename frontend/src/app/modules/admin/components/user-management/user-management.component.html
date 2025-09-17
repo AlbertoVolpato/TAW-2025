@@ -1,0 +1,193 @@
+<div class="user-management">
+  <div class="page-header">
+    <h1>Gestione Utenti</h1>
+    <p>Gestisci utenti e invita nuove compagnie aeree</p>
+  </div>
+
+  <!-- Actions Bar -->
+  <div class="actions-bar">
+    <button class="btn-primary" (click)="toggleInviteForm()">
+      <mat-icon>add</mat-icon>
+      Invita Compagnia Aerea
+    </button>
+    <button class="btn-secondary" (click)="loadUsers()">
+      <mat-icon>refresh</mat-icon>
+      Aggiorna
+    </button>
+  </div>
+
+  <!-- Invite Airline Form -->
+  <mat-card class="invite-form" *ngIf="showInviteForm">
+    <mat-card-header>
+      <mat-card-title>Invita Nuova Compagnia Aerea</mat-card-title>
+      <mat-card-subtitle>La compagnia riceverà una password temporanea via email</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="inviteAirlineForm" (ngSubmit)="onInviteAirline()">
+        <div class="form-grid">
+          <div class="form-field">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" type="email" required>
+              <mat-icon matSuffix>email</mat-icon>
+              <mat-error *ngIf="inviteAirlineForm.get('email')?.hasError('required')">
+                Email richiesta
+              </mat-error>
+              <mat-error *ngIf="inviteAirlineForm.get('email')?.hasError('email')">
+                Email non valida
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-field">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Nome</mat-label>
+              <input matInput formControlName="firstName" required>
+              <mat-icon matSuffix>person</mat-icon>
+              <mat-error *ngIf="inviteAirlineForm.get('firstName')?.hasError('required')">
+                Nome richiesto
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-field">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Cognome</mat-label>
+              <input matInput formControlName="lastName" required>
+              <mat-icon matSuffix>person</mat-icon>
+              <mat-error *ngIf="inviteAirlineForm.get('lastName')?.hasError('required')">
+                Cognome richiesto
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-field">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Nome Compagnia</mat-label>
+              <input matInput formControlName="airlineName" required>
+              <mat-icon matSuffix>business</mat-icon>
+              <mat-error *ngIf="inviteAirlineForm.get('airlineName')?.hasError('required')">
+                Nome compagnia richiesto
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-field">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Codice Compagnia</mat-label>
+              <input matInput formControlName="airlineCode" required maxlength="3" style="text-transform: uppercase;">
+              <mat-icon matSuffix>code</mat-icon>
+              <mat-error *ngIf="inviteAirlineForm.get('airlineCode')?.hasError('required')">
+                Codice compagnia richiesto
+              </mat-error>
+              <mat-hint>Es: AZ, BA, LH (2-3 caratteri)</mat-hint>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="toggleInviteForm()">
+            Annulla
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="inviteAirlineForm.invalid || loading">
+            <mat-spinner diameter="20" class="btn-spinner" *ngIf="loading"></mat-spinner>
+            <span *ngIf="!loading">Invia Invito</span>
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Error Message -->
+  <div class="status-message error" *ngIf="error && !loading">
+    <mat-icon>error</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- Users Table -->
+  <mat-card class="users-table-card">
+    <mat-card-header>
+      <mat-card-title>Utenti Sistema</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="table-container">
+        <table mat-table [dataSource]="users" class="users-table">
+          <!-- Email Column -->
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let user">{{ user.email }}</td>
+          </ng-container>
+
+          <!-- First Name Column -->
+          <ng-container matColumnDef="firstName">
+            <th mat-header-cell *matHeaderCellDef>Nome</th>
+            <td mat-cell *matCellDef="let user">{{ user.firstName }}</td>
+          </ng-container>
+
+          <!-- Last Name Column -->
+          <ng-container matColumnDef="lastName">
+            <th mat-header-cell *matHeaderCellDef>Cognome</th>
+            <td mat-cell *matCellDef="let user">{{ user.lastName }}</td>
+          </ng-container>
+
+          <!-- Role Column -->
+          <ng-container matColumnDef="role">
+            <th mat-header-cell *matHeaderCellDef>Ruolo</th>
+            <td mat-cell *matCellDef="let user">
+              <mat-chip [color]="getRoleColor(user.role)" selected>
+                {{ getRoleText(user.role) }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="isActive">
+            <th mat-header-cell *matHeaderCellDef>Stato</th>
+            <td mat-cell *matCellDef="let user">
+              <mat-chip [color]="user.isActive ? 'primary' : 'accent'" selected>
+                {{ user.isActive ? 'Attivo' : 'Inattivo' }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Azioni</th>
+            <td mat-cell *matCellDef="let user">
+              <button mat-icon-button 
+                      class="btn-secondary"
+                      (click)="toggleUserStatus(user)"
+                      [disabled]="user.role === 'admin'"
+                      [matTooltip]="user.isActive ? 'Disattiva utente' : 'Attiva utente'">
+                <mat-icon>{{ user.isActive ? 'block' : 'check_circle' }}</mat-icon>
+              </button>
+              <button mat-icon-button 
+                      class="btn-danger"
+                      (click)="deleteUser(user)"
+                      [disabled]="user.role === 'admin'"
+                      matTooltip="Elimina utente">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="users.length === 0 && !loading">
+        <mat-icon>people</mat-icon>
+        <h3>Nessun utente trovato</h3>
+        <p>Inizia invitando una compagnia aerea</p>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-container" *ngIf="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Caricamento utenti...</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,145 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <div class="header-content">
+      <div class="user-avatar">
+        <div class="avatar-circle">
+          <span class="avatar-initials">
+            {{ (currentUser?.firstName?.charAt(0) || '') + (currentUser?.lastName?.charAt(0) || '') }}
+          </span>
+        </div>
+      </div>
+      <div class="user-info">
+        <h1 class="user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</h1>
+        <p class="user-email">{{ currentUser?.email }}</p>
+        <span class="user-role">{{ currentUser?.role | titlecase }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-content">
+    <!-- Navigation Cards -->
+    <div class="quick-actions">
+      <div class="action-card" (click)="navigateToBookings()">
+        <mat-icon class="action-icon">flight_takeoff</mat-icon>
+        <div class="action-content">
+          <h3>Le Mie Prenotazioni</h3>
+          <p>Visualizza, gestisci e fai check-in</p>
+        </div>
+        <mat-icon class="action-arrow">chevron_right</mat-icon>
+      </div>
+
+      <div class="action-card" (click)="navigateToChangePassword()">
+        <mat-icon class="action-icon">lock</mat-icon>
+        <div class="action-content">
+          <h3>Cambia Password</h3>
+          <p>Aggiorna la tua password di accesso</p>
+        </div>
+        <mat-icon class="action-arrow">chevron_right</mat-icon>
+      </div>
+    </div>
+
+    <!-- Profile Form -->
+    <div class="profile-form-section">
+      <div class="section-header">
+        <h2>Informazioni Personali</h2>
+        <button 
+          class="btn-secondary edit-button"
+          (click)="toggleEdit()"
+          [disabled]="loading">
+          <mat-icon>{{ isEditing ? 'close' : 'edit' }}</mat-icon>
+          {{ isEditing ? 'Annulla' : 'Modifica' }}
+        </button>
+      </div>
+
+      <!-- Success/Error Messages -->
+      <div class="message-container" *ngIf="success || error">
+        <div class="status-message success" *ngIf="success">
+          <mat-icon>check_circle</mat-icon>
+          <span>{{ success }}</span>
+        </div>
+        <div class="status-message error" *ngIf="error">
+          <mat-icon>error</mat-icon>
+          <span>{{ error }}</span>
+        </div>
+      </div>
+
+      <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="profile-form">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Nome</mat-label>
+            <input 
+              matInput 
+              formControlName="firstName" 
+              [readonly]="!isEditing"
+              required>
+            <mat-icon matSuffix>person</mat-icon>
+            <mat-error *ngIf="f['firstName'].hasError('required')">
+              Il nome è obbligatorio
+            </mat-error>
+            <mat-error *ngIf="f['firstName'].hasError('minlength')">
+              Il nome deve avere almeno 2 caratteri
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Cognome</mat-label>
+            <input 
+              matInput 
+              formControlName="lastName" 
+              [readonly]="!isEditing"
+              required>
+            <mat-icon matSuffix>person</mat-icon>
+            <mat-error *ngIf="f['lastName'].hasError('required')">
+              Il cognome è obbligatorio
+            </mat-error>
+            <mat-error *ngIf="f['lastName'].hasError('minlength')">
+              Il cognome deve avere almeno 2 caratteri
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field full-width">
+            <mat-label>Email</mat-label>
+            <input 
+              matInput 
+              formControlName="email" 
+              readonly>
+            <mat-icon matSuffix>email</mat-icon>
+            <mat-hint>L'email non può essere modificata</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions" *ngIf="isEditing">
+          <button 
+            type="button" 
+            class="btn-secondary"
+            (click)="toggleEdit()"
+            [disabled]="loading">
+            Annulla
+          </button>
+          <button 
+            type="submit" 
+            class="btn-primary"
+            [disabled]="loading || profileForm.invalid">
+            <mat-spinner diameter="20" *ngIf="loading" class="btn-spinner"></mat-spinner>
+            <span *ngIf="!loading">Salva Modifiche</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Account Actions -->
+    <div class="account-actions">
+      <h3>Azioni Account</h3>
+      <div class="danger-zone">
+        <button 
+          class="btn-danger logout-button"
+          (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          Esci dall'Account
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

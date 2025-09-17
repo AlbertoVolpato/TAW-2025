@@ -1,0 +1,749 @@
+// ===================================
+// COMPONENTI UNIFORMI - SKYBOOKER
+// ===================================
+
+// Variabili per colori e dimensioni uniformi
+:root {
+  --primary-color: #1976d2;
+  --primary-hover: #1565c0;
+  --primary-light: #e3f2fd;
+  --secondary-color: #ff9800;
+  --success-color: #4caf50;
+  --error-color: #f44336;
+  --warning-color: #ff9800;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --border-color: #e0e0e0;
+  --border-radius: 8px;
+  --border-radius-large: 12px;
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --transition: all 0.2s ease;
+}
+
+// ===================================
+// FORM FIELDS UNIFORMI
+// ===================================
+
+// Stili globali per mat-form-field
+.mat-mdc-form-field {
+  width: 100%;
+  margin-bottom: 16px;
+  
+  &.mat-form-field-appearance-outline {
+    .mat-mdc-form-field-outline {
+      border-radius: var(--border-radius) !important;
+      border-color: var(--border-color) !important;
+    }
+    
+    &.mat-focused {
+      .mat-mdc-form-field-outline-thick {
+        border-color: var(--primary-color) !important;
+        border-width: 2px !important;
+      }
+    }
+    
+    &.mat-form-field-invalid {
+      .mat-mdc-form-field-outline-thick {
+        border-color: var(--error-color) !important;
+      }
+    }
+  }
+  
+  .mat-mdc-form-field-label {
+    color: var(--text-secondary) !important;
+    font-weight: 500;
+  }
+  
+  .mat-mdc-input-element {
+    color: var(--text-primary) !important;
+    font-size: 16px;
+    
+    &::placeholder {
+      color: var(--text-secondary) !important;
+      opacity: 0.7;
+    }
+    
+    &[readonly] {
+      background-color: #f9fafb !important;
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
+  }
+  
+  .mat-mdc-form-field-hint {
+    color: var(--text-secondary) !important;
+    font-size: 12px;
+  }
+  
+  .mat-mdc-form-field-error {
+    color: var(--error-color) !important;
+    font-size: 12px;
+    font-weight: 500;
+  }
+}
+
+// Classi utility per form fields
+.form-field {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.form-field-small {
+  .mat-mdc-form-field {
+    margin-bottom: 12px;
+  }
+}
+
+.form-field-large {
+  .mat-mdc-form-field {
+    margin-bottom: 24px;
+  }
+}
+
+.full-width {
+  width: 100% !important;
+}
+
+// ===================================
+// BOTTONI UNIFORMI
+// ===================================
+
+// Stili base per tutti i bottoni Material
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button,
+.mat-mdc-fab,
+.mat-mdc-mini-fab {
+  border-radius: var(--border-radius) !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  transition: var(--transition) !important;
+  
+  &:not(:disabled) {
+    box-shadow: var(--shadow-light);
+    
+    &:hover {
+      box-shadow: var(--shadow-medium);
+      transform: translateY(-1px);
+    }
+  }
+  
+  &:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+  }
+  
+  .mat-icon {
+    margin-right: 8px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// Bottoni primari
+.mat-mdc-raised-button.mat-primary {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--primary-hover) !important;
+  }
+}
+
+// Bottoni secondari
+.mat-mdc-outlined-button {
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--primary-light) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+  }
+}
+
+// Bottoni di testo
+.mat-mdc-button {
+  color: var(--primary-color) !important;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--primary-light) !important;
+  }
+}
+
+// Bottoni di pericolo
+.mat-mdc-button.mat-warn,
+.mat-mdc-raised-button.mat-warn,
+.mat-mdc-outlined-button.mat-warn {
+  &:not(:disabled) {
+    color: var(--error-color) !important;
+    
+    &.mat-mdc-raised-button {
+      background-color: var(--error-color) !important;
+      color: white !important;
+      
+      &:hover {
+        background-color: #d32f2f !important;
+      }
+    }
+    
+    &.mat-mdc-outlined-button {
+      border-color: var(--error-color) !important;
+      
+      &:hover {
+        background-color: #ffebee !important;
+      }
+    }
+  }
+}
+
+// Classi utility per bottoni
+.btn-large {
+  padding: 12px 32px !important;
+  font-size: 16px !important;
+  min-height: 48px !important;
+}
+
+.btn-small {
+  padding: 8px 16px !important;
+  font-size: 14px !important;
+  min-height: 36px !important;
+}
+
+.btn-full-width {
+  width: 100% !important;
+}
+
+// Classi uniformi per bottoni
+.btn-primary {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: var(--border-radius) !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  transition: var(--transition) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  box-shadow: var(--shadow-light) !important;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--primary-hover) !important;
+    box-shadow: var(--shadow-medium) !important;
+    transform: translateY(-1px) !important;
+  }
+  
+  &:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+  }
+  
+  .mat-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+.btn-secondary {
+  background-color: transparent !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--border-radius) !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  transition: var(--transition) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  box-shadow: var(--shadow-light) !important;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--primary-light) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+    box-shadow: var(--shadow-medium) !important;
+    transform: translateY(-1px) !important;
+  }
+  
+  &:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+  }
+  
+  .mat-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+.btn-danger {
+  background-color: var(--error-color) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: var(--border-radius) !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  transition: var(--transition) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  box-shadow: var(--shadow-light) !important;
+  
+  &:hover:not(:disabled) {
+    background-color: #d32f2f !important;
+    box-shadow: var(--shadow-medium) !important;
+    transform: translateY(-1px) !important;
+  }
+  
+  &:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+  }
+  
+  .mat-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+// Spinner per bottoni
+.btn-spinner {
+  color: currentColor !important;
+  
+  circle {
+    stroke: currentColor !important;
+  }
+}
+
+// Classi per messaggi di stato
+.status-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--border-radius);
+  margin-bottom: 16px;
+  font-weight: 500;
+  
+  .mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  &.success {
+    background-color: #e8f5e8;
+    color: var(--success-color);
+    border: 1px solid #c8e6c9;
+    
+    .mat-icon {
+      color: var(--success-color);
+    }
+  }
+  
+  &.error {
+    background-color: #ffebee;
+    color: var(--error-color);
+    border: 1px solid #ffcdd2;
+    
+    .mat-icon {
+      color: var(--error-color);
+    }
+  }
+  
+  &.warning {
+    background-color: #fff3e0;
+    color: var(--warning-color);
+    border: 1px solid #ffcc02;
+    
+    .mat-icon {
+      color: var(--warning-color);
+    }
+  }
+  
+  &.info {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    border: 1px solid #bbdefb;
+    
+    .mat-icon {
+      color: var(--primary-color);
+    }
+  }
+}
+
+// ===================================
+// CARDS UNIFORMI
+// ===================================
+
+.mat-mdc-card {
+  border-radius: var(--border-radius-large) !important;
+  box-shadow: var(--shadow-light) !important;
+  border: 1px solid #f0f0f0 !important;
+  transition: var(--transition) !important;
+  
+  &:hover {
+    box-shadow: var(--shadow-medium) !important;
+  }
+  
+  .mat-mdc-card-header {
+    padding: 24px 24px 16px 24px !important;
+    
+    .mat-mdc-card-title {
+      font-size: 1.25rem !important;
+      font-weight: 600 !important;
+      color: var(--text-primary) !important;
+      margin: 0 !important;
+    }
+    
+    .mat-mdc-card-subtitle {
+      color: var(--text-secondary) !important;
+      font-size: 0.875rem !important;
+      margin: 4px 0 0 0 !important;
+    }
+  }
+  
+  .mat-mdc-card-content {
+    padding: 0 24px 16px 24px !important;
+  }
+  
+  .mat-mdc-card-actions {
+    padding: 16px 24px 24px 24px !important;
+    margin: 0 !important;
+    
+    &.align-end {
+      justify-content: flex-end;
+    }
+    
+    &.align-center {
+      justify-content: center;
+    }
+    
+    .mat-mdc-button,
+    .mat-mdc-raised-button,
+    .mat-mdc-outlined-button {
+      margin: 0 8px 0 0 !important;
+      
+      &:last-child {
+        margin-right: 0 !important;
+      }
+    }
+  }
+}
+
+// ===================================
+// FORM LAYOUTS UNIFORMI
+// ===================================
+
+.form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+  
+  &.single-column {
+    grid-template-columns: 1fr;
+  }
+  
+  &.three-columns {
+    grid-template-columns: 1fr 1fr 1fr;
+    
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    
+    .mat-mdc-button,
+    .mat-mdc-raised-button,
+    .mat-mdc-outlined-button {
+      width: 100%;
+    }
+  }
+  
+  &.center {
+    justify-content: center;
+  }
+  
+  &.space-between {
+    justify-content: space-between;
+  }
+}
+
+// ===================================
+// MESSAGGI DI STATO UNIFORMI
+// ===================================
+
+.message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--border-radius);
+  margin-bottom: 16px;
+  font-weight: 500;
+  
+  .mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.success-message {
+  @extend .message;
+  background-color: #e8f5e8;
+  color: var(--success-color);
+  border: 1px solid #c8e6c9;
+  
+  .mat-icon {
+    color: var(--success-color);
+  }
+}
+
+.error-message {
+  @extend .message;
+  background-color: #ffebee;
+  color: var(--error-color);
+  border: 1px solid #ffcdd2;
+  
+  .mat-icon {
+    color: var(--error-color);
+  }
+}
+
+.warning-message {
+  @extend .message;
+  background-color: #fff3e0;
+  color: var(--warning-color);
+  border: 1px solid #ffcc02;
+  
+  .mat-icon {
+    color: var(--warning-color);
+  }
+}
+
+.info-message {
+  @extend .message;
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  border: 1px solid #bbdefb;
+  
+  .mat-icon {
+    color: var(--primary-color);
+  }
+}
+
+// ===================================
+// CHECKBOX E RADIO UNIFORMI
+// ===================================
+
+.mat-mdc-checkbox {
+  .mdc-checkbox {
+    .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background {
+      background-color: var(--primary-color) !important;
+      border-color: var(--primary-color) !important;
+    }
+  }
+  
+  .mdc-form-field {
+    color: var(--text-primary) !important;
+  }
+}
+
+.mat-mdc-radio-button {
+  .mdc-radio {
+    .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
+      background-color: var(--primary-color) !important;
+    }
+    
+    .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__outer-circle {
+      border-color: var(--primary-color) !important;
+    }
+  }
+  
+  .mdc-form-field {
+    color: var(--text-primary) !important;
+  }
+}
+
+// ===================================
+// SPINNER E LOADING UNIFORMI
+// ===================================
+
+.mat-mdc-progress-spinner {
+  circle {
+    stroke: var(--primary-color) !important;
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  
+  .mat-mdc-progress-spinner {
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+// ===================================
+// RESPONSIVE UTILITIES
+// ===================================
+
+@media (max-width: 768px) {
+  .form-container {
+    padding: 16px;
+  }
+  
+  .form-row {
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .form-actions {
+    margin-top: 24px;
+    padding-top: 16px;
+    gap: 12px;
+  }
+  
+  .mat-mdc-card {
+    .mat-mdc-card-header {
+      padding: 16px 16px 12px 16px !important;
+    }
+    
+    .mat-mdc-card-content {
+      padding: 0 16px 12px 16px !important;
+    }
+    
+    .mat-mdc-card-actions {
+      padding: 12px 16px 16px 16px !important;
+    }
+  }
+}
+
+// ===================================
+// ANIMAZIONI UNIFORMI
+// ===================================
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+// ===================================
+// OVERRIDE SPECIFICI PER MATERIAL
+// ===================================
+
+// Stepper uniforme
+.mat-stepper-horizontal {
+  .mat-step-header {
+    padding: 16px 24px !important;
+    
+    .mat-step-icon {
+      background-color: var(--primary-color) !important;
+    }
+    
+    .mat-step-icon-selected {
+      background-color: var(--primary-color) !important;
+    }
+    
+    .mat-step-label {
+      font-weight: 500 !important;
+    }
+  }
+}
+
+// Dialog uniforme
+.mat-mdc-dialog-container {
+  .mdc-dialog__surface {
+    border-radius: var(--border-radius-large) !important;
+  }
+}
+
+// Snackbar uniforme
+.mat-mdc-snack-bar-container {
+  .mdc-snackbar__surface {
+    border-radius: var(--border-radius) !important;
+  }
+}
+
+// Tooltip uniforme
+.mat-mdc-tooltip {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+  border-radius: var(--border-radius) !important;
+  font-size: 12px !important;
+}

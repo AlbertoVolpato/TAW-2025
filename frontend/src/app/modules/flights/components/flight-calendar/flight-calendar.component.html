@@ -1,0 +1,53 @@
+<div class="flight-calendar-container">
+  <div class="calendar-header">
+    <h3>Seleziona la data di partenza</h3>
+    <div class="availability-legend">
+      <div class="legend-item">
+        <span class="legend-color available"></span>
+        <span>Date disponibili</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color unavailable"></span>
+        <span>Date non disponibili</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendario Material -->
+  <div class="calendar-wrapper bg-white rounded-lg shadow-soft border border-gray-200 p-4">
+    <mat-calendar
+      [selected]="selectedDate"
+      [dateFilter]="dateFilter"
+      [dateClass]="dateClass"
+      [minDate]="minDate"
+      (selectedChange)="onDateSelected($event)"
+      (monthSelected)="onMonthChanged($event)">
+    </mat-calendar>
+  </div>
+
+  <div class="calendar-actions">
+    <button 
+      mat-stroked-button 
+      color="primary" 
+      (click)="showAlternativeDates()"
+      class="alternative-dates-btn">
+      <mat-icon>date_range</mat-icon>
+      Mostra date alternative
+    </button>
+  </div>
+
+  <!-- Messaggio informativo -->
+  <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+    <div class="flex items-start space-x-2">
+      <mat-icon class="text-blue-600 mt-0.5" style="font-size: 18px; width: 18px; height: 18px;">info</mat-icon>
+      <div class="text-sm text-blue-800">
+        <p class="font-medium mb-1">Come funziona:</p>
+        <ul class="list-disc list-inside space-y-1 text-blue-700">
+          <li>Le date in <span class="font-semibold text-green-600">verde</span> hanno voli disponibili</li>
+          <li>Clicca su una data verde per selezionarla</li>
+          <li>Clicca su una data non disponibile per vedere alternative</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,167 @@
+<div class="booking-list-container">
+  <div class="header">
+    <h1>Le Mie Prenotazioni</h1>
+    <p class="subtitle">Gestisci le tue prenotazioni di volo</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Caricamento prenotazioni...</p>
+  </div>
+
+  <!-- Error State -->
+  <mat-card *ngIf="error && !loading" class="error-card">
+    <mat-card-content>
+      <div class="error-content">
+        <mat-icon color="warn">error</mat-icon>
+        <p>{{ error }}</p>
+        <button class="btn-primary" (click)="loadBookings()">Riprova</button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Empty State -->
+  <mat-card *ngIf="!loading && !error && bookings.length === 0" class="empty-state">
+    <mat-card-content>
+      <div class="empty-content">
+        <mat-icon class="empty-icon">flight_takeoff</mat-icon>
+        <h2>Nessuna prenotazione trovata</h2>
+        <p>Non hai ancora effettuato nessuna prenotazione.</p>
+        <button class="btn-primary" routerLink="/flights/search">
+          Cerca Voli
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Bookings List -->
+  <div *ngIf="!loading && !error && bookings.length > 0" class="bookings-grid">
+    <mat-card 
+      *ngFor="let booking of bookings; trackBy: trackByBookingId" 
+      class="booking-card"
+      [class.cancelled]="booking.status === 'cancelled'"
+    >
+      <mat-card-header>
+        <div class="booking-header">
+          <div class="booking-reference">
+            <span class="reference-label">Codice Prenotazione</span>
+            <span class="reference-value">{{ formatBookingReference(booking.bookingReference) }}</span>
+          </div>
+          <div class="booking-status">
+            <mat-chip [color]="getBookingStatusColor(booking.status)" selected>
+              {{ getBookingStatusText(booking.status) }}
+            </mat-chip>
+          </div>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Flight Information -->
+        <div class="flight-info">
+          <div class="route">
+            <div class="airport">
+              <span class="airport-code">{{ booking.flight.departureAirport.code }}</span>
+              <span class="airport-name">{{ booking.flight.departureAirport.name }}</span>
+            </div>
+            <div class="flight-path">
+              <mat-icon>flight_takeoff</mat-icon>
+              <div class="flight-line"></div>
+              <mat-icon>flight_land</mat-icon>
+            </div>
+            <div class="airport">
+              <span class="airport-code">{{ booking.flight.arrivalAirport.code }}</span>
+              <span class="airport-name">{{ booking.flight.arrivalAirport.name }}</span>
+            </div>
+          </div>
+
+          <div class="flight-details">
+            <div class="detail-item">
+              <mat-icon>schedule</mat-icon>
+              <span>{{ booking.flight.departureTime | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="detail-item">
+              <mat-icon>timer</mat-icon>
+              <span>{{ formatDuration(booking.flight.duration) }}</span>
+            </div>
+            <div class="detail-item">
+              <mat-icon>airline_seat_recline_normal</mat-icon>
+              <span>{{ booking.passengers.length }} passeggero{{ booking.passengers.length > 1 ? 'i' : '' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Passengers -->
+        <div class="passengers-section">
+          <h4>Passeggeri</h4>
+          <div class="passengers-list">
+            <div *ngFor="let passenger of booking.passengers" class="passenger-item">
+              <mat-icon>person</mat-icon>
+              <span>{{ passenger.firstName }} {{ passenger.lastName }}</span>
+              <span *ngIf="passenger.seatNumber" class="seat-number">
+                Posto {{ passenger.seatNumber }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Information -->
+        <div class="payment-info">
+          <div class="payment-status">
+            <span class="label">Pagamento:</span>
+            <mat-chip [color]="getPaymentStatusColor(booking.paymentStatus)" selected>
+              {{ getPaymentStatusText(booking.paymentStatus) }}
+            </mat-chip>
+          </div>
+          <div class="total-price">
+            <span class="label">Totale:</span>
+            <span class="price">{{ formatPrice(booking.totalPrice) }}</span>
+          </div>
+        </div>
+
+        <!-- Check-in Status -->
+        <div *ngIf="booking.checkedIn" class="checkin-status">
+          <mat-icon color="primary">check_circle</mat-icon>
+          <span>Check-in completato</span>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button 
+          class="btn-secondary" 
+          (click)="onViewBooking(booking)"
+        >
+          <mat-icon>visibility</mat-icon>
+          Dettagli
+        </button>
+
+        <button 
+          *ngIf="canCheckIn(booking)" 
+          class="btn-primary" 
+          (click)="onCheckIn(booking)"
+        >
+          <mat-icon>flight_takeoff</mat-icon>
+          Check-in
+        </button>
+
+        <button 
+          *ngIf="booking.checkedIn" 
+          class="btn-primary" 
+          (click)="onViewBooking(booking)"
+        >
+          <mat-icon>confirmation_number</mat-icon>
+          Carta d'Imbarco
+        </button>
+
+        <button 
+          *ngIf="canCancel(booking)" 
+          class="btn-danger" 
+          (click)="onCancelBooking(booking)"
+        >
+          <mat-icon>cancel</mat-icon>
+          Cancella
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

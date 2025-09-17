@@ -1,0 +1,202 @@
+<header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-soft">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <!-- Logo e titolo -->
+      <div class="flex items-center space-x-3 cursor-pointer group" (click)="navigateToFlights()">
+        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+          <mat-icon class="text-white text-xl">flight</mat-icon>
+        </div>
+        <span class="text-xl font-bold text-gray-900 hidden sm:block">SkyBooker</span>
+      </div>
+
+      <!-- Menu desktop -->
+      <nav class="hidden md:flex items-center space-x-1">
+        <button 
+          class="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+          (click)="navigateToFlights()">
+          <mat-icon class="text-lg">search</mat-icon>
+          <span class="font-medium">Cerca Voli</span>
+        </button>
+
+        <!-- Menu per utenti autenticati -->
+        <ng-container *ngIf="isAuthenticated()">
+          <!-- Menu Admin -->
+          <button 
+            *ngIf="isAdmin()" 
+            class="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+            (click)="navigateToAdmin()">
+            <mat-icon class="text-lg">admin_panel_settings</mat-icon>
+            <span class="font-medium">Admin</span>
+          </button>
+
+          <!-- Menu Compagnia Aerea -->
+          <button 
+            *ngIf="isAirline()" 
+            class="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+            (click)="navigateToAirline()">
+            <mat-icon class="text-lg">business</mat-icon>
+            <span class="font-medium">Gestione</span>
+          </button>
+
+          <!-- Menu Passeggero -->
+          <button 
+            *ngIf="isPassenger()" 
+            class="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+            (click)="navigateToBookings()">
+            <mat-icon class="text-lg">confirmation_number</mat-icon>
+            <span class="font-medium">Prenotazioni</span>
+          </button>
+        </ng-container>
+      </nav>
+
+      <!-- Menu utente -->
+      <div class="flex items-center space-x-3">
+        <ng-container *ngIf="!isAuthenticated()">
+          <button 
+            class="px-4 py-2 text-gray-600 hover:text-primary-600 font-medium transition-colors duration-200"
+            routerLink="/login">
+            Accedi
+          </button>
+          <button 
+            class="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg shadow-soft hover:shadow-medium transition-all duration-200"
+            routerLink="/register">
+            Registrati
+          </button>
+        </ng-container>
+
+        <ng-container *ngIf="isAuthenticated()">
+          <!-- Avatar utente -->
+          <div class="relative">
+            <button 
+              class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+              [matMenuTriggerFor]="userMenu">
+              <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center">
+                <span class="text-white text-sm font-semibold">
+                  {{ (currentUser?.firstName?.charAt(0) || '') + (currentUser?.lastName?.charAt(0) || '') }}
+                </span>
+              </div>
+              <div class="hidden sm:block text-left">
+                <p class="text-sm font-medium text-gray-900">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
+                <p class="text-xs text-gray-500 capitalize">{{ currentUser?.role }}</p>
+              </div>
+              <mat-icon class="text-gray-400 text-lg">keyboard_arrow_down</mat-icon>
+            </button>
+
+            <mat-menu #userMenu="matMenu" class="mt-2">
+              <div class="px-4 py-3 border-b border-gray-100">
+                <p class="text-sm font-medium text-gray-900">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
+                <p class="text-xs text-gray-500 capitalize">{{ currentUser?.role }}</p>
+              </div>
+              
+              <button mat-menu-item (click)="navigateToProfile()" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50">
+                <mat-icon class="text-gray-400">person</mat-icon>
+                <span>Profilo</span>
+              </button>
+              
+              <button mat-menu-item routerLink="/change-password" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50">
+                <mat-icon class="text-gray-400">lock</mat-icon>
+                <span>Cambia Password</span>
+              </button>
+              
+              <div class="border-t border-gray-100 my-1"></div>
+              
+              <button mat-menu-item (click)="logout()" class="flex items-center space-x-3 px-4 py-3 hover:bg-red-50 text-red-600">
+                <mat-icon class="text-red-500">logout</mat-icon>
+                <span>Esci</span>
+              </button>
+            </mat-menu>
+          </div>
+        </ng-container>
+
+        <!-- Menu mobile toggle -->
+        <button 
+          class="md:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+          (click)="toggleMenu()">
+          <mat-icon class="text-gray-600">{{ isMenuOpen ? 'close' : 'menu' }}</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Menu mobile -->
+    <div 
+      class="md:hidden border-t border-gray-100 bg-white"
+      [class.hidden]="!isMenuOpen"
+      [@slideDown]="isMenuOpen">
+      <div class="py-4 space-y-1">
+        <button 
+          class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+          (click)="navigateToFlights()">
+          <mat-icon class="text-lg">search</mat-icon>
+          <span class="font-medium">Cerca Voli</span>
+        </button>
+
+        <ng-container *ngIf="isAuthenticated()">
+          <button 
+            *ngIf="isAdmin()" 
+            class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+            (click)="navigateToAdmin()">
+            <mat-icon class="text-lg">admin_panel_settings</mat-icon>
+            <span class="font-medium">Amministrazione</span>
+          </button>
+
+          <button 
+            *ngIf="isAirline()" 
+            class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+            (click)="navigateToAirline()">
+            <mat-icon class="text-lg">business</mat-icon>
+            <span class="font-medium">Gestione Voli</span>
+          </button>
+
+          <button 
+            *ngIf="isPassenger()" 
+            class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+            (click)="navigateToBookings()">
+            <mat-icon class="text-lg">confirmation_number</mat-icon>
+            <span class="font-medium">Le Mie Prenotazioni</span>
+          </button>
+
+          <div class="border-t border-gray-100 my-2"></div>
+          
+          <button 
+            class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+            (click)="navigateToProfile()">
+            <mat-icon class="text-lg">person</mat-icon>
+            <span class="font-medium">Profilo</span>
+          </button>
+
+          <button 
+            class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+            routerLink="/change-password">
+            <mat-icon class="text-lg">lock</mat-icon>
+            <span class="font-medium">Cambia Password</span>
+          </button>
+
+          <button 
+            class="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+            (click)="logout()">
+            <mat-icon class="text-lg">logout</mat-icon>
+            <span class="font-medium">Esci</span>
+          </button>
+        </ng-container>
+
+        <ng-container *ngIf="!isAuthenticated()">
+          <div class="border-t border-gray-100 my-2"></div>
+          
+          <button 
+            class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+            routerLink="/login">
+            <mat-icon class="text-lg">login</mat-icon>
+            <span class="font-medium">Accedi</span>
+          </button>
+          
+          <button 
+            class="w-full flex items-center space-x-3 px-4 py-3 text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg transition-all duration-200"
+            routerLink="/register">
+            <mat-icon class="text-lg">person_add</mat-icon>
+            <span class="font-medium">Registrati</span>
+          </button>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</header>

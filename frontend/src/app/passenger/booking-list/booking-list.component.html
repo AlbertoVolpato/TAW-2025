@@ -1,0 +1,125 @@
+<div class="booking-list-container">
+  <div class="header">
+    <h2>My Bookings</h2>
+    <div class="filters">
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select [(value)]="selectedStatus" (selectionChange)="onStatusChange()">
+          <mat-option value="">All</mat-option>
+          <mat-option value="pending">Pending</mat-option>
+          <mat-option value="confirmed">Confirmed</mat-option>
+          <mat-option value="cancelled">Cancelled</mat-option>
+          <mat-option value="completed">Completed</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="content" *ngIf="!loading && !error">
+    <div class="booking-cards" *ngIf="bookings.length > 0">
+      <mat-card class="booking-card" *ngFor="let booking of bookings">
+        <mat-card-header>
+          <div mat-card-avatar class="booking-avatar">
+            <mat-icon>flight</mat-icon>
+          </div>
+          <mat-card-title>{{ booking.bookingReference }}</mat-card-title>
+          <mat-card-subtitle>{{ getFlightRoute(booking) }}</mat-card-subtitle>
+          <div class="status-badge" [ngClass]="'status-' + booking.status">
+            {{ booking.status | titlecase }}
+          </div>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="booking-details">
+            <div class="detail-row">
+              <span class="label">Flight:</span>
+              <span class="value">{{ booking.flight?.flightNumber }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Date:</span>
+              <span class="value">{{ booking.flight?.departureTime | date:'medium' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Passengers:</span>
+              <span class="value">{{ booking.passengers.length }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Total Price:</span>
+              <span class="value price">€{{ getTotalPrice(booking) | number:'1.2-2' }}</span>
+            </div>
+            <div class="detail-row" *ngIf="booking.payment">
+              <span class="label">Payment:</span>
+              <span class="value" [ngClass]="'payment-' + booking.payment.status">
+                {{ booking.payment.status | titlecase }}
+              </span>
+            </div>
+          </div>
+
+          <div class="passenger-list">
+            <h4>Passengers:</h4>
+            <div class="passenger-item" *ngFor="let passenger of booking.passengers">
+              <span class="passenger-name">{{ passenger.firstName }} {{ passenger.lastName }}</span>
+              <span class="passenger-seat" *ngIf="booking.seats?.outbound">
+                Seat: {{ getSeatForPassenger(booking, passenger) }}
+              </span>
+            </div>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button mat-button color="primary" (click)="viewBookingDetails(booking)">
+            <mat-icon>visibility</mat-icon>
+            View Details
+          </button>
+          
+          <button mat-button color="accent" 
+                  *ngIf="canCheckIn(booking)" 
+                  (click)="checkIn(booking)"
+                  [disabled]="booking.checkedIn">
+            <mat-icon>check_circle</mat-icon>
+            {{ booking.checkedIn ? 'Checked In' : 'Check In' }}
+          </button>
+          
+          <button mat-button color="warn" 
+                  *ngIf="canCancel(booking)" 
+                  (click)="openCancelDialog(booking)">
+            <mat-icon>cancel</mat-icon>
+            Cancel
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <div class="empty-state" *ngIf="bookings.length === 0">
+      <mat-icon class="empty-icon">flight_takeoff</mat-icon>
+      <h3>No bookings found</h3>
+      <p>You haven't made any bookings yet. Start planning your next trip!</p>
+      <button mat-raised-button color="primary" routerLink="/search">
+        Search Flights
+      </button>
+    </div>
+
+    <mat-paginator 
+      *ngIf="totalBookings > pageSize"
+      [length]="totalBookings"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[5, 10, 20]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons>
+    </mat-paginator>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <mat-spinner></mat-spinner>
+    <p>Loading your bookings...</p>
+  </div>
+
+  <div class="error-state" *ngIf="error">
+    <mat-icon class="error-icon">error</mat-icon>
+    <h3>Error Loading Bookings</h3>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadBookings()">
+      Try Again
+    </button>
+  </div>
+</div>

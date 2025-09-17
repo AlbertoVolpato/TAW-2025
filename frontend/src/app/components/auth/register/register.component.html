@@ -1,0 +1,98 @@
+<div class="register-container">
+  <mat-card class="register-card">
+    <mat-card-header>
+      <div class="register-header">
+        <div class="logo-container">
+          <mat-icon>person_add</mat-icon>
+        </div>
+        <mat-card-title>Crea il tuo account</mat-card-title>
+        <mat-card-subtitle>Unisciti a SkyBooker per prenotare i tuoi voli</mat-card-subtitle>
+      </div>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Nome</mat-label>
+            <input matInput type="text" formControlName="firstName" placeholder="Inserisci il tuo nome">
+            <mat-error *ngIf="f['firstName'].invalid && f['firstName'].touched">
+              <span *ngIf="f['firstName'].errors?.['required']">Il nome è obbligatorio</span>
+              <span *ngIf="f['firstName'].errors?.['minlength']">Il nome deve avere almeno 2 caratteri</span>
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Cognome</mat-label>
+            <input matInput type="text" formControlName="lastName" placeholder="Inserisci il tuo cognome">
+            <mat-error *ngIf="f['lastName'].invalid && f['lastName'].touched">
+              <span *ngIf="f['lastName'].errors?.['required']">Il cognome è obbligatorio</span>
+              <span *ngIf="f['lastName'].errors?.['minlength']">Il cognome deve avere almeno 2 caratteri</span>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row single-column">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" formControlName="email" placeholder="Inserisci la tua email">
+            <mat-icon matSuffix>email</mat-icon>
+            <mat-error *ngIf="f['email'].invalid && f['email'].touched">
+              <span *ngIf="f['email'].errors?.['required']">L'email è obbligatoria</span>
+              <span *ngIf="f['email'].errors?.['email']">Inserisci un'email valida</span>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" formControlName="password" placeholder="Inserisci la password">
+            <mat-icon matSuffix>lock</mat-icon>
+            <mat-error *ngIf="f['password'].invalid && f['password'].touched">
+              <span *ngIf="f['password'].errors?.['required']">La password è obbligatoria</span>
+              <span *ngIf="f['password'].errors?.['minlength']">La password deve avere almeno 6 caratteri</span>
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Conferma Password</mat-label>
+            <input matInput type="password" formControlName="confirmPassword" placeholder="Conferma la password">
+            <mat-icon matSuffix>lock_outline</mat-icon>
+            <mat-error *ngIf="f['confirmPassword'].invalid && f['confirmPassword'].touched">
+              <span *ngIf="f['confirmPassword'].errors?.['required']">Conferma la password</span>
+              <span *ngIf="f['confirmPassword'].errors?.['passwordMismatch']">Le password non corrispondono</span>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div *ngIf="success" class="success-message">
+          <mat-icon>check_circle</mat-icon>
+          <span>{{ success }}</span>
+        </div>
+
+        <div *ngIf="error" class="error-message">
+          <mat-icon>error</mat-icon>
+          <span>{{ error }}</span>
+        </div>
+
+        <div class="form-actions center">
+          <button type="submit" 
+                  class="btn-primary btn-full-width btn-large"
+                  [disabled]="registerForm.invalid || loading">
+            <mat-spinner diameter="20" class="btn-spinner" *ngIf="loading"></mat-spinner>
+            <span *ngIf="!loading">Registrati</span>
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+    
+    <mat-card-actions>
+      <div class="login-link">
+        <p>Hai già un account? 
+          <a routerLink="/login" class="btn-secondary">Accedi qui</a>
+        </p>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+</div>
