@@ -1,0 +1,47 @@
+<div class="custom-autocomplete-container">
+  <div class="input-wrapper">
+    <input 
+      type="text"
+      [placeholder]="placeholder"
+      [value]="displayValue"
+      (input)="onInput($event)"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+      (keydown)="onKeyDown($event)"
+      #inputElement
+      class="autocomplete-input">
+    
+    <div class="input-icon" *ngIf="icon">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getIconPath()"></path>
+      </svg>
+    </div>
+  </div>
+
+  <div 
+    class="dropdown-container" 
+    [class.visible]="isOpen && filteredOptions.length > 0"
+    #dropdownElement>
+    <div class="dropdown-content">
+      <div 
+        *ngFor="let option of filteredOptions; let i = index"
+        class="dropdown-option"
+        [class.highlighted]="i === highlightedIndex"
+        (click)="selectOption(option)"
+        (mouseenter)="highlightedIndex = i">
+        
+        <div class="option-content">
+          <div class="option-main">
+            <span class="option-name">{{ option.name }}</span>
+            <span class="option-code">{{ option.code }}</span>
+          </div>
+          <div class="option-location">{{ option.city }}, {{ option.country }}</div>
+        </div>
+      </div>
+      
+      <div *ngIf="filteredOptions.length === 0 && searchTerm.length > 0" class="no-results">
+        Nessun aeroporto trovato
+      </div>
+    </div>
+  </div>
+</div>

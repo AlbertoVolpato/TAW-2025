@@ -102,69 +102,65 @@ const usersData = [
   {
     email: 'admin@taw.com',
     password: 'admin123',
-    name: 'System Administrator',
+    firstName: 'System',
+    lastName: 'Administrator',
     role: 'admin'
   },
   {
     email: 'alitalia@airline.com',
     password: 'alitalia123',
-    name: 'Alitalia Manager',
+    firstName: 'Alitalia',
+    lastName: 'Manager',
     role: 'airline'
   },
   {
     email: 'lufthansa@airline.com',
     password: 'lufthansa123',
-    name: 'Lufthansa Manager',
+    firstName: 'Lufthansa',
+    lastName: 'Manager',
     role: 'airline'
   },
   {
     email: 'british@airline.com',
     password: 'british123',
-    name: 'British Airways Manager',
+    firstName: 'British Airways',
+    lastName: 'Manager',
     role: 'airline'
   },
   {
     email: 'passenger@test.com',
     password: 'passenger123',
-    name: 'Test Passenger',
+    firstName: 'Test',
+    lastName: 'Passenger',
     role: 'passenger'
   }
 ];
 
-// Sample airlines data (will be populated after users are created)
+// Sample airlines data
 const airlinesData = [
   {
     code: 'AZ',
     name: 'Alitalia',
     country: 'Italy',
     website: 'https://www.alitalia.com',
-    contactInfo: {
-      phone: '+39 06 65649',
-      email: 'info@alitalia.com',
-      address: 'Via Alessandro Marchetti 111, 00148 Roma, Italy'
-    }
+    contactEmail: 'info@alitalia.com',
+    contactPhone: '+390665649'
   },
   {
     code: 'LH',
     name: 'Lufthansa',
     country: 'Germany',
     website: 'https://www.lufthansa.com',
-    contactInfo: {
-      phone: '+49 69 86 799 799',
-      email: 'service@lufthansa.com',
-      address: 'Venloer Str. 151-153, 50672 Köln, Germany'
-    }
+    contactEmail: 'service@lufthansa.com',
+    contactPhone: '+4969867997'
   },
   {
     code: 'BA',
     name: 'British Airways',
     country: 'United Kingdom',
     website: 'https://www.britishairways.com',
-    contactInfo: {
-      phone: '+44 344 493 0787',
-      email: 'customer.relations@britishairways.com',
-      address: 'Waterside, PO Box 365, Harmondsworth UB7 0GB, UK'
-    }
+    contactEmail: 'customer.relations@britishairways.com',
+    contactPhone: '+443444930787'
   }
 ];
 
@@ -211,7 +207,7 @@ export const seedDatabase = async (): Promise<void> => {
       const airlineData = airlinesData[i];
       const airline = new Airline({
         ...airlineData,
-        user: airlineUsers[i]._id
+        userId: airlineUsers[i]._id
       });
       await airline.save();
       console.log(`✅ Created airline: ${airlineData.code} - ${airlineData.name}`);
@@ -233,9 +229,8 @@ export const seedDatabase = async (): Promise<void> => {
   } catch (error) {
     console.error('❌ Error seeding database:', error);
     throw error;
-  } finally {
-    await disconnectDatabase();
   }
+  // Non disconnettere il database qui per mantenere la connessione attiva
 };
 
 // Run seeding if this file is executed directly

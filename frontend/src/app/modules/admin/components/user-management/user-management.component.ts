@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { AuthService } from '../../../../services/auth.service';
+import { UserService, CreateAirlineRequest } from '../../../../services/user.service';
 import { User } from '../../../../models/user.model';
 
 @Component({
@@ -13,6 +13,7 @@ export class UserManagementComponent implements OnInit {
   users: User[] = [];
   loading = false;
   error: string | null = null;
+  success: string | null = null;
   
   // Forms
   inviteAirlineForm: FormGroup;
@@ -21,9 +22,15 @@ export class UserManagementComponent implements OnInit {
   // Table columns
   displayedColumns: string[] = ['email', 'firstName', 'lastName', 'role', 'isActive', 'actions'];
 
+  // Pagination
+  currentPage = 1;
+  pageSize = 10;
+  totalUsers = 0;
+  totalPages = 0;
+
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
+    private userService: UserService,
     private dialog: MatDialog
   ) {
     this.inviteAirlineForm = this.fb.group({
@@ -31,7 +38,8 @@ export class UserManagementComponent implements OnInit {
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       airlineName: ['', [Validators.required, Validators.minLength(2)]],
-      airlineCode: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(3)]]
+      airlineCode: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(3)]],
+      country: ['Italy']
     });
   }
 
@@ -43,29 +51,20 @@ export class UserManagementComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    // In a real implementation, this would call a user management service
-    // For now, we'll simulate the functionality
-    this.authService.getProfile().subscribe({
-      next: (response: any) => {
-        // This is a placeholder - in reality you'd have a proper user management endpoint
-        this.users = [
-          {
-            _id: '1',
-            email: 'admin@flightbooking.com',
-            firstName: 'Admin',
-            lastName: 'User',
-            role: 'admin',
-            isActive: true,
-            isEmailVerified: true,
-            mustChangePassword: false,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          }
-        ];
+    this.userService.getAllUsers({
+      page: this.currentPage,
+      limit: this.pageSize
+    }).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.users = response.data.users;
+          this.totalUsers = response.data.pagination.total;
+          this.totalPages = response.data.pagination.pages;
+        }
         this.loading = false;
       },
-      error: (error: any) => {
-        this.error = 'Errore nel caricamento degli utenti';
+      error: (error) => {
+        this.error = error.error?.message || 'Errore nel caricamento degli utenti';
         this.loading = false;
         console.error('Error loading users:', error);
       }
@@ -74,8 +73,11 @@ export class UserManagementComponent implements OnInit {
 
   toggleInviteForm(): void {
     this.showInviteForm = !this.showInviteForm;
+    this.error = null;
+    this.success = null;
     if (!this.showInviteForm) {
       this.inviteAirlineForm.reset();
+      this.inviteAirlineForm.patchValue({ country: 'Italy' });
     }
   }
 
@@ -86,33 +88,28 @@ export class UserManagementComponent implements OnInit {
     }
 
     this.loading = true;
-    const formData = this.inviteAirlineForm.value;
-
-    // In a real implementation, this would call an API to create the airline user
-    console.log('Inviting airline:', formData);
+    this.error = null;
+    this.success = null;
     
-    // Simulate API call
-    setTimeout(() => {
-      this.loading = false;
-      this.showInviteForm = false;
-      this.inviteAirlineForm.reset();
-      
-      // Add the new airline user to the list (simulation)
-      const newUser: User = {
-        _id: Date.now().toString(),
-        email: formData.email,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        role: 'airline',
-        isActive: true,
-        isEmailVerified: false,
-        mustChangePassword: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      
-      this.users.push(newUser);
-    }, 1000);
+    const formData: CreateAirlineRequest = this.inviteAirlineForm.value;
+
+    this.userService.createAirlineByInvitation(formData).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.success = `Compagnia aerea creata con successo! Password temporanea: ${response.data.temporaryPassword}`;
+          this.showInviteForm = false;
+          this.inviteAirlineForm.reset();
+          this.inviteAirlineForm.patchValue({ country: 'Italy' });
+          this.loadUsers(); // Reload users list
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        this.error = error.error?.message || 'Errore nella creazione della compagnia aerea';
+        this.loading = false;
+        console.error('Error creating airline:', error);
+      }
+    });
   }
 
   deleteUser(user: User): void {
@@ -123,29 +120,55 @@ export class UserManagementComponent implements OnInit {
 
     if (confirm(`Sei sicuro di voler eliminare l'utente ${user.email}?`)) {
       this.loading = true;
+      this.error = null;
+      this.success = null;
       
-      // In a real implementation, this would call an API to delete the user
-      console.log('Deleting user:', user);
-      
-      // Simulate API call
-      setTimeout(() => {
-        this.users = this.users.filter(u => u._id !== user._id);
-        this.loading = false;
-      }, 500);
+      this.userService.deleteUser(user._id).subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.success = 'Utente eliminato con successo';
+            this.loadUsers(); // Reload users list
+          }
+          this.loading = false;
+        },
+        error: (error) => {
+          this.error = error.error?.message || 'Errore nell\'eliminazione dell\'utente';
+          this.loading = false;
+          console.error('Error deleting user:', error);
+        }
+      });
     }
   }
 
   toggleUserStatus(user: User): void {
+    if (user.role === 'admin') {
+      this.error = 'Non è possibile modificare lo stato di un amministratore';
+      return;
+    }
+
     this.loading = true;
+    this.error = null;
+    this.success = null;
     
-    // In a real implementation, this would call an API to toggle user status
-    console.log('Toggling user status:', user);
-    
-    // Simulate API call
-    setTimeout(() => {
-      user.isActive = !user.isActive;
-      this.loading = false;
-    }, 500);
+    this.userService.toggleUserStatus(user._id).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.success = response.message;
+          this.loadUsers(); // Reload users list
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        this.error = error.error?.message || 'Errore nella modifica dello stato utente';
+        this.loading = false;
+        console.error('Error toggling user status:', error);
+      }
+    });
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadUsers();
   }
 
   getRoleText(role: string): string {

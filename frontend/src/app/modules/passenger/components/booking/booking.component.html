@@ -25,7 +25,13 @@
   <div *ngIf="error && !loading" class="status-message error">
     <mat-icon>error</mat-icon>
     <span>{{ error }}</span>
-    <button class="btn-primary" (click)="error = null">Chiudi</button>
+    <button class="btn-secondary" (click)="error = null">Chiudi</button>
+  </div>
+
+  <!-- Success Message -->
+  <div class="status-message success" *ngIf="!error && !loading && flight">
+    <mat-icon>check_circle</mat-icon>
+    <span>Prenotazione in corso...</span>
   </div>
 
   <!-- Booking Stepper -->

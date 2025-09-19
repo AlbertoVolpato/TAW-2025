@@ -215,6 +215,12 @@
     </mat-card-content>
   </mat-card>
 
+  <!-- Success Message -->
+  <div class="status-message success" *ngIf="success && !loading">
+    <mat-icon>check_circle</mat-icon>
+    <span>{{ success }}</span>
+  </div>
+
   <!-- Error Message -->
   <div class="status-message error" *ngIf="error && !loading">
     <mat-icon>error</mat-icon>

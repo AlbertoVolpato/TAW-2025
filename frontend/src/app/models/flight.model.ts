@@ -64,6 +64,11 @@ export interface Flight {
     extraLegroom: boolean;
   };
   isActive: boolean;
+  // Alternative date properties
+  isAlternativeDate?: boolean;
+  originalDate?: string;
+  alternativeDate?: string;
+  daysDifference?: number;
 }
 
 export interface FlightSearchRequest {

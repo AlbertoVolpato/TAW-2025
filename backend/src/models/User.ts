@@ -10,6 +10,7 @@ export interface IUser extends Document {
   isActive: boolean;
   isEmailVerified: boolean;
   mustChangePassword: boolean;
+  airline?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -58,6 +59,11 @@ const userSchema = new Schema<IUser>({
   mustChangePassword: {
     type: Boolean,
     default: false
+  },
+  airline: {
+    type: Schema.Types.ObjectId,
+    ref: 'Airline',
+    required: false
   }
 }, {
   timestamps: true

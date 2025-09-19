@@ -1,200 +1,209 @@
-<header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-soft">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between items-center h-16">
-      <!-- Logo e titolo -->
-      <div class="flex items-center space-x-3 cursor-pointer group" (click)="navigateToFlights()">
-        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-          <mat-icon class="text-white text-xl">flight</mat-icon>
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <!-- Logo -->
+      <div class="logo" (click)="navigateToHome()">
+        <div class="logo-icon">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+          </svg>
         </div>
-        <span class="text-xl font-bold text-gray-900 hidden sm:block">SkyBooker</span>
+        <span class="logo-text">SkyBooker</span>
       </div>
 
-      <!-- Menu desktop -->
-      <nav class="hidden md:flex items-center space-x-1">
-        <button 
-          class="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-          (click)="navigateToFlights()">
-          <mat-icon class="text-lg">search</mat-icon>
-          <span class="font-medium">Cerca Voli</span>
-        </button>
+      <!-- Desktop Navigation -->
+      <nav class="nav-desktop">
+        <a class="nav-link" (click)="navigateToFlights()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          Cerca Voli
+        </a>
 
-        <!-- Menu per utenti autenticati -->
+        <!-- Authenticated User Menu -->
         <ng-container *ngIf="isAuthenticated()">
-          <!-- Menu Admin -->
-          <button 
-            *ngIf="isAdmin()" 
-            class="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-            (click)="navigateToAdmin()">
-            <mat-icon class="text-lg">admin_panel_settings</mat-icon>
-            <span class="font-medium">Admin</span>
-          </button>
+          <!-- Admin Menu -->
+          <ng-container *ngIf="isAdmin()">
+            <a class="nav-link" (click)="navigateToAdmin()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+              </svg>
+              Dashboard
+            </a>
+            <a class="nav-link" (click)="navigateToUserManagement()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+              </svg>
+              Utenti
+            </a>
+          </ng-container>
 
-          <!-- Menu Compagnia Aerea -->
-          <button 
-            *ngIf="isAirline()" 
-            class="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-            (click)="navigateToAirline()">
-            <mat-icon class="text-lg">business</mat-icon>
-            <span class="font-medium">Gestione</span>
-          </button>
+          <!-- Airline Menu -->
+          <ng-container *ngIf="isAirline()">
+            <a class="nav-link" (click)="navigateToAirline()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+              </svg>
+              Dashboard
+            </a>
+            <a class="nav-link" (click)="navigateToFlightManagement()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+              </svg>
+              Voli
+            </a>
+          </ng-container>
 
-          <!-- Menu Passeggero -->
-          <button 
-            *ngIf="isPassenger()" 
-            class="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-            (click)="navigateToBookings()">
-            <mat-icon class="text-lg">confirmation_number</mat-icon>
-            <span class="font-medium">Prenotazioni</span>
-          </button>
+          <!-- Passenger Menu -->
+          <ng-container *ngIf="isPassenger()">
+            <a class="nav-link" (click)="navigateToBookings()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+              </svg>
+              Prenotazioni
+            </a>
+          </ng-container>
         </ng-container>
       </nav>
 
-      <!-- Menu utente -->
-      <div class="flex items-center space-x-3">
+      <!-- User Actions -->
+      <div class="user-actions">
         <ng-container *ngIf="!isAuthenticated()">
-          <button 
-            class="px-4 py-2 text-gray-600 hover:text-primary-600 font-medium transition-colors duration-200"
-            routerLink="/login">
-            Accedi
-          </button>
-          <button 
-            class="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg shadow-soft hover:shadow-medium transition-all duration-200"
-            routerLink="/register">
-            Registrati
-          </button>
+          <button class="btn btn-ghost" routerLink="/login">Accedi</button>
+          <button class="btn btn-primary" routerLink="/register">Registrati</button>
         </ng-container>
 
         <ng-container *ngIf="isAuthenticated()">
-          <!-- Avatar utente -->
-          <div class="relative">
-            <button 
-              class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-              [matMenuTriggerFor]="userMenu">
-              <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center">
-                <span class="text-white text-sm font-semibold">
-                  {{ (currentUser?.firstName?.charAt(0) || '') + (currentUser?.lastName?.charAt(0) || '') }}
-                </span>
+          <!-- User Menu -->
+          <div class="user-menu" [class.active]="isUserMenuOpen">
+            <button class="user-button" (click)="toggleUserMenu()">
+              <div class="user-avatar">
+                {{ getUserInitials() }}
               </div>
-              <div class="hidden sm:block text-left">
-                <p class="text-sm font-medium text-gray-900">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
-                <p class="text-xs text-gray-500 capitalize">{{ currentUser?.role }}</p>
+              <div class="user-info">
+                <span class="user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
+                <span class="user-role">{{ getUserRoleText() }}</span>
               </div>
-              <mat-icon class="text-gray-400 text-lg">keyboard_arrow_down</mat-icon>
+              <svg class="w-4 h-4 chevron" [class.rotated]="isUserMenuOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
             </button>
 
-            <mat-menu #userMenu="matMenu" class="mt-2">
-              <div class="px-4 py-3 border-b border-gray-100">
-                <p class="text-sm font-medium text-gray-900">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
-                <p class="text-xs text-gray-500 capitalize">{{ currentUser?.role }}</p>
-              </div>
-              
-              <button mat-menu-item (click)="navigateToProfile()" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50">
-                <mat-icon class="text-gray-400">person</mat-icon>
-                <span>Profilo</span>
-              </button>
-              
-              <button mat-menu-item routerLink="/change-password" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50">
-                <mat-icon class="text-gray-400">lock</mat-icon>
-                <span>Cambia Password</span>
-              </button>
-              
-              <div class="border-t border-gray-100 my-1"></div>
-              
-              <button mat-menu-item (click)="logout()" class="flex items-center space-x-3 px-4 py-3 hover:bg-red-50 text-red-600">
-                <mat-icon class="text-red-500">logout</mat-icon>
-                <span>Esci</span>
-              </button>
-            </mat-menu>
+            <div class="user-dropdown" *ngIf="isUserMenuOpen">
+              <a class="dropdown-item" (click)="navigateToProfile()">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                Profilo
+              </a>
+              <a class="dropdown-item" routerLink="/change-password">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+                Cambia Password
+              </a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item logout" (click)="logout()">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                Logout
+              </a>
+            </div>
           </div>
         </ng-container>
 
-        <!-- Menu mobile toggle -->
-        <button 
-          class="md:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-          (click)="toggleMenu()">
-          <mat-icon class="text-gray-600">{{ isMenuOpen ? 'close' : 'menu' }}</mat-icon>
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" (click)="toggleMobileMenu()">
+          <svg class="w-6 h-6" [class.hidden]="isMobileMenuOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+          <svg class="w-6 h-6" [class.hidden]="!isMobileMenuOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
         </button>
       </div>
     </div>
 
-    <!-- Menu mobile -->
-    <div 
-      class="md:hidden border-t border-gray-100 bg-white"
-      [class.hidden]="!isMenuOpen"
-      [@slideDown]="isMenuOpen">
-      <div class="py-4 space-y-1">
-        <button 
-          class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-          (click)="navigateToFlights()">
-          <mat-icon class="text-lg">search</mat-icon>
-          <span class="font-medium">Cerca Voli</span>
-        </button>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" [class.active]="isMobileMenuOpen">
+      <div class="mobile-nav">
+        <a class="mobile-nav-link" (click)="navigateToFlights()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          Cerca Voli
+        </a>
 
         <ng-container *ngIf="isAuthenticated()">
-          <button 
-            *ngIf="isAdmin()" 
-            class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-            (click)="navigateToAdmin()">
-            <mat-icon class="text-lg">admin_panel_settings</mat-icon>
-            <span class="font-medium">Amministrazione</span>
-          </button>
+          <ng-container *ngIf="isAdmin()">
+            <a class="mobile-nav-link" (click)="navigateToAdmin()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+              </svg>
+              Dashboard Admin
+            </a>
+            <a class="mobile-nav-link" (click)="navigateToUserManagement()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+              </svg>
+              Gestione Utenti
+            </a>
+          </ng-container>
 
-          <button 
-            *ngIf="isAirline()" 
-            class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-            (click)="navigateToAirline()">
-            <mat-icon class="text-lg">business</mat-icon>
-            <span class="font-medium">Gestione Voli</span>
-          </button>
+          <ng-container *ngIf="isAirline()">
+            <a class="mobile-nav-link" (click)="navigateToAirline()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+              </svg>
+              Dashboard Compagnia
+            </a>
+            <a class="mobile-nav-link" (click)="navigateToFlightManagement()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+              </svg>
+              Gestione Voli
+            </a>
+          </ng-container>
 
-          <button 
-            *ngIf="isPassenger()" 
-            class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-            (click)="navigateToBookings()">
-            <mat-icon class="text-lg">confirmation_number</mat-icon>
-            <span class="font-medium">Le Mie Prenotazioni</span>
-          </button>
+          <ng-container *ngIf="isPassenger()">
+            <a class="mobile-nav-link" (click)="navigateToBookings()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+              </svg>
+              Le Mie Prenotazioni
+            </a>
+            <a class="mobile-nav-link" (click)="navigateToProfile()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              Il Mio Profilo
+            </a>
+          </ng-container>
 
-          <div class="border-t border-gray-100 my-2"></div>
-          
-          <button 
-            class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-            (click)="navigateToProfile()">
-            <mat-icon class="text-lg">person</mat-icon>
-            <span class="font-medium">Profilo</span>
-          </button>
-
-          <button 
-            class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-            routerLink="/change-password">
-            <mat-icon class="text-lg">lock</mat-icon>
-            <span class="font-medium">Cambia Password</span>
-          </button>
-
-          <button 
-            class="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
-            (click)="logout()">
-            <mat-icon class="text-lg">logout</mat-icon>
-            <span class="font-medium">Esci</span>
-          </button>
+          <div class="mobile-divider"></div>
+          <a class="mobile-nav-link logout" (click)="logout()">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            Logout
+          </a>
         </ng-container>
 
         <ng-container *ngIf="!isAuthenticated()">
-          <div class="border-t border-gray-100 my-2"></div>
-          
-          <button 
-            class="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-            routerLink="/login">
-            <mat-icon class="text-lg">login</mat-icon>
-            <span class="font-medium">Accedi</span>
-          </button>
-          
-          <button 
-            class="w-full flex items-center space-x-3 px-4 py-3 text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg transition-all duration-200"
-            routerLink="/register">
-            <mat-icon class="text-lg">person_add</mat-icon>
-            <span class="font-medium">Registrati</span>
-          </button>
+          <div class="mobile-divider"></div>
+          <a class="mobile-nav-link" routerLink="/login">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            Accedi
+          </a>
+          <a class="mobile-nav-link primary" routerLink="/register">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            </svg>
+            Registrati
+          </a>
         </ng-container>
       </div>
     </div>

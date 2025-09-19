@@ -1,243 +1,256 @@
-<div class="bg-gradient-to-br from-primary-50 via-white to-blue-50">
+<!-- Flight Search Page -->
+<div class="flight-search-page">
   <!-- Hero Section -->
-  <div class="relative overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-r from-primary-600/10 to-blue-600/10"></div>
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-      <div class="text-center animate-fade-in">
-        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-          Trova il tuo volo
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-blue-600">perfetto</span>
-        </h1>
-        <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-          Confronta prezzi e orari da centinaia di compagnie aeree per trovare l'offerta migliore
-        </p>
+  <section class="hero-section">
+    <div class="container">
+      <div class="hero-content">
+        <h1>Trova il tuo volo perfetto</h1>
+        <p>Confronta prezzi e orari da centinaia di compagnie aeree per trovare l'offerta migliore</p>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Search Form Container -->
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-10 pb-16">
-    <!-- Search Card -->
-    <div class="bg-white rounded-2xl shadow-large border border-gray-100 p-6 sm:p-8 animate-slide-up mb-8">
-      <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
-        <!-- Trip Type Toggle -->
-        <div class="flex justify-center mb-8">
-          <div class="bg-gray-100 p-1 rounded-xl">
-            <mat-button-toggle-group formControlName="tripType" (change)="onTripTypeChange()" class="bg-transparent">
-              <mat-button-toggle value="oneWay" class="px-6 py-3 text-sm font-medium rounded-lg">
-                Solo andata
-              </mat-button-toggle>
-              <mat-button-toggle value="roundTrip" class="px-6 py-3 text-sm font-medium rounded-lg">
-                Andata e ritorno
-              </mat-button-toggle>
-            </mat-button-toggle-group>
-          </div>
-        </div>
-
-        <!-- Airports Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-          <!-- Departure Airport -->
-          <div class="lg:col-span-1">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Da</label>
-            <div class="form-field">
-              <mat-form-field appearance="outline" class="w-full">
-                <input matInput 
-                       formControlName="departureAirport" 
-                       placeholder="Città o aeroporto di partenza"
-                       [matAutocomplete]="departureAuto"
-                       class="text-base">
-                <mat-icon matSuffix class="text-primary-500">flight_takeoff</mat-icon>
-                <mat-autocomplete #departureAuto="matAutocomplete" [displayWith]="displayAirport">
-                  <mat-option *ngFor="let airport of filteredDepartureAirports | async" [value]="airport">
-                    <div class="airport-option-content">
-                      <div class="flex items-center justify-between">
-                        <span class="font-medium text-gray-900">{{ airport.name }}</span>
-                        <span class="text-sm font-semibold text-primary-600">{{ airport.code }}</span>
-                      </div>
-                      <div class="text-sm text-gray-500">{{ airport.city }}, {{ airport.country }}</div>
-                    </div>
-                  </mat-option>
-                </mat-autocomplete>
-                <mat-error *ngIf="searchForm.get('departureAirport')?.invalid && searchForm.get('departureAirport')?.touched">
-                  Seleziona un aeroporto di partenza
-                </mat-error>
-              </mat-form-field>
+  <!-- Search Form Section -->
+  <section class="search-section">
+    <div class="container">
+      <div class="search-card">
+        <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
+          <!-- Trip Type Toggle -->
+          <div class="trip-type-section">
+            <div class="trip-type-toggle">
+              <label class="toggle-option" [class.active]="searchForm.get('tripType')?.value === 'oneWay'">
+                <input type="radio" formControlName="tripType" value="oneWay" (change)="onTripTypeChange()">
+                <span>Solo andata</span>
+              </label>
+              <label class="toggle-option" [class.active]="searchForm.get('tripType')?.value === 'roundTrip'">
+                <input type="radio" formControlName="tripType" value="roundTrip" (change)="onTripTypeChange()">
+                <span>Andata e ritorno</span>
+              </label>
             </div>
           </div>
 
-          <!-- Swap Button -->
-          <div class="flex items-end justify-center lg:col-span-1 pb-4">
-            <button type="button" 
-                    (click)="swapAirports()"
-                    class="w-12 h-12 bg-primary-50 hover:bg-primary-100 text-primary-600 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 shadow-soft">
-              <mat-icon>swap_horiz</mat-icon>
+          <!-- Airports Row -->
+           <div class="airports-row">
+             <!-- Departure Airport -->
+             <div class="form-group">
+               <label>Da</label>
+               <app-custom-autocomplete
+                 [options]="airports"
+                 placeholder="Città o aeroporto di partenza"
+                 icon="takeoff"
+                 formControlName="departureAirport"
+                 (optionSelected)="onDepartureAirportSelected($event)">
+               </app-custom-autocomplete>
+               <div class="error" *ngIf="searchForm.get('departureAirport')?.invalid && searchForm.get('departureAirport')?.touched">
+                 Seleziona un aeroporto di partenza
+               </div>
+             </div>
+
+             <!-- Swap Button -->
+             <div class="swap-container">
+               <button type="button" class="swap-btn" (click)="swapAirports()">
+                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                 </svg>
+               </button>
+             </div>
+
+             <!-- Arrival Airport -->
+             <div class="form-group">
+               <label>A</label>
+               <app-custom-autocomplete
+                 [options]="airports"
+                 placeholder="Città o aeroporto di destinazione"
+                 icon="landing"
+                 formControlName="arrivalAirport"
+                 (optionSelected)="onArrivalAirportSelected($event)">
+               </app-custom-autocomplete>
+               <div class="error" *ngIf="searchForm.get('arrivalAirport')?.invalid && searchForm.get('arrivalAirport')?.touched">
+                 Seleziona un aeroporto di destinazione
+               </div>
+             </div>
+           </div>
+
+          <!-- Dates Row -->
+           <div class="dates-row">
+             <div class="form-group">
+               <label>Data partenza</label>
+               <input type="date" 
+                      formControlName="departureDate"
+                      [min]="getMinDate()"
+                      [max]="getMaxDate()">
+               <div class="selected-date-info" *ngIf="searchForm.get('departureDate')?.value">
+                 <small class="text-primary-600">
+                   Data selezionata: {{ formatSelectedDate(searchForm.get('departureDate')?.value) }}
+                 </small>
+               </div>
+             </div>
+             <div class="form-group" *ngIf="searchForm.get('tripType')?.value === 'roundTrip'">
+               <label>Data ritorno</label>
+               <input type="date" 
+                      formControlName="returnDate"
+                      [min]="searchForm.get('departureDate')?.value || getMinDate()"
+                      [max]="getMaxDate()">
+               <div class="selected-date-info" *ngIf="searchForm.get('returnDate')?.value">
+                 <small class="text-primary-600">
+                   Data selezionata: {{ formatSelectedDate(searchForm.get('returnDate')?.value) }}
+                 </small>
+               </div>
+             </div>
+           </div>
+
+          <!-- Options Row -->
+          <div class="options-row">
+            <div class="form-group">
+              <label>Passeggeri</label>
+              <select formControlName="passengers">
+                <option *ngFor="let num of [1,2,3,4,5,6,7,8,9]" [value]="num">
+                  {{ num }} {{ num === 1 ? 'Passeggero' : 'Passeggeri' }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Classe</label>
+              <select formControlName="seatClass">
+                <option value="economy">Economy</option>
+                <option value="business">Business</option>
+                <option value="first">Prima Classe</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Search Button -->
+          <div class="search-button-container">
+            <button type="submit" 
+                    class="btn btn-primary btn-lg search-btn"
+                    [disabled]="searchForm.invalid || loading">
+              <div class="spinner" *ngIf="loading"></div>
+              <svg *ngIf="!loading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              <span>{{ loading ? 'Ricerca in corso...' : 'Cerca Voli' }}</span>
             </button>
           </div>
-
-          <!-- Arrival Airport -->
-          <div class="lg:col-span-1">
-            <label class="block text-sm font-medium text-gray-700 mb-2">A</label>
-            <div class="form-field">
-              <mat-form-field appearance="outline" class="w-full">
-                <input matInput 
-                       formControlName="arrivalAirport" 
-                       placeholder="Città o aeroporto di destinazione"
-                       [matAutocomplete]="arrivalAuto"
-                       class="text-base">
-                <mat-icon matSuffix class="text-primary-500">flight_land</mat-icon>
-                <mat-autocomplete #arrivalAuto="matAutocomplete" [displayWith]="displayAirport">
-                  <mat-option *ngFor="let airport of filteredArrivalAirports | async" [value]="airport">
-                    <div class="airport-option-content">
-                      <div class="flex items-center justify-between">
-                        <span class="font-medium text-gray-900">{{ airport.name }}</span>
-                        <span class="text-sm font-semibold text-primary-600">{{ airport.code }}</span>
-                      </div>
-                      <div class="text-sm text-gray-500">{{ airport.city }}, {{ airport.country }}</div>
-                    </div>
-                  </mat-option>
-                </mat-autocomplete>
-                <mat-error *ngIf="searchForm.get('arrivalAirport')?.invalid && searchForm.get('arrivalAirport')?.touched">
-                  Seleziona un aeroporto di destinazione
-                </mat-error>
-              </mat-form-field>
-            </div>
-          </div>
-        </div>
-
-        <!-- Passengers Section -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-          <!-- Passengers -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Passeggeri</label>
-            <div class="form-field">
-              <mat-form-field appearance="outline" class="w-full">
-                <mat-select formControlName="passengers" class="text-base">
-                  <mat-option *ngFor="let num of [1,2,3,4,5,6,7,8,9]" [value]="num">
-                    {{ num }} {{ num === 1 ? 'Passeggero' : 'Passeggeri' }}
-                  </mat-option>
-                </mat-select>
-                <mat-icon matSuffix class="text-primary-500">person</mat-icon>
-              </mat-form-field>
-            </div>
-          </div>
-
-          <!-- Seat Class -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Classe</label>
-            <div class="form-field">
-              <mat-form-field appearance="outline" class="w-full">
-                <mat-select formControlName="seatClass" class="text-base">
-                  <mat-option value="economy">Economy</mat-option>
-                  <mat-option value="business">Business</mat-option>
-                  <mat-option value="first">Prima Classe</mat-option>
-                </mat-select>
-                <mat-icon matSuffix class="text-primary-500">airline_seat_recline_normal</mat-icon>
-              </mat-form-field>
-            </div>
-          </div>
-        </div>
-
-        <!-- Calendar Section -->
-        <div *ngIf="showCalendar" class="mb-8">
-          <app-flight-calendar
-            [origin]="getAirportCode(searchForm.get('departureAirport')?.value)"
-            [destination]="getAirportCode(searchForm.get('arrivalAirport')?.value)"
-            [passengers]="searchForm.get('passengers')?.value || 1"
-            [seatClass]="searchForm.get('seatClass')?.value || 'economy'"
-            [selectedDate]="searchForm.get('departureDate')?.value"
-            (dateSelected)="onCalendarDateSelected($event)"
-            (suggestionsRequested)="onSuggestionsRequested($event)">
-          </app-flight-calendar>
-        </div>
-
-        <!-- Search Button -->
-        <div class="flex justify-center">
-          <button type="submit" 
-                  [disabled]="searchForm.invalid || loading"
-                  class="btn-primary px-12 py-4 text-lg font-semibold flex items-center space-x-3">
-            <mat-spinner diameter="20" *ngIf="loading" class="btn-spinner"></mat-spinner>
-            <mat-icon *ngIf="!loading" class="text-xl">search</mat-icon>
-            <span>{{ loading ? 'Ricerca in corso...' : 'Cerca Voli' }}</span>
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
+  </section>
 
-    <!-- Filters Section -->
-    <div *ngIf="flights.length > 0" class="mb-8">
-      <div class="bg-white rounded-xl shadow-soft border border-gray-100 p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Filtra e ordina risultati</h3>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Ordina per</label>
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-select [(value)]="sortBy" (selectionChange)="onSortChange()">
-                <mat-option value="price">Prezzo più basso</mat-option>
-                <mat-option value="duration">Durata più breve</mat-option>
-                <mat-option value="departure">Orario partenza</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
+  <!-- Filters Section -->
+   <section class="filters-section" *ngIf="flights.length > 0">
+     <div class="container">
+       <div class="filters-card">
+         <h3>Filtra e ordina risultati</h3>
+         <div class="filters-grid">
+           <div class="form-group">
+             <label>Ordina per</label>
+             <select [value]="sortBy" (change)="onSortChange($event)">
+               <option value="price">Prezzo più basso</option>
+               <option value="duration">Durata più breve</option>
+               <option value="departure">Orario partenza</option>
+             </select>
+           </div>
+           <div class="form-group">
+             <label>Classe</label>
+             <select [value]="classFilter" (change)="onClassFilterChange($event)">
+               <option value="all">Tutte le classi</option>
+               <option value="economy">Economy</option>
+               <option value="business">Business</option>
+               <option value="first">Prima classe</option>
+             </select>
+           </div>
+         </div>
+       </div>
+     </div>
+   </section>
 
+  <!-- Error Section -->
+  <section class="error-section" *ngIf="error && !loading">
+    <div class="container">
+      <div class="error-card">
+        <div class="error-content">
+          <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Classe</label>
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-select [(value)]="classFilter" (selectionChange)="onClassFilterChange()">
-                <mat-option value="all">Tutte le classi</mat-option>
-                <mat-option value="economy">Economy</mat-option>
-                <mat-option value="business">Business</mat-option>
-                <mat-option value="first">Prima classe</mat-option>
-              </mat-select>
-            </mat-form-field>
+            <h3>Nessun volo trovato</h3>
+            <p>{{ error }}</p>
           </div>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- Error Message -->
-    <div *ngIf="error" class="mb-8">
-      <div class="bg-red-50 border border-red-200 rounded-xl p-6">
-        <div class="flex items-center space-x-3">
-          <mat-icon class="text-red-500 text-2xl">error</mat-icon>
-          <div>
-            <h3 class="text-lg font-medium text-red-800">Errore nella ricerca</h3>
-            <p class="text-red-600">{{ error }}</p>
+  <!-- Results Section -->
+  <section class="results-section" *ngIf="flights.length > 0">
+    <div class="container">
+      <h3>Risultati della ricerca</h3>
+      <div class="flights-grid">
+        <div *ngFor="let flight of flights" class="flight-card">
+          <!-- Alternative date badge -->
+           <div *ngIf="flight.isAlternativeDate" class="alternative-date-badge">
+             <small>
+               <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+               </svg>
+               {{ flight.alternativeDate ? formatSelectedDate(flight.alternativeDate) : '' }}
+               <span class="days-diff" *ngIf="flight.daysDifference !== undefined">({{ flight.daysDifference > 0 ? '+' : '' }}{{ flight.daysDifference }} giorni)</span>
+             </small>
+           </div>
+          
+          <!-- Flight info -->
+          <div class="flight-info">
+            <div class="flight-route">
+              <div class="airport">
+                <span class="code">{{ flight.departureAirport?.code }}</span>
+                <span class="city">{{ flight.departureAirport?.city }}</span>
+              </div>
+              <div class="flight-path">
+                <svg class="plane-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                </svg>
+              </div>
+              <div class="airport">
+                <span class="code">{{ flight.arrivalAirport?.code }}</span>
+                <span class="city">{{ flight.arrivalAirport?.city }}</span>
+              </div>
+            </div>
+            
+            <div class="flight-details">
+              <div class="time-info">
+                <span class="departure-time">{{ flight.departureTime | date:'HH:mm' }}</span>
+                <span class="duration">{{ formatDuration(flight.duration) }}</span>
+                <span class="arrival-time">{{ flight.arrivalTime | date:'HH:mm' }}</span>
+              </div>
+              
+              <div class="flight-meta">
+                <span class="airline">{{ flight.airline?.name }}</span>
+                <span class="flight-number">{{ flight.flightNumber }}</span>
+              </div>
+            </div>
+            
+            <div class="price-info">
+              <span class="price">€{{ flight.basePrice?.economy }}</span>
+              <button class="select-btn">Seleziona</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- Flight Results -->
-    <div>
-      <app-flight-list 
-        [flights]="flights" 
-        [loading]="loading"
-        *ngIf="flights.length > 0 || loading">
-      </app-flight-list>
-
-      <!-- No Results Message -->
-      <div class="text-center py-16" *ngIf="!loading && flights.length === 0 && !error && searchForm.dirty">
-        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <mat-icon class="text-4xl text-gray-400">flight_takeoff</mat-icon>
+  <!-- No Results Section -->
+  <section class="no-results-section" *ngIf="!loading && flights.length === 0 && !error && searchForm.dirty">
+    <div class="container">
+      <div class="no-results">
+        <div class="no-results-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+          </svg>
         </div>
-        <h3 class="text-2xl font-semibold text-gray-900 mb-2">Nessun volo trovato</h3>
-        <p class="text-gray-600 max-w-md mx-auto">
-          Prova a modificare i criteri di ricerca o le date selezionate per trovare più opzioni.
-        </p>
+        <h3>Nessun volo trovato</h3>
+        <p>Prova a modificare i criteri di ricerca o le date selezionate per trovare più opzioni.</p>
       </div>
     </div>
-
-    <!-- Date Suggestions Modal -->
-    <app-date-suggestions
-      [origin]="getAirportCode(searchForm.get('departureAirport')?.value)"
-      [destination]="getAirportCode(searchForm.get('arrivalAirport')?.value)"
-      [targetDate]="suggestedTargetDate"
-      [passengers]="searchForm.get('passengers')?.value || 1"
-      [seatClass]="searchForm.get('seatClass')?.value || 'economy'"
-      [visible]="showSuggestions"
-      (dateSelected)="onSuggestionDateSelected($event)"
-      (closed)="onSuggestionsClosed()">
-    </app-date-suggestions>
-  </div>
+  </section>
 </div>

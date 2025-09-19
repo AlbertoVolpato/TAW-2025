@@ -7,6 +7,7 @@
 import app from '../app';
 import debug from 'debug';
 import http from 'http';
+import { seedDatabase } from '../utils/seedData';
 
 const debugLog = debug('backend:server');
 
@@ -24,12 +25,31 @@ app.set('port', port);
 var server = http.createServer(app);
 
 /**
+ * Initialize database with test data on startup
+ */
+async function initializeDatabase() {
+  try {
+    console.log('🌱 Initializing database with test data...');
+    await seedDatabase();
+    console.log('✅ Database initialization completed');
+  } catch (error) {
+    console.error('❌ Database initialization failed:', error);
+    // Don't exit the process, just log the error
+  }
+}
+
+/**
  * Listen on provided port, on all network interfaces.
  */
 
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+// Initialize database after server starts listening
+server.on('listening', () => {
+  initializeDatabase();
+});
 
 /**
  * Normalize a port into a number, string, or false.

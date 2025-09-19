@@ -231,6 +231,13 @@ export class BookingComponent implements OnInit {
 
   onConfirmBooking(): void {
     if (!this.flight || !this.passengersForm.valid || !this.paymentForm.valid) {
+      this.error = 'Completa tutti i campi richiesti prima di procedere';
+      return;
+    }
+
+    // Check if all passengers have selected seats
+    if (this.selectedSeats.some(seat => !seat)) {
+      this.error = 'Seleziona un posto per ogni passeggero';
       return;
     }
 
@@ -244,20 +251,26 @@ export class BookingComponent implements OnInit {
       seatClass: 'economy' as const
     }));
 
-    const bookingRequest: BookingRequest = {
+    const bookingData: BookingRequest = {
       flightId: this.flight._id,
-      passengers,
+      passengers: passengers,
       seats: {
         outbound: this.selectedSeats
       },
-      extras: this.extrasForm.value
+      extras: {
+        meals: this.extrasForm.value.meals || [],
+        baggage: this.extrasForm.value.baggage || { carryOn: 1, checked: 0 },
+        insurance: this.extrasForm.value.insurance || false,
+        priorityBoarding: this.extrasForm.value.priorityBoarding || false,
+        extraLegroom: this.extrasForm.value.extraLegroom || false
+      }
     };
 
-    // Create booking
-    this.bookingService.createBooking(bookingRequest).subscribe({
+    // Create booking first
+    this.bookingService.createBooking(bookingData).subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          // Process payment
+          // Process payment after booking creation
           this.processPayment(response.data.booking);
         } else {
           this.loading = false;

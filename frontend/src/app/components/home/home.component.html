@@ -1,0 +1,199 @@
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-title">
+          Vola verso i tuoi
+          <span class="text-gradient">sogni</span>
+        </h1>
+        <p class="hero-subtitle">
+          Scopri il mondo con SkyBooker. Prenota voli per oltre 1000 destinazioni 
+          con la migliore esperienza di viaggio.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-lg" (click)="navigateToSearch()">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            Cerca Voli
+          </button>
+          <button class="btn btn-ghost btn-lg" (click)="scrollToFeatures()">
+            Scopri di più
+          </button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="floating-card">
+          <div class="card-mini">
+            <div class="flight-info">
+              <div class="route">
+                <span class="airport">FCO</span>
+                <div class="flight-path">
+                  <div class="plane-icon">✈️</div>
+                  <div class="path-line"></div>
+                </div>
+                <span class="airport">JFK</span>
+              </div>
+              <div class="details">
+                <span class="price">€459</span>
+                <span class="duration">8h 30m</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quick Search -->
+<section class="quick-search">
+  <div class="container">
+    <div class="search-card">
+      <h3>Trova il tuo volo perfetto</h3>
+      <form class="search-form" [formGroup]="quickSearchForm" (ngSubmit)="onQuickSearch()">
+        <div class="search-row">
+          <div class="form-group">
+            <label>Da</label>
+            <input 
+              type="text" 
+              formControlName="from" 
+              placeholder="Città o aeroporto"
+              class="search-input">
+          </div>
+          <button type="button" class="swap-btn" (click)="swapCities()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+            </svg>
+          </button>
+          <div class="form-group">
+            <label>A</label>
+            <input 
+              type="text" 
+              formControlName="to" 
+              placeholder="Città o aeroporto"
+              class="search-input">
+          </div>
+        </div>
+        <div class="search-row">
+          <div class="form-group">
+            <label>Partenza</label>
+            <input 
+              type="date" 
+              formControlName="departureDate"
+              class="search-input">
+          </div>
+          <div class="form-group">
+            <label>Passeggeri</label>
+            <select formControlName="passengers" class="search-input">
+              <option value="1">1 Passeggero</option>
+              <option value="2">2 Passeggeri</option>
+              <option value="3">3 Passeggeri</option>
+              <option value="4">4 Passeggeri</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary search-btn">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            Cerca
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-header">
+      <h2>Perché scegliere SkyBooker</h2>
+      <p>La tua esperienza di viaggio inizia qui</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+          </svg>
+        </div>
+        <h3>Prezzi Migliori</h3>
+        <p>Confrontiamo migliaia di voli per offrirti sempre il prezzo più conveniente.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h3>Prenotazione Sicura</h3>
+        <p>I tuoi dati sono protetti con la crittografia più avanzata del settore.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+        </div>
+        <h3>Prenotazione Rapida</h3>
+        <p>Prenota il tuo volo in meno di 3 minuti con la nostra interfaccia intuitiva.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h3>Supporto 24/7</h3>
+        <p>Il nostro team è sempre disponibile per aiutarti in ogni momento.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Popular Destinations -->
+<section class="destinations">
+  <div class="container">
+    <div class="section-header">
+      <h2>Destinazioni Popolari</h2>
+      <p>Scopri le mete più amate dai nostri viaggiatori</p>
+    </div>
+    <div class="destinations-grid">
+      <div class="destination-card" *ngFor="let destination of popularDestinations">
+        <div class="destination-image">
+          <img [src]="destination.image" [alt]="destination.name">
+          <div class="destination-overlay">
+            <button class="btn btn-secondary btn-sm" (click)="searchDestination(destination)">
+              Cerca Voli
+            </button>
+          </div>
+        </div>
+        <div class="destination-info">
+          <h4>{{ destination.name }}</h4>
+          <p>{{ destination.country }}</p>
+          <span class="price">Da {{ destination.price }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta">
+  <div class="container">
+    <div class="cta-content">
+      <h2>Pronto per la tua prossima avventura?</h2>
+      <p>Unisciti a migliaia di viaggiatori che hanno scelto SkyBooker per i loro voli.</p>
+      <div class="cta-actions">
+        <button class="btn btn-primary btn-lg" (click)="navigateToSearch()">
+          Inizia a Cercare
+        </button>
+        <button class="btn btn-secondary btn-lg" *ngIf="!isAuthenticated()" routerLink="/register">
+          Registrati Gratis
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

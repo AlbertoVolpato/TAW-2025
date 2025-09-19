@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Observable, of } from 'rxjs';
-import { map, startWith, debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
-import { Flight, Airport, FlightSearchRequest } from '../../../../models/flight.model';
+import { Flight, Airport, FlightSearchRequest, FlightSearchResponse, AirportSearchResponse } from '../../../../models/flight.model';
 import { FlightService } from '../../../../services/flight.service';
+import { AutocompleteOption } from '../../../../shared/components/custom-autocomplete/custom-autocomplete.component';
 
 @Component({
   selector: 'app-flight-search',
@@ -17,16 +16,14 @@ export class FlightSearchComponent implements OnInit {
   error: string | null = null;
   sortBy = 'price';
   classFilter = 'all';
-  
-  // Calendar and suggestions
-  showCalendar = false;
-  showSuggestions = false;
-  suggestedTargetDate = '';
 
-  // Airports data from API
-  airports: Airport[] = [];
-  filteredDepartureAirports: Observable<Airport[]> = of([]);
-  filteredArrivalAirports: Observable<Airport[]> = of([]);
+  // Calendar and suggestions - removed
+  // showCalendar = false;
+  // showSuggestions = false;
+  // suggestedTargetDate = '';
+
+  // Airports data
+  airports: AutocompleteOption[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -34,26 +31,30 @@ export class FlightSearchComponent implements OnInit {
   ) {
     this.searchForm = this.fb.group({
       tripType: ['oneWay', Validators.required],
-      departureAirport: ['', Validators.required],
-      arrivalAirport: ['', Validators.required],
-      departureDate: [''],
+      departureAirport: [null, Validators.required],
+      arrivalAirport: [null, Validators.required],
+      departureDate: ['', Validators.required],
       returnDate: [''],
-      passengers: [1, [Validators.required, Validators.min(1), Validators.max(9)]],
+      passengers: [1, [Validators.required, Validators.min(1)]],
       seatClass: ['economy', Validators.required]
     });
   }
 
   ngOnInit(): void {
     this.loadAirports();
-    this.setupAutocomplete();
-    this.setupCalendarVisibility();
   }
 
   private loadAirports(): void {
     this.flightService.getAirports().subscribe({
-      next: (response) => {
+      next: (response: AirportSearchResponse) => {
         if (response.success && response.data) {
-          this.airports = response.data.airports;
+          this.airports = response.data.airports.map(airport => ({
+            id: airport._id || airport.code,
+            name: airport.name,
+            code: airport.code,
+            city: airport.city,
+            country: airport.country
+          }));
         }
       },
       error: (error) => {
@@ -63,51 +64,21 @@ export class FlightSearchComponent implements OnInit {
     });
   }
 
-  private setupAutocomplete(): void {
-    // Setup departure airport autocomplete
-    this.filteredDepartureAirports = this.searchForm.get('departureAirport')!.valueChanges.pipe(
-      startWith(''),
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(value => {
-        if (typeof value === 'string' && value.length >= 2) {
-          return this.flightService.searchAirports(value).pipe(
-            map(response => response.success ? response.data.airports : []),
-            catchError(() => of([]))
-          );
-        }
-        return of(this.airports.slice(0, 10));
-      })
-    );
-
-    // Setup arrival airport autocomplete
-    this.filteredArrivalAirports = this.searchForm.get('arrivalAirport')!.valueChanges.pipe(
-      startWith(''),
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(value => {
-        if (typeof value === 'string' && value.length >= 2) {
-          return this.flightService.searchAirports(value).pipe(
-            map(response => response.success ? response.data.airports : []),
-            catchError(() => of([]))
-          );
-        }
-        return of(this.airports.slice(0, 10));
-      })
-    );
+  onDepartureAirportSelected(airport: AutocompleteOption): void {
+    this.searchForm.patchValue({ departureAirport: airport });
   }
 
-  displayAirport(airport: Airport): string {
-    return airport ? `${airport.name} (${airport.iataCode || airport.code})` : '';
+  onArrivalAirportSelected(airport: AutocompleteOption): void {
+    this.searchForm.patchValue({ arrivalAirport: airport });
   }
 
   swapAirports(): void {
-    const departure = this.searchForm.get('departureAirport')?.value;
-    const arrival = this.searchForm.get('arrivalAirport')?.value;
+    const departureValue = this.searchForm.get('departureAirport')?.value;
+    const arrivalValue = this.searchForm.get('arrivalAirport')?.value;
     
     this.searchForm.patchValue({
-      departureAirport: arrival,
-      arrivalAirport: departure
+      departureAirport: arrivalValue,
+      arrivalAirport: departureValue
     });
   }
 
@@ -132,58 +103,171 @@ export class FlightSearchComponent implements OnInit {
 
     this.loading = true;
     this.error = null;
-    this.flights = [];
 
     const formValue = this.searchForm.value;
-    const departureAirport = formValue.departureAirport;
-    const arrivalAirport = formValue.arrivalAirport;
-
-    // Extract airport codes or IDs
-    const departureCode = typeof departureAirport === 'string' ? 
-      departureAirport : (departureAirport.iataCode || departureAirport.code || departureAirport._id);
-    const arrivalCode = typeof arrivalAirport === 'string' ? 
-      arrivalAirport : (arrivalAirport.iataCode || arrivalAirport.code || arrivalAirport._id);
-
     const searchRequest: FlightSearchRequest = {
-      departureAirport: departureCode,
-      arrivalAirport: arrivalCode,
-      departureDate: this.formatDate(formValue.departureDate),
+      departureAirport: formValue.departureAirport?.code,
+      arrivalAirport: formValue.arrivalAirport?.code,
+      departureDate: this.formatDate(new Date(formValue.departureDate)),
+      returnDate: formValue.returnDate ? this.formatDate(new Date(formValue.returnDate)) : undefined,
       passengers: formValue.passengers,
-      returnDate: formValue.returnDate ? this.formatDate(formValue.returnDate) : undefined,
-      class: 'economy' // Default to economy for now
+      class: formValue.seatClass
     };
 
+    console.log('Searching flights with request:', searchRequest);
+
     this.flightService.searchFlights(searchRequest).subscribe({
-      next: (response) => {
+      next: (response: FlightSearchResponse) => {
+        console.log('Flight search response:', response);
         this.loading = false;
         if (response.success) {
-          this.flights = response.data?.flights || response.flights || [];
+          this.flights = (response.data?.flights || response.flights || []).map(flight => ({
+            ...flight,
+            duration: this.calculateDuration(flight.departureTime, flight.arrivalTime)
+          }));
+          this.sortFlights();
           if (this.flights.length === 0) {
-            this.error = 'Nessun volo trovato per i criteri di ricerca selezionati';
+            // Se non ci sono voli per la data selezionata, suggerisci date alternative
+            this.suggestAlternativeDates(searchRequest);
           }
         } else {
           this.error = response.message || 'Errore nella ricerca voli';
         }
       },
       error: (error) => {
+        console.error('Error searching flights:', error);
+        this.error = 'Errore nella ricerca dei voli. Riprova più tardi.';
         this.loading = false;
-        console.error('Flight search error:', error);
-        this.error = error.error?.message || 'Errore nella ricerca voli. Riprova più tardi.';
       }
     });
   }
 
-  private formatDate(date: Date): string {
-    if (!date) return '';
-    const d = new Date(date);
-    return d.toISOString().split('T')[0];
+  private suggestAlternativeDates(originalRequest: FlightSearchRequest): void {
+    if (!originalRequest.departureAirport || !originalRequest.arrivalAirport || !originalRequest.departureDate) {
+      this.error = 'Nessun volo trovato per i criteri di ricerca selezionati';
+      return;
+    }
+
+    console.log('Suggesting alternative dates for:', originalRequest);
+
+    this.flightService.suggestAlternativeDates(
+      originalRequest.departureAirport,
+      originalRequest.arrivalAirport,
+      originalRequest.departureDate,
+      originalRequest.passengers,
+      originalRequest.class || 'economy'
+    ).subscribe({
+      next: (response) => {
+        console.log('Alternative dates response:', response);
+        if (response.success && response.data.suggestions.length > 0) {
+          // Cerca automaticamente voli nelle date alternative
+          this.searchAlternativeDates(originalRequest, response.data.suggestions);
+        } else {
+          this.error = `Nessun volo trovato per il ${this.formatDisplayDate(originalRequest.departureDate)} e nessuna data alternativa disponibile nei giorni vicini.`;
+        }
+      },
+      error: (error) => {
+        console.error('Error getting alternative dates:', error);
+        this.error = 'Nessun volo trovato per i criteri di ricerca selezionati';
+      }
+    });
   }
 
-  onSortChange(): void {
+  private searchAlternativeDates(originalRequest: FlightSearchRequest, suggestions: any[]): void {
+    // Prendi le prime 3 date alternative più vicine
+    const topSuggestions = suggestions.slice(0, 3);
+    let foundFlights = false;
+
+    console.log('Searching flights in alternative dates:', topSuggestions);
+
+    // Cerca voli per ogni data alternativa
+    const searchPromises = topSuggestions.map(suggestion => {
+      const altRequest = {
+        ...originalRequest,
+        departureDate: suggestion.date
+      };
+
+      return this.flightService.searchFlights(altRequest).toPromise();
+    });
+
+    Promise.all(searchPromises).then(responses => {
+      // Combina tutti i voli trovati
+      const allFlights: any[] = [];
+      
+      responses.forEach((response, index) => {
+        if (response?.success && response.data?.flights && response.data.flights.length > 0) {
+          foundFlights = true;
+          // Aggiungi informazioni sulla data alternativa
+          const flightsWithAltDate = response.data.flights.map((flight: any) => ({
+            ...flight,
+            isAlternativeDate: true,
+            originalDate: originalRequest.departureDate,
+            alternativeDate: topSuggestions[index].date,
+            daysDifference: topSuggestions[index].daysDifference,
+            duration: this.calculateDuration(flight.departureTime, flight.arrivalTime)
+          }));
+          allFlights.push(...flightsWithAltDate);
+        }
+      });
+
+      if (foundFlights) {
+        this.flights = allFlights;
+        this.sortFlights();
+        this.error = `Nessun volo trovato per il ${this.formatDisplayDate(originalRequest.departureDate)}. Ecco i voli disponibili nei giorni vicini:`;
+      } else {
+        this.error = `Nessun volo trovato per il ${this.formatDisplayDate(originalRequest.departureDate)} e nessun volo disponibile nei giorni vicini.`;
+      }
+    }).catch(error => {
+      console.error('Error searching alternative dates:', error);
+      this.error = 'Errore durante la ricerca di date alternative';
+    });
+  }
+
+  private formatDisplayDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('it-IT', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
+  formatSelectedDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('it-IT', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
+  getMinDate(): string {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  }
+
+  getMaxDate(): string {
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() + 1); // 1 anno nel futuro
+    return maxDate.toISOString().split('T')[0];
+  }
+
+  private formatDate(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
+  onSortChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.sortBy = target.value;
     this.sortFlights();
   }
 
-  onClassFilterChange(): void {
+  onClassFilterChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.classFilter = target.value;
     // Filter flights by class if needed
     // For now, we'll just re-sort
     this.sortFlights();
@@ -199,11 +283,7 @@ export class FlightSearchComponent implements OnInit {
         });
         break;
       case 'duration':
-        this.flights.sort((a, b) => {
-          const durationA = this.calculateDuration(a.departureTime, a.arrivalTime);
-          const durationB = this.calculateDuration(b.departureTime, b.arrivalTime);
-          return durationA - durationB;
-        });
+        this.flights.sort((a, b) => (a.duration || 0) - (b.duration || 0));
         break;
       case 'departure':
         this.flights.sort((a, b) => {
@@ -218,50 +298,22 @@ export class FlightSearchComponent implements OnInit {
   private calculateDuration(departure: Date | string, arrival: Date | string): number {
     const dep = new Date(departure);
     const arr = new Date(arrival);
-    return arr.getTime() - dep.getTime();
+    return Math.round((arr.getTime() - dep.getTime()) / (1000 * 60)); // minutes
   }
 
   private markFormGroupTouched(): void {
     Object.keys(this.searchForm.controls).forEach(key => {
-      const control = this.searchForm.get(key);
-      control?.markAsTouched();
+      this.searchForm.get(key)?.markAsTouched();
     });
   }
 
-  private setupCalendarVisibility(): void {
-    // Mostra il calendario quando entrambi gli aeroporti sono selezionati
-    this.searchForm.valueChanges.subscribe(() => {
-      const departureAirport = this.searchForm.get('departureAirport')?.value;
-      const arrivalAirport = this.searchForm.get('arrivalAirport')?.value;
-      
-      this.showCalendar = !!(departureAirport && arrivalAirport);
-    });
+  formatDuration(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
   }
 
-  onCalendarDateSelected(date: Date): void {
-    this.searchForm.patchValue({
-      departureDate: date
-    });
-  }
-
-  onSuggestionsRequested(targetDate: string): void {
-    this.suggestedTargetDate = targetDate;
-    this.showSuggestions = true;
-  }
-
-  onSuggestionDateSelected(dateString: string): void {
-    const date = new Date(dateString);
-    this.searchForm.patchValue({
-      departureDate: date
-    });
-    this.showSuggestions = false;
-  }
-
-  onSuggestionsClosed(): void {
-    this.showSuggestions = false;
-  }
-
-  getAirportCode(airport: Airport | null): string {
+  getAirportCode(airport: AutocompleteOption | null): string {
     return airport?.code || '';
   }
 }

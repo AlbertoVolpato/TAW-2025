@@ -13,6 +13,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 // Routing
 import { AdminRoutingModule } from './admin-routing.module';
@@ -41,7 +42,8 @@ import { UserManagementComponent } from './components/user-management/user-manag
     MatFormFieldModule,
     MatInputModule,
     MatDialogModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatPaginatorModule
   ]
 })
 export class AdminModule { }

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AirlineService, CreateFlightRequest, CreateAircraftRequest } from '../../../../services/airline.service';
 import { FlightService } from '../../../../services/flight.service';
 import { Flight, Airport } from '../../../../models/flight.model';
 
@@ -13,6 +14,7 @@ export class FlightManagementComponent implements OnInit {
   airports: Airport[] = [];
   loading = false;
   error: string | null = null;
+  success: string | null = null;
   
   // Forms
   flightForm: FormGroup;
@@ -31,6 +33,7 @@ export class FlightManagementComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
+    private airlineService: AirlineService,
     private flightService: FlightService
   ) {
     this.flightForm = this.fb.group({
@@ -64,16 +67,15 @@ export class FlightManagementComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.flightService.getAllFlights().subscribe({
-      next: (response: any) => {
+    this.airlineService.getAirlineFlights().subscribe({
+      next: (response) => {
         if (response.success && response.data) {
-          // In a real app, filter by airline
           this.flights = response.data.flights || [];
         }
         this.loading = false;
       },
-      error: (error: any) => {
-        this.error = 'Errore nel caricamento dei voli';
+      error: (error) => {
+        this.error = error.error?.message || 'Errore nel caricamento dei voli';
         this.loading = false;
         console.error('Error loading flights:', error);
       }
@@ -82,12 +84,12 @@ export class FlightManagementComponent implements OnInit {
 
   loadAirports(): void {
     this.flightService.getAirports().subscribe({
-      next: (response: any) => {
+      next: (response) => {
         if (response.success && response.data) {
           this.airports = response.data.airports || [];
         }
       },
-      error: (error: any) => {
+      error: (error) => {
         console.error('Error loading airports:', error);
       }
     });
@@ -95,6 +97,8 @@ export class FlightManagementComponent implements OnInit {
 
   toggleFlightForm(): void {
     this.showFlightForm = !this.showFlightForm;
+    this.error = null;
+    this.success = null;
     if (!this.showFlightForm) {
       this.flightForm.reset();
     }
@@ -102,6 +106,8 @@ export class FlightManagementComponent implements OnInit {
 
   toggleAircraftForm(): void {
     this.showAircraftForm = !this.showAircraftForm;
+    this.error = null;
+    this.success = null;
     if (!this.showAircraftForm) {
       this.aircraftForm.reset();
     }
@@ -114,18 +120,27 @@ export class FlightManagementComponent implements OnInit {
     }
 
     this.loading = true;
-    const formData = this.flightForm.value;
-
-    // In a real implementation, this would call an API to create the flight
-    console.log('Creating flight:', formData);
+    this.error = null;
+    this.success = null;
     
-    // Simulate API call
-    setTimeout(() => {
-      this.loading = false;
-      this.showFlightForm = false;
-      this.flightForm.reset();
-      this.loadFlights(); // Reload flights
-    }, 1000);
+    const formData: CreateFlightRequest = this.flightForm.value;
+
+    this.airlineService.createFlight(formData).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.success = 'Volo creato con successo!';
+          this.showFlightForm = false;
+          this.flightForm.reset();
+          this.loadFlights(); // Reload flights
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        this.error = error.error?.message || 'Errore nella creazione del volo';
+        this.loading = false;
+        console.error('Error creating flight:', error);
+      }
+    });
   }
 
   onCreateAircraft(): void {
@@ -135,31 +150,48 @@ export class FlightManagementComponent implements OnInit {
     }
 
     this.loading = true;
-    const formData = this.aircraftForm.value;
-
-    // In a real implementation, this would call an API to create the aircraft
-    console.log('Creating aircraft:', formData);
+    this.error = null;
+    this.success = null;
     
-    // Simulate API call
-    setTimeout(() => {
-      this.loading = false;
-      this.showAircraftForm = false;
-      this.aircraftForm.reset();
-    }, 1000);
+    const formData: CreateAircraftRequest = this.aircraftForm.value;
+
+    this.airlineService.createAircraft(formData).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.success = 'Aeromobile registrato con successo!';
+          this.showAircraftForm = false;
+          this.aircraftForm.reset();
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        this.error = error.error?.message || 'Errore nella registrazione dell\'aeromobile';
+        this.loading = false;
+        console.error('Error creating aircraft:', error);
+      }
+    });
   }
 
   deleteFlight(flight: Flight): void {
     if (confirm(`Sei sicuro di voler eliminare il volo ${flight.flightNumber}?`)) {
       this.loading = true;
+      this.error = null;
+      this.success = null;
       
-      // In a real implementation, this would call an API to delete the flight
-      console.log('Deleting flight:', flight);
-      
-      // Simulate API call
-      setTimeout(() => {
-        this.flights = this.flights.filter(f => f._id !== flight._id);
-        this.loading = false;
-      }, 500);
+      this.airlineService.deleteFlight(flight._id).subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.success = 'Volo eliminato con successo';
+            this.loadFlights(); // Reload flights
+          }
+          this.loading = false;
+        },
+        error: (error) => {
+          this.error = error.error?.message || 'Errore nell\'eliminazione del volo';
+          this.loading = false;
+          console.error('Error deleting flight:', error);
+        }
+      });
     }
   }
 

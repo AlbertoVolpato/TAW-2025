@@ -2,30 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/user.model';
-import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-header',
-  templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss'],
-  animations: [
-    trigger('slideDown', [
-      state('true', style({
-        opacity: 1,
-        transform: 'translateY(0)'
-      })),
-      state('false', style({
-        opacity: 0,
-        transform: 'translateY(-10px)'
-      })),
-      transition('false => true', animate('200ms ease-out')),
-      transition('true => false', animate('150ms ease-in'))
-    ])
-  ]
+  templateUrl: './header.component.html'
 })
 export class HeaderComponent implements OnInit {
   currentUser: User | null = null;
-  isMenuOpen = false;
+  isUserMenuOpen = false;
+  isMobileMenuOpen = false;
 
   constructor(
     private authService: AuthService,
@@ -54,43 +39,90 @@ export class HeaderComponent implements OnInit {
     return this.authService.isPassenger();
   }
 
-  toggleMenu(): void {
-    this.isMenuOpen = !this.isMenuOpen;
+  toggleUserMenu(): void {
+    this.isUserMenuOpen = !this.isUserMenuOpen;
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  navigateToHome(): void {
+    this.router.navigate(['/']);
+    this.closeMobileMenu();
   }
 
   navigateToFlights(): void {
     this.router.navigate(['/flights/search']);
-    this.isMenuOpen = false;
+    this.closeMobileMenu();
   }
 
   navigateToProfile(): void {
     this.router.navigate(['/profile']);
-    this.isMenuOpen = false;
+    this.closeMobileMenu();
   }
 
   navigateToAdmin(): void {
     if (this.isAdmin()) {
       this.router.navigate(['/admin']);
-      this.isMenuOpen = false;
+      this.closeMobileMenu();
+    }
+  }
+
+  navigateToUserManagement(): void {
+    if (this.isAdmin()) {
+      this.router.navigate(['/admin/users']);
+      this.closeMobileMenu();
     }
   }
 
   navigateToAirline(): void {
     if (this.isAirline()) {
       this.router.navigate(['/airline']);
-      this.isMenuOpen = false;
+      this.closeMobileMenu();
+    }
+  }
+
+  navigateToFlightManagement(): void {
+    if (this.isAirline()) {
+      this.router.navigate(['/airline/flights']);
+      this.closeMobileMenu();
     }
   }
 
   navigateToBookings(): void {
     if (this.isPassenger()) {
       this.router.navigate(['/passenger/bookings']);
-      this.isMenuOpen = false;
+      this.closeMobileMenu();
     }
+  }
+
+  getUserInitials(): string {
+    if (!this.currentUser) return '';
+    const firstInitial = this.currentUser.firstName?.charAt(0) || '';
+    const lastInitial = this.currentUser.lastName?.charAt(0) || '';
+    return (firstInitial + lastInitial).toUpperCase();
+  }
+
+  getUserRoleText(): string {
+    if (!this.currentUser) return '';
+    
+    const roleTexts: { [key: string]: string } = {
+      'admin': 'Amministratore',
+      'airline': 'Compagnia Aerea',
+      'passenger': 'Passeggero'
+    };
+    
+    return roleTexts[this.currentUser.role] || this.currentUser.role;
   }
 
   logout(): void {
     this.authService.logout();
-    this.isMenuOpen = false;
+    this.closeMobileMenu();
+    this.isUserMenuOpen = false;
+  }
+
+  private closeMobileMenu(): void {
+    this.isMobileMenuOpen = false;
   }
 }

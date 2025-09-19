@@ -23,13 +23,15 @@ import { FlightSearchComponent } from './components/flight-search/flight-search.
 import { FlightListComponent } from './components/flight-list/flight-list.component';
 import { FlightCalendarComponent } from './components/flight-calendar/flight-calendar.component';
 import { DateSuggestionsComponent } from './components/date-suggestions/date-suggestions.component';
+import { CustomAutocompleteComponent } from '../../shared/components/custom-autocomplete/custom-autocomplete.component';
 
 @NgModule({
   declarations: [
     FlightSearchComponent,
     FlightListComponent,
     FlightCalendarComponent,
-    DateSuggestionsComponent
+    DateSuggestionsComponent,
+    CustomAutocompleteComponent
   ],
   imports: [
     CommonModule,
