@@ -2,16 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { AirlineService } from '../../../../services/airline.service';
 import { AuthService } from '../../../../services/auth.service';
 import { Flight } from '../../../../models/flight.model';
-import {
-  AirlineStats,
-  AirlineRevenueStats,
-  PopularRoutesStats,
-} from '../../../../models/airline-stats.model';
+import { AirlineStats, AirlineRevenueStats, PopularRoutesStats } from '../../../../models/airline-stats.model';
 
 @Component({
   selector: 'app-airline-dashboard',
   templateUrl: './airline-dashboard.component.html',
-  styleUrls: ['./airline-dashboard.component.scss'],
+  styleUrls: ['./airline-dashboard.component.scss']
 })
 export class AirlineDashboardComponent implements OnInit {
   flights: Flight[] = [];
@@ -21,11 +17,6 @@ export class AirlineDashboardComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
-  // Properties for template compatibility
-  totalFlights = 0;
-  activeFlights = 0;
-  todayFlights = 0;
-
   constructor(
     private airlineService: AirlineService,
     private authService: AuthService
@@ -33,30 +24,26 @@ export class AirlineDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.authService.isAirline()) {
-      this.loadAirlineData();
+      this.loadDashboardData();
     } else {
       this.error = 'Accesso negato. Privilegi di compagnia aerea richiesti.';
     }
   }
 
-  loadAirlineData(): void {
+  loadDashboardData(): void {
     this.loading = true;
     this.error = null;
 
-    // Load airline statistics
+        // Load airline statistics  
     this.airlineService.getGeneralStats().subscribe({
       next: (response: any) => {
         if (response.success) {
           this.stats = response.data;
-          // Update template properties
-          this.totalFlights = response.data.totalFlights || 0;
-          this.activeFlights = response.data.activeFlights || 0;
-          this.todayFlights = response.data.todayFlights || 0;
         }
       },
       error: (error: any) => {
         console.error('Error loading stats:', error);
-      },
+      }
     });
 
     // Load revenue statistics
@@ -68,7 +55,7 @@ export class AirlineDashboardComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Error loading revenue stats:', error);
-      },
+      }
     });
 
     // Load popular routes
@@ -80,49 +67,37 @@ export class AirlineDashboardComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Error loading popular routes:', error);
-      },
+      }
     });
 
     // Load recent flights for display
     this.airlineService.getAirlineFlights({ limit: 10 }).subscribe({
-      next: (response: any) => {
-        if (response.success) {
-          this.flights = response.data?.flights || [];
-        }
-        this.loading = false;
-      },
-      error: (error: any) => {
-        this.error = 'Errore nel caricamento dei dati';
-        this.loading = false;
-        console.error('Error loading flights:', error);
-      },
-    });
   }
 
   refreshData(): void {
-    this.loadAirlineData();
+    this.loadDashboardData();
   }
 
   getFlightStatusColor(status: string): string {
     const statusColors: { [key: string]: string } = {
-      scheduled: 'primary',
-      boarding: 'accent',
-      departed: 'warn',
-      arrived: 'primary',
-      cancelled: 'warn',
-      delayed: 'accent',
+      'scheduled': 'primary',
+      'boarding': 'accent',
+      'departed': 'warn',
+      'arrived': 'primary',
+      'cancelled': 'warn',
+      'delayed': 'accent'
     };
     return statusColors[status] || 'primary';
   }
 
   getFlightStatusText(status: string): string {
     const statusTexts: { [key: string]: string } = {
-      scheduled: 'Programmato',
-      boarding: 'Imbarco',
-      departed: 'Partito',
-      arrived: 'Arrivato',
-      cancelled: 'Cancellato',
-      delayed: 'Ritardato',
+      'scheduled': 'Programmato',
+      'boarding': 'Imbarco',
+      'departed': 'Partito',
+      'arrived': 'Arrivato',
+      'cancelled': 'Cancellato',
+      'delayed': 'Ritardato'
     };
     return statusTexts[status] || status;
   }

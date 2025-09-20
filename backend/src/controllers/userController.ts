@@ -1,50 +1,54 @@
-import { Request, Response, NextFunction } from 'express';
-import { User } from '../models/User';
-import { Airline } from '../models/Airline';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import mongoose from 'mongoose';
+import { Request, Response, NextFunction } from "express";
+import { User } from "../models/User";
+import { Airline } from "../models/Airline";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 // Get all users (admin only)
-export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+export const getAllUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Check if user is admin
-    if (req.user?.role !== 'admin') {
+    if (req.user?.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Admin privileges required.'
+        message: "Access denied. Admin privileges required.",
       });
     }
 
     const { role, active, page = 1, limit = 20, search } = req.query;
-    
+
     // Build query
     const query: any = {};
-    
+
     if (role) {
       query.role = role;
     }
-    
+
     if (active !== undefined) {
-      query.isActive = active === 'true';
+      query.isActive = active === "true";
     }
-    
+
     if (search) {
       query.$or = [
-        { firstName: { $regex: search, $options: 'i' } },
-        { lastName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
       ];
     }
 
     const skip = (Number(page) - 1) * Number(limit);
-    
+
     const users = await User.find(query)
-      .select('-password')
+      .select("-password")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Number(limit))
-      .populate('airline', 'name code');
+      .populate("airline", "name code");
 
     const total = await User.countDocuments(query);
 
@@ -56,9 +60,9 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
           page: Number(page),
           limit: Number(limit),
           total,
-          pages: Math.ceil(total / Number(limit))
-        }
-      }
+          pages: Math.ceil(total / Number(limit)),
+        },
+      },
     });
   } catch (error) {
     next(error);
@@ -66,13 +70,17 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
 };
 
 // Create airline user by invitation (admin only)
-export const createAirlineByInvitation = async (req: Request, res: Response, next: NextFunction) => {
+export const createAirlineByInvitation = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Check if user is admin
-    if (req.user?.role !== 'admin') {
+    if (req.user?.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Admin privileges required.'
+        message: "Access denied. Admin privileges required.",
       });
     }
 
@@ -82,7 +90,7 @@ export const createAirlineByInvitation = async (req: Request, res: Response, nex
       lastName,
       airlineName,
       airlineCode,
-      country = 'Italy'
+      country = "Italy",
     } = req.body;
 
     // Check if email already exists
@@ -90,21 +98,25 @@ export const createAirlineByInvitation = async (req: Request, res: Response, nex
     if (existingUser) {
       return res.status(409).json({
         success: false,
-        message: 'Email already registered'
+        message: "Email already registered",
       });
     }
 
     // Check if airline code already exists
-    const existingAirline = await Airline.findOne({ code: airlineCode.toUpperCase() });
+    const existingAirline = await Airline.findOne({
+      code: airlineCode.toUpperCase(),
+    });
     if (existingAirline) {
       return res.status(409).json({
         success: false,
-        message: 'Airline code already exists'
+        message: "Airline code already exists",
       });
     }
 
     // Generate temporary password
-    const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+    const tempPassword =
+      Math.random().toString(36).slice(-8) +
+      Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(tempPassword, 12);
 
     // Create airline user
@@ -113,10 +125,10 @@ export const createAirlineByInvitation = async (req: Request, res: Response, nex
       password: hashedPassword,
       firstName,
       lastName,
-      role: 'airline',
+      role: "airline",
       isActive: true,
       isEmailVerified: false,
-      mustChangePassword: true
+      mustChangePassword: true,
     });
 
     await airlineUser.save();
@@ -129,15 +141,15 @@ export const createAirlineByInvitation = async (req: Request, res: Response, nex
       userId: airlineUser._id,
       isActive: true,
       headquarters: {
-        address: '',
-        city: '',
-        country: country
+        address: "",
+        city: "",
+        country: country,
       },
       contactInfo: {
         email: email,
-        phone: '',
-        website: ''
-      }
+        phone: "",
+        website: "",
+      },
     });
 
     await airline.save();
@@ -151,7 +163,8 @@ export const createAirlineByInvitation = async (req: Request, res: Response, nex
 
     res.status(201).json({
       success: true,
-      message: 'Airline user created successfully. Temporary password sent via email.',
+      message:
+        "Airline user created successfully. Temporary password sent via email.",
       data: {
         user: {
           id: airlineUser._id,
@@ -159,16 +172,16 @@ export const createAirlineByInvitation = async (req: Request, res: Response, nex
           firstName: airlineUser.firstName,
           lastName: airlineUser.lastName,
           role: airlineUser.role,
-          mustChangePassword: airlineUser.mustChangePassword
+          mustChangePassword: airlineUser.mustChangePassword,
         },
         airline: {
           id: airline._id,
           name: airline.name,
           code: airline.code,
-          country: airline.country
+          country: airline.country,
         },
-        temporaryPassword: tempPassword // Remove this in production
-      }
+        temporaryPassword: tempPassword, // Remove this in production
+      },
     });
   } catch (error) {
     next(error);
@@ -176,13 +189,17 @@ export const createAirlineByInvitation = async (req: Request, res: Response, nex
 };
 
 // Delete user (admin only)
-export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Check if user is admin
-    if (req.user?.role !== 'admin') {
+    if (req.user?.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Admin privileges required.'
+        message: "Access denied. Admin privileges required.",
       });
     }
 
@@ -193,20 +210,20 @@ export const deleteUser = async (req: Request, res: Response, next: NextFunction
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
     // Prevent deletion of admin users
-    if (user.role === 'admin') {
+    if (user.role === "admin") {
       return res.status(403).json({
         success: false,
-        message: 'Cannot delete admin users'
+        message: "Cannot delete admin users",
       });
     }
 
     // If it's an airline user, also delete the airline
-    if (user.role === 'airline' && user.airline) {
+    if (user.role === "airline" && user.airline) {
       await Airline.findByIdAndDelete(user.airline);
     }
 
@@ -215,7 +232,7 @@ export const deleteUser = async (req: Request, res: Response, next: NextFunction
 
     res.status(200).json({
       success: true,
-      message: 'User deleted successfully'
+      message: "User deleted successfully",
     });
   } catch (error) {
     next(error);
@@ -223,13 +240,17 @@ export const deleteUser = async (req: Request, res: Response, next: NextFunction
 };
 
 // Toggle user active status (admin only)
-export const toggleUserStatus = async (req: Request, res: Response, next: NextFunction) => {
+export const toggleUserStatus = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Check if user is admin
-    if (req.user?.role !== 'admin') {
+    if (req.user?.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Admin privileges required.'
+        message: "Access denied. Admin privileges required.",
       });
     }
 
@@ -240,15 +261,15 @@ export const toggleUserStatus = async (req: Request, res: Response, next: NextFu
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
     // Prevent deactivation of admin users
-    if (user.role === 'admin') {
+    if (user.role === "admin") {
       return res.status(403).json({
         success: false,
-        message: 'Cannot modify admin user status'
+        message: "Cannot modify admin user status",
       });
     }
 
@@ -257,13 +278,17 @@ export const toggleUserStatus = async (req: Request, res: Response, next: NextFu
     await user.save();
 
     // If it's an airline user, also update airline status
-    if (user.role === 'airline' && user.airline) {
-      await Airline.findByIdAndUpdate(user.airline, { isActive: user.isActive });
+    if (user.role === "airline" && user.airline) {
+      await Airline.findByIdAndUpdate(user.airline, {
+        isActive: user.isActive,
+      });
     }
 
     res.status(200).json({
       success: true,
-      message: `User ${user.isActive ? 'activated' : 'deactivated'} successfully`,
+      message: `User ${
+        user.isActive ? "activated" : "deactivated"
+      } successfully`,
       data: {
         user: {
           id: user._id,
@@ -271,9 +296,9 @@ export const toggleUserStatus = async (req: Request, res: Response, next: NextFu
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
-          isActive: user.isActive
-        }
-      }
+          isActive: user.isActive,
+        },
+      },
     });
   } catch (error) {
     next(error);
@@ -281,32 +306,36 @@ export const toggleUserStatus = async (req: Request, res: Response, next: NextFu
 };
 
 // Get user by ID (admin only)
-export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Check if user is admin
-    if (req.user?.role !== 'admin') {
+    if (req.user?.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Admin privileges required.'
+        message: "Access denied. Admin privileges required.",
       });
     }
 
     const { userId } = req.params;
 
     const user = await User.findById(userId)
-      .select('-password')
-      .populate('airline', 'name code country');
+      .select("-password")
+      .populate("airline", "name code country");
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
     res.status(200).json({
       success: true,
-      data: { user }
+      data: { user },
     });
   } catch (error) {
     next(error);

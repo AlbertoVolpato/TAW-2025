@@ -6,7 +6,7 @@ import { AuthService } from '../../../services/auth.service';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
@@ -22,7 +22,7 @@ export class LoginComponent implements OnInit {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false]
+      rememberMe: [false],
     });
   }
 
@@ -48,7 +48,7 @@ export class LoginComponent implements OnInit {
 
     const loginData = {
       email: this.loginForm.value.email,
-      password: this.loginForm.value.password
+      password: this.loginForm.value.password,
     };
 
     this.authService.login(loginData).subscribe({
@@ -59,7 +59,7 @@ export class LoginComponent implements OnInit {
             this.router.navigate(['/change-password']);
           } else {
             // Redirect based on user role
-            this.redirectBasedOnRole(response.user?.role);
+            this.authService.redirectBasedOnRole();
           }
         } else {
           this.error = response.message || 'Login failed';
@@ -69,29 +69,14 @@ export class LoginComponent implements OnInit {
       error: (error) => {
         this.error = error.error?.message || 'An error occurred during login';
         this.loading = false;
-      }
+      },
     });
   }
 
   private markFormGroupTouched(): void {
-    Object.keys(this.loginForm.controls).forEach(key => {
+    Object.keys(this.loginForm.controls).forEach((key) => {
       const control = this.loginForm.get(key);
       control?.markAsTouched();
     });
-  }
-
-  private redirectBasedOnRole(role?: string): void {
-    switch (role) {
-      case 'admin':
-        this.router.navigate(['/admin']);
-        break;
-      case 'airline':
-        this.router.navigate(['/airline']);
-        break;
-      case 'passenger':
-      default:
-        this.router.navigate(['/flights/search']);
-        break;
-    }
   }
 }

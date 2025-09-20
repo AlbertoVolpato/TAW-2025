@@ -7,7 +7,8 @@
     "dev": "nodemon src/bin/www.ts",
     "build": "tsc",
     "test": "jest",
-    "seed": "ts-node src/utils/seedData.ts"
+    "seed": "ts-node src/utils/seedData.ts",
+    "initialize-data": "ts-node scripts/initialize-data.ts"
   },
   "dependencies": {
     "@types/bcryptjs": "^3.0.0",
@@ -19,18 +20,18 @@
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
     "debug": "~2.6.9",
-    "dotenv": "^17.2.2",
+    "dotenv": "^16.4.5",
     "ejs": "~2.6.1",
     "express": "~4.16.1",
-    "express-rate-limit": "^8.1.0",
-    "express-validator": "^7.2.1",
-    "helmet": "^8.1.0",
+    "express-rate-limit": "^6.10.0",
+    "express-validator": "^6.15.0",
+    "helmet": "^7.1.0",
     "http-errors": "~1.6.3",
-    "joi": "^18.0.1",
+    "joi": "^17.12.3",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.18.1",
+    "mongoose": "^6.12.8",
     "morgan": "~1.9.1",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.7.5"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.9",

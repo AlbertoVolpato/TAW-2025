@@ -21,6 +21,7 @@ import { AppComponent } from './app.component';
 import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
 import { ChangePasswordComponent } from './components/auth/change-password/change-password.component';
+import { ProfileComponent } from './components/profile/profile.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { HeaderComponent } from './shared/header/header.component';
 import { LayoutComponent } from './shared/layout/layout.component';
@@ -32,9 +33,10 @@ import { FooterComponent } from './shared/footer/footer.component';
     LoginComponent,
     RegisterComponent,
     ChangePasswordComponent,
+    ProfileComponent,
     HeaderComponent,
     LayoutComponent,
-    FooterComponent
+    FooterComponent,
   ],
   imports: [
     BrowserModule,
@@ -52,15 +54,15 @@ import { FooterComponent } from './shared/footer/footer.component';
     MatToolbarModule,
     MatMenuModule,
     MatSidenavModule,
-    MatListModule
+    MatListModule,
   ],
   providers: [
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
-      multi: true
-    }
+      multi: true,
+    },
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

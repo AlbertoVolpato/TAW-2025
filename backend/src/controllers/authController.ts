@@ -1,34 +1,42 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { User, IUser } from '../models/User';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { User, IUser } from "../models/User";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-key";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "24h";
 
 // Generate JWT token
 const generateToken = (userId: string): string => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
+  return jwt.sign({ userId }, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  } as jwt.SignOptions);
 };
 
 // Force password change (for users who must change password)
-export const forceChangePassword = async (req: Request, res: Response, next: NextFunction) => {
+export const forceChangePassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { email, newPassword } = req.body;
 
     if (!email || !newPassword) {
       return res.status(400).json({
         success: false,
-        message: 'Email and new password are required'
+        message: "Email and new password are required",
       });
       return;
     }
 
     // Find user with password
-    const user = await User.findOne({ email, isActive: true }).select('+password');
+    const user = await User.findOne({ email, isActive: true }).select(
+      "+password"
+    );
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
       return;
     }
@@ -37,7 +45,7 @@ export const forceChangePassword = async (req: Request, res: Response, next: Nex
     if (!user.mustChangePassword) {
       return res.status(400).json({
         success: false,
-        message: 'Password change not required for this user'
+        message: "Password change not required for this user",
       });
       return;
     }
@@ -52,25 +60,25 @@ export const forceChangePassword = async (req: Request, res: Response, next: Nex
 
     return res.status(200).json({
       success: true,
-      message: 'Password changed successfully',
+      message: "Password changed successfully",
       data: {
         user: {
           id: user._id,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          role: user.role
+          role: user.role,
         },
-        token
-      }
+        token,
+      },
     });
   } catch (error: any) {
-    if (error.name === 'ValidationError') {
+    if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err: any) => err.message);
       return res.status(400).json({
         success: false,
-        message: 'Validation error',
-        errors
+        message: "Validation error",
+        errors,
       });
     } else {
       next(error);
@@ -78,8 +86,12 @@ export const forceChangePassword = async (req: Request, res: Response, next: Nex
   }
 };
 
-// Register new user
-export const register = async (req: Request, res: Response, next: NextFunction) => {
+// Register new user (passengers only)
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { email, password, firstName, lastName, role } = req.body;
 
@@ -88,18 +100,37 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'User with this email already exists'
+        message: "User with this email already exists",
       });
       return;
     }
 
-    // Create new user
+    // Airlines cannot self-register - they must be invited by admin
+    if (role && role === "airline") {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Airlines cannot self-register. Contact an administrator for invitation.",
+      });
+      return;
+    }
+
+    // Admin users cannot self-register either
+    if (role && role === "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Admin users cannot self-register.",
+      });
+      return;
+    }
+
+    // Create new passenger user
     const user = new User({
       email,
       password,
       firstName,
       lastName,
-      role: role || 'passenger'
+      role: "passenger", // Force passenger role for self-registration
     });
 
     await user.save();
@@ -109,25 +140,25 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 
     return res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: "User registered successfully",
       data: {
         user: {
           id: user._id,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          role: user.role
+          role: user.role,
         },
-        token
-      }
+        token,
+      },
     });
   } catch (error: any) {
-    if (error.name === 'ValidationError') {
+    if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err: any) => err.message);
       return res.status(400).json({
         success: false,
-        message: 'Validation error',
-        errors
+        message: "Validation error",
+        errors,
       });
     } else {
       next(error);
@@ -136,7 +167,11 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 };
 
 // Login user
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { email, password } = req.body;
 
@@ -144,17 +179,19 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Email and password are required'
+        message: "Email and password are required",
       });
       return;
     }
 
     // Find user and include password for comparison
-    const user = await User.findOne({ email, isActive: true }).select('+password');
+    const user = await User.findOne({ email, isActive: true }).select(
+      "+password"
+    );
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: "Invalid email or password",
       });
       return;
     }
@@ -164,7 +201,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: "Invalid email or password",
       });
       return;
     }
@@ -173,7 +210,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     if (user.mustChangePassword) {
       return res.status(200).json({
         success: true,
-        message: 'Password change required',
+        message: "Password change required",
         data: {
           user: {
             id: user._id,
@@ -181,10 +218,10 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             firstName: user.firstName,
             lastName: user.lastName,
             role: user.role,
-            mustChangePassword: true
+            mustChangePassword: true,
           },
-          requiresPasswordChange: true
-        }
+          requiresPasswordChange: true,
+        },
       });
       return;
     }
@@ -194,17 +231,17 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
     return res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message: "Login successful",
       data: {
         user: {
           id: user._id,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          role: user.role
+          role: user.role,
         },
-        token
-      }
+        token,
+      },
     });
   } catch (error) {
     next(error);
@@ -212,7 +249,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 };
 
 // Get current user profile
-export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
+export const getProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = (req as any).user.userId;
     const user = await User.findById(userId);
@@ -220,7 +261,7 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
       return;
     }
@@ -236,9 +277,9 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
           role: user.role,
           isActive: user.isActive,
           createdAt: user.createdAt,
-          updatedAt: user.updatedAt
-        }
-      }
+          updatedAt: user.updatedAt,
+        },
+      },
     });
   } catch (error) {
     next(error);
@@ -246,7 +287,11 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
 };
 
 // Update user profile
-export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+export const updateProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = (req as any).user.userId;
     const { firstName, lastName } = req.body;
@@ -260,31 +305,31 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
       return;
     }
 
     return res.status(200).json({
       success: true,
-      message: 'Profile updated successfully',
+      message: "Profile updated successfully",
       data: {
         user: {
           id: user._id,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          role: user.role
-        }
-      }
+          role: user.role,
+        },
+      },
     });
   } catch (error: any) {
-    if (error.name === 'ValidationError') {
+    if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err: any) => err.message);
       return res.status(400).json({
         success: false,
-        message: 'Validation error',
-        errors
+        message: "Validation error",
+        errors,
       });
     } else {
       next(error);
@@ -293,7 +338,11 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
 };
 
 // Change password
-export const changePassword = async (req: Request, res: Response, next: NextFunction) => {
+export const changePassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = (req as any).user.userId;
     const { currentPassword, newPassword } = req.body;
@@ -301,17 +350,17 @@ export const changePassword = async (req: Request, res: Response, next: NextFunc
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
         success: false,
-        message: 'Current password and new password are required'
+        message: "Current password and new password are required",
       });
       return;
     }
 
     // Find user with password
-    const user = await User.findById(userId).select('+password');
+    const user = await User.findById(userId).select("+password");
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
       return;
     }
@@ -321,7 +370,7 @@ export const changePassword = async (req: Request, res: Response, next: NextFunc
     if (!isCurrentPasswordValid) {
       return res.status(400).json({
         success: false,
-        message: 'Current password is incorrect'
+        message: "Current password is incorrect",
       });
       return;
     }
@@ -335,15 +384,15 @@ export const changePassword = async (req: Request, res: Response, next: NextFunc
 
     return res.status(200).json({
       success: true,
-      message: 'Password changed successfully'
+      message: "Password changed successfully",
     });
   } catch (error: any) {
-    if (error.name === 'ValidationError') {
+    if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err: any) => err.message);
       return res.status(400).json({
         success: false,
-        message: 'Validation error',
-        errors
+        message: "Validation error",
+        errors,
       });
     } else {
       next(error);

@@ -6,7 +6,7 @@ import { AuthService } from '../../../services/auth.service';
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss']
+  styleUrls: ['./register.component.scss'],
 })
 export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
@@ -14,18 +14,24 @@ export class RegisterComponent implements OnInit {
   error = '';
   success = '';
 
+  hidePassword = true;
+  hideConfirmPassword = true;
+
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
     private router: Router
   ) {
-    this.registerForm = this.formBuilder.group({
-      firstName: ['', [Validators.required, Validators.maxLength(50)]],
-      lastName: ['', [Validators.required, Validators.maxLength(50)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
+    this.registerForm = this.formBuilder.group(
+      {
+        firstName: ['', [Validators.required, Validators.maxLength(50)]],
+        lastName: ['', [Validators.required, Validators.maxLength(50)]],
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', [Validators.required]],
+      },
+      { validators: this.passwordMatchValidator }
+    );
   }
 
   ngOnInit(): void {
@@ -35,13 +41,29 @@ export class RegisterComponent implements OnInit {
     }
   }
 
-  get f() { return this.registerForm.controls; }
+  get f() {
+    return this.registerForm.controls;
+  }
+
+  get passwordMismatchError(): boolean {
+    const control = this.registerForm.get('confirmPassword');
+    return !!(
+      control &&
+      control.touched &&
+      control.errors &&
+      control.errors['passwordMismatch']
+    );
+  }
 
   passwordMatchValidator(form: FormGroup) {
     const password = form.get('password');
     const confirmPassword = form.get('confirmPassword');
-    
-    if (password && confirmPassword && password.value !== confirmPassword.value) {
+
+    if (
+      password &&
+      confirmPassword &&
+      password.value !== confirmPassword.value
+    ) {
       confirmPassword.setErrors({ passwordMismatch: true });
     } else if (confirmPassword?.errors?.['passwordMismatch']) {
       delete confirmPassword.errors['passwordMismatch'];
@@ -66,7 +88,8 @@ export class RegisterComponent implements OnInit {
     this.authService.register(userData).subscribe({
       next: (response) => {
         if (response.success) {
-          this.success = 'Registration successful! Please login with your credentials.';
+          this.success =
+            'Registration successful! Please login with your credentials.';
           setTimeout(() => {
             this.router.navigate(['/login']);
           }, 2000);
@@ -76,9 +99,10 @@ export class RegisterComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        this.error = error.error?.message || 'An error occurred during registration';
+        this.error =
+          error.error?.message || 'An error occurred during registration';
         this.loading = false;
-      }
+      },
     });
   }
 }

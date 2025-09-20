@@ -7,6 +7,11 @@ export interface User {
   isActive: boolean;
   isEmailVerified: boolean;
   mustChangePassword: boolean;
+  airline?: {
+    _id: string;
+    name: string;
+    code: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,6 +43,35 @@ export interface ChangePasswordRequest {
 
 export interface ForceChangePasswordRequest {
   email: string;
-  temporaryPassword: string;
   newPassword: string;
+}
+
+export interface CreateAirlineInvitation {
+  email: string;
+  firstName: string;
+  lastName: string;
+  airlineName: string;
+  airlineCode: string;
+  country?: string;
+}
+
+export interface UserSearchParams {
+  role?: 'admin' | 'airline' | 'passenger';
+  active?: boolean;
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface UserListResponse {
+  success: boolean;
+  data: {
+    users: User[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+    };
+  };
 }

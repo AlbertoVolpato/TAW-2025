@@ -1,7 +1,17 @@
 <div class="admin-dashboard">
   <div class="dashboard-header">
     <h1>Dashboard Amministratore</h1>
-    <p>Gestisci voli, compagnie aeree e aeroporti</p>
+    <p>Gestisci utenti, compagnie aeree e sistema</p>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="refreshData()">
+        <mat-icon>refresh</mat-icon>
+        Aggiorna
+      </button>
+      <button mat-raised-button (click)="exportSystemReport()">
+        <mat-icon>download</mat-icon>
+        Report Sistema
+      </button>
+    </div>
   </div>
 
   <!-- Loading State -->
@@ -11,15 +21,71 @@
   </div>
 
   <!-- Error State -->
-  <div class="status-message error" *ngIf="error && !loading">
+  <div class="error-container" *ngIf="error && !loading">
     <mat-icon>error</mat-icon>
     <span>{{ error }}</span>
-    <button class="btn-primary" (click)="loadDashboardData()">Riprova</button>
+    <button mat-raised-button color="primary" (click)="refreshData()">Riprova</button>
   </div>
 
-  <div class="dashboard-content" *ngIf="!loading && !error">
+  <div class="dashboard-content" *ngIf="!loading && !error && dashboardStats">
+    <!-- Dashboard Statistics -->
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>people</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ dashboardStats.totalUsers }}</h3>
+            <p>Utenti Totali</p>
+            <span class="stat-subtitle">{{ dashboardStats.newUsersThisMonth }} nuovi questo mese</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>business</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ dashboardStats.totalAirlines }}</h3>
+            <p>Compagnie Aeree</p>
+            <span class="stat-subtitle">{{ dashboardStats.activeAirlines }} attive</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>flight</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ dashboardStats.totalFlights }}</h3>
+            <p>Voli Totali</p>
+            <span class="stat-subtitle">{{ dashboardStats.activeFlights }} programmati</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>confirmation_number</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ dashboardStats.totalBookings }}</h3>
+            <p>Prenotazioni</p>
+            <span class="stat-subtitle">{{ dashboardStats.bookingsThisMonth }} questo mese</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
     <!-- Quick Actions -->
     <div class="quick-actions">
+      <h2>Azioni Rapide</h2>
       <div class="actions-grid">
         <mat-card class="action-card" routerLink="/admin/users">
           <mat-card-content>
@@ -32,22 +98,20 @@
         <mat-card class="action-card">
           <mat-card-content>
             <mat-icon>flight</mat-icon>
-            <h3>Gestione Voli</h3>
-            <p>Supervisiona tutti i voli del sistema</p>
+            <h3>Supervisione Voli</h3>
+            <p>Monitora tutti i voli del sistema</p>
           </mat-card-content>
         </mat-card>
 
-        <mat-card class="action-card">
+        <mat-card class="action-card" (click)="exportUsers()">
           <mat-card-content>
-            <mat-icon>analytics</mat-icon>
-            <h3>Report</h3>
-            <p>Visualizza statistiche e report</p>
+            <mat-icon>download</mat-icon>
+            <h3>Esporta Utenti</h3>
+            <p>Scarica lista utenti in CSV</p>
           </mat-card-content>
         </mat-card>
       </div>
     </div>
-
-    <!-- Statistics Cards -->
     <div class="stats-grid">
       <mat-card class="stat-card">
         <mat-card-content>
@@ -133,30 +197,60 @@
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="['flightNumber', 'airline', 'route', 'departure', 'status']"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['flightNumber', 'airline', 'route', 'departure', 'status'];"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['flightNumber', 'airline', 'route', 'departure', 'status'];">
+            </tr>
           </table>
         </div>
       </mat-card-content>
     </mat-card>
 
-    <!-- Airlines List -->
-    <mat-card class="data-card">
-      <mat-card-header>
-        <mat-card-title>Compagnie Aeree</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="airlines-grid">
-          <div *ngFor="let airline of airlines.slice(0, 6)" class="airline-item">
-            <div class="airline-info">
-              <h4>{{ airline.name }}</h4>
-              <p>{{ airline.code }}</p>
+
+    <!-- System Statistics -->
+    <div class="system-stats" *ngIf="systemStats">
+      <h2>Statistiche di Sistema</h2>
+      <div class="system-stats-grid">
+        <mat-card class="system-stat-card">
+          <mat-card-content>
+            <h3>Performance</h3>
+            <div class="stat-item">
+              <span>Tempo di risposta medio:</span>
+              <strong>{{ systemStats.averageResponseTime }}ms</strong>
             </div>
-            <mat-chip [color]="airline.isActive ? 'primary' : 'accent'" selected>
-              {{ airline.isActive ? 'Attiva' : 'Inattiva' }}
-            </mat-chip>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
+            <div class="stat-item">
+              <span>Uptime:</span>
+              <strong>{{ systemStats.systemUptime }}</strong>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="system-stat-card">
+          <mat-card-content>
+            <h3>Database</h3>
+            <div class="stat-item">
+              <span>Dimensione database:</span>
+              <strong>{{ systemStats.databaseSize }}</strong>
+            </div>
+            <div class="stat-item">
+              <span>Backup più recente:</span>
+              <strong>{{ systemStats.lastBackup | date: 'dd/MM/yyyy HH:mm' }}</strong>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="system-stat-card">
+          <mat-card-content>
+            <h3>Errori</h3>
+            <div class="stat-item">
+              <span>Errori oggi:</span>
+              <strong>{{ systemStats.errorsToday }}</strong>
+            </div>
+            <div class="stat-item">
+              <span>Tasso di successo:</span>
+              <strong>{{ systemStats.successRate }}%</strong>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
   </div>
 </div>

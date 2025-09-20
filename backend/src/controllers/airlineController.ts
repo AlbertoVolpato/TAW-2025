@@ -1,22 +1,26 @@
-import { Request, Response, NextFunction } from 'express';
-import { Airline, IAirline } from '../models/Airline';
-import { User } from '../models/User';
-import { Flight } from '../models/Flight';
-import { Booking } from '../models/Booking';
-import mongoose from 'mongoose';
+import { Request, Response, NextFunction } from "express";
+import { Airline, IAirline } from "../models/Airline";
+import { User } from "../models/User";
+import { Flight } from "../models/Flight";
+import { Booking } from "../models/Booking";
+import mongoose from "mongoose";
 
 // Get all airlines
-export const getAllAirlines = async (req: Request, res: Response, next: NextFunction) => {
+export const getAllAirlines = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { country, active } = req.query;
-    
+
     // Build filter object
     const filter: any = {};
-    if (country) filter.country = new RegExp(country as string, 'i');
-    if (active !== undefined) filter.isActive = active === 'true';
+    if (country) filter.country = new RegExp(country as string, "i");
+    if (active !== undefined) filter.isActive = active === "true";
 
     const airlines = await Airline.find(filter)
-      .populate('userId', 'firstName lastName email')
+      .populate("userId", "firstName lastName email")
       .sort({ name: 1 })
       .lean();
 
@@ -24,8 +28,8 @@ export const getAllAirlines = async (req: Request, res: Response, next: NextFunc
       success: true,
       data: {
         airlines,
-        count: airlines.length
-      }
+        count: airlines.length,
+      },
     });
   } catch (error) {
     next(error);
@@ -33,24 +37,30 @@ export const getAllAirlines = async (req: Request, res: Response, next: NextFunc
 };
 
 // Get airline by ID
-export const getAirlineById = async (req: Request, res: Response, next: NextFunction) => {
+export const getAirlineById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
-    
-    const airline = await Airline.findById(id)
-      .populate('userId', 'firstName lastName email');
-      
+
+    const airline = await Airline.findById(id).populate(
+      "userId",
+      "firstName lastName email"
+    );
+
     if (!airline) {
       return res.status(404).json({
         success: false,
-        message: 'Airline not found'
+        message: "Airline not found",
       });
       return;
     }
 
     return res.status(200).json({
       success: true,
-      data: { airline }
+      data: { airline },
     });
   } catch (error) {
     next(error);
@@ -58,24 +68,30 @@ export const getAirlineById = async (req: Request, res: Response, next: NextFunc
 };
 
 // Get airline by code
-export const getAirlineByCode = async (req: Request, res: Response, next: NextFunction) => {
+export const getAirlineByCode = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { code } = req.params;
-    
-    const airline = await Airline.findOne({ code: code.toUpperCase(), isActive: true })
-      .populate('userId', 'firstName lastName email');
-      
+
+    const airline = await Airline.findOne({
+      code: code.toUpperCase(),
+      isActive: true,
+    }).populate("userId", "firstName lastName email");
+
     if (!airline) {
       return res.status(404).json({
         success: false,
-        message: 'Airline not found'
+        message: "Airline not found",
       });
       return;
     }
 
     return res.status(200).json({
       success: true,
-      data: { airline }
+      data: { airline },
     });
   } catch (error) {
     next(error);
@@ -83,7 +99,11 @@ export const getAirlineByCode = async (req: Request, res: Response, next: NextFu
 };
 
 // Create new airline by invitation (admin only)
-export const createAirlineByInvitation = async (req: Request, res: Response, next: NextFunction) => {
+export const createAirlineByInvitation = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const {
       name,
@@ -94,14 +114,14 @@ export const createAirlineByInvitation = async (req: Request, res: Response, nex
       contactInfo,
       userEmail,
       firstName,
-      lastName
+      lastName,
     } = req.body;
 
     // Only admin can create airlines by invitation
-    if (req.user?.role !== 'admin') {
+    if (req.user?.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Admin privileges required.'
+        message: "Access denied. Admin privileges required.",
       });
       return;
     }
@@ -111,7 +131,7 @@ export const createAirlineByInvitation = async (req: Request, res: Response, nex
     if (existingAirline) {
       return res.status(400).json({
         success: false,
-        message: 'Airline code already exists'
+        message: "Airline code already exists",
       });
       return;
     }
@@ -121,13 +141,15 @@ export const createAirlineByInvitation = async (req: Request, res: Response, nex
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'User with this email already exists'
+        message: "User with this email already exists",
       });
       return;
     }
 
     // Generate temporary password
-    const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+    const tempPassword =
+      Math.random().toString(36).slice(-8) +
+      Math.random().toString(36).slice(-8);
 
     // Create airline user with temporary password
     const airlineUser = new User({
@@ -135,9 +157,9 @@ export const createAirlineByInvitation = async (req: Request, res: Response, nex
       lastName,
       email: userEmail.toLowerCase(),
       password: tempPassword,
-      role: 'airline',
+      role: "airline",
       isEmailVerified: true, // Admin-created accounts are pre-verified
-      mustChangePassword: true // Force password change on first login
+      mustChangePassword: true, // Force password change on first login
     });
 
     await airlineUser.save();
@@ -150,30 +172,31 @@ export const createAirlineByInvitation = async (req: Request, res: Response, nex
       headquarters,
       website,
       contactInfo,
-      userId: airlineUser._id
+      userId: airlineUser._id,
     });
 
     await airline.save();
 
     // Populate user data for response
-    await airline.populate('userId', 'firstName lastName email');
+    await airline.populate("userId", "firstName lastName email");
 
     return res.status(201).json({
       success: true,
-      message: 'Airline created successfully by invitation',
+      message: "Airline created successfully by invitation",
       data: {
         airline,
         temporaryPassword: tempPassword, // Return temp password for admin to share
-        loginInstructions: 'The airline user must change their password on first login'
-      }
+        loginInstructions:
+          "The airline user must change their password on first login",
+      },
     });
   } catch (error: any) {
-    if (error.name === 'ValidationError') {
+    if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err: any) => err.message);
       return res.status(400).json({
         success: false,
-        message: 'Validation error',
-        errors
+        message: "Validation error",
+        errors,
       });
     } else {
       next(error);
@@ -182,13 +205,18 @@ export const createAirlineByInvitation = async (req: Request, res: Response, nex
 };
 
 // Legacy create airline method (kept for backward compatibility but restricted)
-export const createAirline = async (req: Request, res: Response, next: NextFunction) => {
+export const createAirline = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Redirect to invitation-based creation
     return res.status(400).json({
       success: false,
-      message: 'Direct airline creation is not allowed. Airlines must be created by invitation through admin.',
-      redirectTo: '/api/airlines/invite'
+      message:
+        "Direct airline creation is not allowed. Airlines must be created by invitation through admin.",
+      redirectTo: "/api/airlines/invite",
     });
   } catch (error) {
     next(error);
@@ -196,7 +224,11 @@ export const createAirline = async (req: Request, res: Response, next: NextFunct
 };
 
 // Update airline (admin or airline owner)
-export const updateAirline = async (req: Request, res: Response, next: NextFunction) => {
+export const updateAirline = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -208,30 +240,33 @@ export const updateAirline = async (req: Request, res: Response, next: NextFunct
     if (!existingAirline) {
       return res.status(404).json({
         success: false,
-        message: 'Airline not found'
+        message: "Airline not found",
       });
       return;
     }
 
     // Check permissions
-    if (userRole === 'airline' && (existingAirline as any).user?.toString() !== userId) {
+    if (
+      userRole === "airline" &&
+      (existingAirline as any).user?.toString() !== userId
+    ) {
       return res.status(403).json({
         success: false,
-        message: 'You can only update your own airline'
+        message: "You can only update your own airline",
       });
       return;
     }
 
     // If updating code, check for duplicates
     if (updateData.code) {
-      const duplicateAirline = await Airline.findOne({ 
+      const duplicateAirline = await Airline.findOne({
         code: updateData.code.toUpperCase(),
-        _id: { $ne: id }
+        _id: { $ne: id },
       });
       if (duplicateAirline) {
         return res.status(400).json({
           success: false,
-          message: 'Airline with this code already exists'
+          message: "Airline with this code already exists",
         });
         return;
       }
@@ -240,33 +275,32 @@ export const updateAirline = async (req: Request, res: Response, next: NextFunct
     // If updating user, validate
     if (updateData.user) {
       const user = await User.findById(updateData.user);
-      if (!user || user.role !== 'airline') {
+      if (!user || user.role !== "airline") {
         return res.status(400).json({
           success: false,
-          message: 'Invalid user or user must have airline role'
+          message: "Invalid user or user must have airline role",
         });
         return;
       }
     }
 
-    const airline = await Airline.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    ).populate('userId', 'firstName lastName email');
+    const airline = await Airline.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    }).populate("userId", "firstName lastName email");
 
     return res.status(200).json({
       success: true,
-      message: 'Airline updated successfully',
-      data: { airline }
+      message: "Airline updated successfully",
+      data: { airline },
     });
   } catch (error: any) {
-    if (error.name === 'ValidationError') {
+    if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err: any) => err.message);
       return res.status(400).json({
         success: false,
-        message: 'Validation error',
-        errors
+        message: "Validation error",
+        errors,
       });
     } else {
       next(error);
@@ -275,10 +309,14 @@ export const updateAirline = async (req: Request, res: Response, next: NextFunct
 };
 
 // Delete airline (admin only)
-export const deleteAirline = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteAirline = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
-    
+
     const airline = await Airline.findByIdAndUpdate(
       id,
       { isActive: false },
@@ -288,14 +326,14 @@ export const deleteAirline = async (req: Request, res: Response, next: NextFunct
     if (!airline) {
       return res.status(404).json({
         success: false,
-        message: 'Airline not found'
+        message: "Airline not found",
       });
       return;
     }
 
     return res.status(200).json({
       success: true,
-      message: 'Airline deactivated successfully'
+      message: "Airline deactivated successfully",
     });
   } catch (error) {
     next(error);
@@ -303,24 +341,30 @@ export const deleteAirline = async (req: Request, res: Response, next: NextFunct
 };
 
 // Get current user's airline (for airline users)
-export const getMyAirline = async (req: Request, res: Response, next: NextFunction) => {
+export const getMyAirline = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.user?.userId;
-    
-    const airline = await Airline.findOne({ userId: userId, isActive: true })
-      .populate('userId', 'firstName lastName email');
-      
+
+    const airline = await Airline.findOne({
+      userId: userId,
+      isActive: true,
+    }).populate("userId", "firstName lastName email");
+
     if (!airline) {
       return res.status(404).json({
         success: false,
-        message: 'No airline found for current user'
+        message: "No airline found for current user",
       });
       return;
     }
 
     return res.status(200).json({
       success: true,
-      data: { airline }
+      data: { airline },
     });
   } catch (error) {
     next(error);
@@ -328,14 +372,18 @@ export const getMyAirline = async (req: Request, res: Response, next: NextFuncti
 };
 
 // Get airline statistics (airline only)
-export const getAirlineStatistics = async (req: Request, res: Response, next: NextFunction) => {
+export const getAirlineStatistics = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.user?.userId;
-    
-    if (!userId || req.user?.role !== 'airline') {
+
+    if (!userId || req.user?.role !== "airline") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Airline account required.'
+        message: "Access denied. Airline account required.",
       });
       return;
     }
@@ -345,7 +393,7 @@ export const getAirlineStatistics = async (req: Request, res: Response, next: Ne
     if (!airline) {
       return res.status(404).json({
         success: false,
-        message: 'No airline found for current user'
+        message: "No airline found for current user",
       });
       return;
     }
@@ -363,44 +411,48 @@ export const getAirlineStatistics = async (req: Request, res: Response, next: Ne
     }
 
     // Get flights for this airline
-     const flightFilter: any = { airline: airlineId };
-     if (Object.keys(dateFilter).length > 0) {
-       flightFilter['departureTime'] = dateFilter;
-     }
+    const flightFilter: any = { airline: airlineId };
+    if (Object.keys(dateFilter).length > 0) {
+      flightFilter["departureTime"] = dateFilter;
+    }
 
     const flights = await Flight.find(flightFilter);
-    const flightIds = flights.map(f => f._id);
+    const flightIds = flights.map((f) => f._id);
 
     // Get bookings for these flights
     const bookings = await Booking.find({
       flight: { $in: flightIds },
-      status: { $in: ['confirmed', 'completed'] }
-    }).populate('flight', 'flightNumber route schedule');
+      status: { $in: ["confirmed", "completed"] },
+    }).populate("flight", "flightNumber route schedule");
 
     // Calculate statistics
-     const totalPassengers = bookings.reduce((sum, booking) => {
-       return sum + (booking.passengers?.length || 0);
-     }, 0);
+    const totalPassengers = bookings.reduce((sum, booking) => {
+      return sum + (booking.passengers?.length || 0);
+    }, 0);
 
-     const totalRevenue = bookings.reduce((sum, booking) => {
-       return sum + (booking.pricing?.totalPrice || 0);
-     }, 0);
+    const totalRevenue = bookings.reduce((sum, booking) => {
+      return sum + (booking.pricing?.totalPrice || 0);
+    }, 0);
 
     // Most demanded routes
-    const routeStats: { [key: string]: { count: number; revenue: number; route: any } } = {};
-    
-    bookings.forEach(booking => {
+    const routeStats: {
+      [key: string]: { count: number; revenue: number; route: any };
+    } = {};
+
+    bookings.forEach((booking) => {
       if (booking.flight && (booking.flight as any).route) {
-        const routeKey = `${(booking.flight as any).route.origin}-${(booking.flight as any).route.destination}`;
+        const routeKey = `${(booking.flight as any).route.origin}-${
+          (booking.flight as any).route.destination
+        }`;
         if (!routeStats[routeKey]) {
           routeStats[routeKey] = {
             count: 0,
             revenue: 0,
-            route: (booking.flight as any).route
+            route: (booking.flight as any).route,
           };
         }
         routeStats[routeKey].count += booking.passengers?.length || 0;
-         routeStats[routeKey].revenue += booking.pricing?.totalPrice || 0;
+        routeStats[routeKey].revenue += booking.pricing?.totalPrice || 0;
       }
     });
 
@@ -409,38 +461,46 @@ export const getAirlineStatistics = async (req: Request, res: Response, next: Ne
         route: key,
         passengers: stats.count,
         revenue: stats.revenue,
-        routeDetails: stats.route
+        routeDetails: stats.route,
       }))
       .sort((a, b) => b.passengers - a.passengers)
       .slice(0, 10);
 
     // Monthly statistics
-    const monthlyStats: { [key: string]: { passengers: number; revenue: number; flights: number } } = {};
-    
-    bookings.forEach(booking => {
-       if (booking.flight && (booking.flight as any).departureTime) {
-         const date = new Date((booking.flight as any).departureTime);
-         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-         
-         if (!monthlyStats[monthKey]) {
-           monthlyStats[monthKey] = { passengers: 0, revenue: 0, flights: 0 };
-         }
-         
-         monthlyStats[monthKey].passengers += booking.passengers?.length || 0;
-         monthlyStats[monthKey].revenue += booking.pricing?.totalPrice || 0;
-       }
-     });
+    const monthlyStats: {
+      [key: string]: { passengers: number; revenue: number; flights: number };
+    } = {};
+
+    bookings.forEach((booking) => {
+      if (booking.flight && (booking.flight as any).departureTime) {
+        const date = new Date((booking.flight as any).departureTime);
+        const monthKey = `${date.getFullYear()}-${String(
+          date.getMonth() + 1
+        ).padStart(2, "0")}`;
+
+        if (!monthlyStats[monthKey]) {
+          monthlyStats[monthKey] = { passengers: 0, revenue: 0, flights: 0 };
+        }
+
+        monthlyStats[monthKey].passengers += booking.passengers?.length || 0;
+        monthlyStats[monthKey].revenue += booking.pricing?.totalPrice || 0;
+      }
+    });
 
     // Count unique flights
-    const uniqueFlights = new Set(bookings.map(b => b.flight?.toString())).size;
-    flights.forEach(flight => {
-       const date = new Date(flight.departureTime);
-       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-       
-       if (monthlyStats[monthKey]) {
-         monthlyStats[monthKey].flights = (monthlyStats[monthKey].flights || 0) + 1;
-       }
-     });
+    const uniqueFlights = new Set(bookings.map((b) => b.flight?.toString()))
+      .size;
+    flights.forEach((flight) => {
+      const date = new Date(flight.departureTime);
+      const monthKey = `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}`;
+
+      if (monthlyStats[monthKey]) {
+        monthlyStats[monthKey].flights =
+          (monthlyStats[monthKey].flights || 0) + 1;
+      }
+    });
 
     const monthlyData = Object.entries(monthlyStats)
       .map(([month, stats]) => ({ month, ...stats }))
@@ -454,32 +514,38 @@ export const getAirlineStatistics = async (req: Request, res: Response, next: Ne
           totalRevenue,
           totalFlights: flights.length,
           totalBookings: bookings.length,
-          averageRevenuePerFlight: flights.length > 0 ? totalRevenue / flights.length : 0,
-          averagePassengersPerFlight: flights.length > 0 ? totalPassengers / flights.length : 0
+          averageRevenuePerFlight:
+            flights.length > 0 ? totalRevenue / flights.length : 0,
+          averagePassengersPerFlight:
+            flights.length > 0 ? totalPassengers / flights.length : 0,
         },
         mostDemandedRoutes,
         monthlyStatistics: monthlyData,
         period: {
-          startDate: startDate || 'All time',
-          endDate: endDate || 'All time'
-        }
-      }
+          startDate: startDate || "All time",
+          endDate: endDate || "All time",
+        },
+      },
     });
   } catch (error) {
-    console.error('Error fetching airline statistics:', error);
+    console.error("Error fetching airline statistics:", error);
     next(error);
   }
 };
 
 // Get revenue statistics (airline only)
-export const getRevenueStatistics = async (req: Request, res: Response, next: NextFunction) => {
+export const getRevenueStatistics = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.user?.userId;
-    
-    if (!userId || req.user?.role !== 'airline') {
+
+    if (!userId || req.user?.role !== "airline") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Airline account required.'
+        message: "Access denied. Airline account required.",
       });
       return;
     }
@@ -489,7 +555,7 @@ export const getRevenueStatistics = async (req: Request, res: Response, next: Ne
     if (!airline) {
       return res.status(404).json({
         success: false,
-        message: 'No airline found for current user'
+        message: "No airline found for current user",
       });
       return;
     }
@@ -502,65 +568,76 @@ export const getRevenueStatistics = async (req: Request, res: Response, next: Ne
     const endOfYear = new Date(`${year}-12-31`);
 
     const flights = await Flight.find({
-       airline: airlineId,
-       'departureTime': {
-         $gte: startOfYear,
-         $lte: endOfYear
-       }
-     });
+      airline: airlineId,
+      departureTime: {
+        $gte: startOfYear,
+        $lte: endOfYear,
+      },
+    });
 
-    const flightIds = flights.map(f => f._id);
+    const flightIds = flights.map((f) => f._id);
 
     // Aggregate revenue by month
     const revenueByMonth = await Booking.aggregate([
       {
         $match: {
           flight: { $in: flightIds },
-          status: { $in: ['confirmed', 'completed'] }
-        }
+          status: { $in: ["confirmed", "completed"] },
+        },
       },
       {
         $lookup: {
-          from: 'flights',
-          localField: 'flight',
-          foreignField: '_id',
-          as: 'flightData'
-        }
+          from: "flights",
+          localField: "flight",
+          foreignField: "_id",
+          as: "flightData",
+        },
       },
       {
-        $unwind: '$flightData'
+        $unwind: "$flightData",
       },
       {
         $group: {
-           _id: {
-             month: { $month: '$flightData.departureTime' },
-             year: { $year: '$flightData.departureTime' }
-           },
-           totalRevenue: { $sum: '$pricing.totalPrice' },
-           totalBookings: { $sum: 1 },
-           totalPassengers: { $sum: { $size: '$passengers' } }
-         }
+          _id: {
+            month: { $month: "$flightData.departureTime" },
+            year: { $year: "$flightData.departureTime" },
+          },
+          totalRevenue: { $sum: "$pricing.totalPrice" },
+          totalBookings: { $sum: 1 },
+          totalPassengers: { $sum: { $size: "$passengers" } },
+        },
       },
       {
-        $sort: { '_id.month': 1 }
-      }
+        $sort: { "_id.month": 1 },
+      },
     ]);
 
     // Format the data
     const monthlyRevenue = Array.from({ length: 12 }, (_, i) => {
-      const monthData = revenueByMonth.find(item => item._id.month === i + 1);
+      const monthData = revenueByMonth.find((item) => item._id.month === i + 1);
       return {
         month: i + 1,
-        monthName: new Date(2024, i, 1).toLocaleString('default', { month: 'long' }),
+        monthName: new Date(2024, i, 1).toLocaleString("default", {
+          month: "long",
+        }),
         revenue: monthData?.totalRevenue || 0,
         bookings: monthData?.totalBookings || 0,
-        passengers: monthData?.totalPassengers || 0
+        passengers: monthData?.totalPassengers || 0,
       };
     });
 
-    const totalYearRevenue = monthlyRevenue.reduce((sum, month) => sum + month.revenue, 0);
-    const totalYearBookings = monthlyRevenue.reduce((sum, month) => sum + month.bookings, 0);
-    const totalYearPassengers = monthlyRevenue.reduce((sum, month) => sum + month.passengers, 0);
+    const totalYearRevenue = monthlyRevenue.reduce(
+      (sum, month) => sum + month.revenue,
+      0
+    );
+    const totalYearBookings = monthlyRevenue.reduce(
+      (sum, month) => sum + month.bookings,
+      0
+    );
+    const totalYearPassengers = monthlyRevenue.reduce(
+      (sum, month) => sum + month.passengers,
+      0
+    );
 
     return res.status(200).json({
       success: true,
@@ -572,25 +649,30 @@ export const getRevenueStatistics = async (req: Request, res: Response, next: Ne
           totalBookings: totalYearBookings,
           totalPassengers: totalYearPassengers,
           averageMonthlyRevenue: totalYearRevenue / 12,
-          averageRevenuePerBooking: totalYearBookings > 0 ? totalYearRevenue / totalYearBookings : 0
-        }
-      }
+          averageRevenuePerBooking:
+            totalYearBookings > 0 ? totalYearRevenue / totalYearBookings : 0,
+        },
+      },
     });
   } catch (error) {
-    console.error('Error fetching revenue statistics:', error);
+    console.error("Error fetching revenue statistics:", error);
     next(error);
   }
 };
 
 // Get passenger statistics (airline only)
-export const getPassengerStatistics = async (req: Request, res: Response, next: NextFunction) => {
+export const getPassengerStatistics = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.user?.userId;
-    
-    if (!userId || req.user?.role !== 'airline') {
+
+    if (!userId || req.user?.role !== "airline") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Airline account required.'
+        message: "Access denied. Airline account required.",
       });
       return;
     }
@@ -600,95 +682,339 @@ export const getPassengerStatistics = async (req: Request, res: Response, next: 
     if (!airline) {
       return res.status(404).json({
         success: false,
-        message: 'No airline found for current user'
+        message: "No airline found for current user",
       });
       return;
     }
 
     const airlineId = airline._id;
-    const { period = '30' } = req.query; // days
+    const { period = "30" } = req.query; // days
 
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - Number(period));
 
     // Get flights for this airline in the specified period
-     const flights = await Flight.find({
-       airline: airlineId,
-       'departureTime': { $gte: startDate }
-     });
+    const flights = await Flight.find({
+      airline: airlineId,
+      departureTime: { $gte: startDate },
+    });
 
-    const flightIds = flights.map(f => f._id);
+    const flightIds = flights.map((f) => f._id);
 
     // Get passenger statistics
     const passengerStats = await Booking.aggregate([
       {
         $match: {
           flight: { $in: flightIds },
-          status: { $in: ['confirmed', 'completed'] }
-        }
+          status: { $in: ["confirmed", "completed"] },
+        },
       },
       {
         $lookup: {
-          from: 'flights',
-          localField: 'flight',
-          foreignField: '_id',
-          as: 'flightData'
-        }
+          from: "flights",
+          localField: "flight",
+          foreignField: "_id",
+          as: "flightData",
+        },
       },
       {
-        $unwind: '$flightData'
+        $unwind: "$flightData",
       },
       {
         $group: {
           _id: {
             date: {
-               $dateToString: {
-                 format: '%Y-%m-%d',
-                 date: '$flightData.departureTime'
-               }
-             }
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$flightData.departureTime",
+              },
+            },
           },
-          totalPassengers: { $sum: { $size: '$passengers' } },
+          totalPassengers: { $sum: { $size: "$passengers" } },
           totalBookings: { $sum: 1 },
-          totalFlights: { $addToSet: '$flight' }
-        }
+          totalFlights: { $addToSet: "$flight" },
+        },
       },
       {
         $addFields: {
-          totalFlights: { $size: '$totalFlights' }
-        }
+          totalFlights: { $size: "$totalFlights" },
+        },
       },
       {
-        $sort: { '_id.date': 1 }
-      }
+        $sort: { "_id.date": 1 },
+      },
     ]);
 
-    const totalPassengers = passengerStats.reduce((sum, day) => sum + day.totalPassengers, 0);
-    const totalBookings = passengerStats.reduce((sum, day) => sum + day.totalBookings, 0);
+    const totalPassengers = passengerStats.reduce(
+      (sum, day) => sum + day.totalPassengers,
+      0
+    );
+    const totalBookings = passengerStats.reduce(
+      (sum, day) => sum + day.totalBookings,
+      0
+    );
     const totalFlights = flights.length;
 
     return res.status(200).json({
       success: true,
       data: {
         period: `Last ${period} days`,
-        dailyStatistics: passengerStats.map(stat => ({
+        dailyStatistics: passengerStats.map((stat) => ({
           date: stat._id.date,
           passengers: stat.totalPassengers,
           bookings: stat.totalBookings,
-          flights: stat.totalFlights
+          flights: stat.totalFlights,
         })),
         summary: {
           totalPassengers,
           totalBookings,
           totalFlights,
-          averagePassengersPerDay: passengerStats.length > 0 ? totalPassengers / passengerStats.length : 0,
-          averagePassengersPerFlight: totalFlights > 0 ? totalPassengers / totalFlights : 0,
-          loadFactor: 0 // This would require aircraft capacity data
-        }
-      }
+          averagePassengersPerDay:
+            passengerStats.length > 0
+              ? totalPassengers / passengerStats.length
+              : 0,
+          averagePassengersPerFlight:
+            totalFlights > 0 ? totalPassengers / totalFlights : 0,
+          loadFactor: 0, // This would require aircraft capacity data
+        },
+      },
     });
   } catch (error) {
-    console.error('Error fetching passenger statistics:', error);
+    console.error("Error fetching passenger statistics:", error);
+    next(error);
+  }
+};
+
+// Get airline revenue statistics (airline only)
+export const getAirlineRevenueStats = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId, role } = req.user || {};
+
+    if (role !== "airline") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Airline account required.",
+      });
+    }
+
+    const airline = await Airline.findOne({ userId, isActive: true });
+    if (!airline) {
+      return res.status(404).json({
+        success: false,
+        message: "Airline not found",
+      });
+    }
+
+    const { period = "30" } = req.query;
+    const dateFrom = new Date();
+    dateFrom.setDate(dateFrom.getDate() - Number(period));
+
+    // Get flights for this airline
+    const flights = await Flight.find({
+      airline: airline._id,
+      departureTime: { $gte: dateFrom },
+    });
+
+    const flightIds = flights.map((f) => f._id);
+
+    // Get revenue statistics
+    const revenueStats = await Booking.aggregate([
+      {
+        $match: {
+          flight: { $in: flightIds },
+          status: "confirmed",
+          createdAt: { $gte: dateFrom },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            date: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$createdAt",
+              },
+            },
+          },
+          dailyRevenue: { $sum: "$totalPrice" },
+          bookingCount: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { "_id.date": 1 },
+      },
+    ]);
+
+    // Get total revenue
+    const totalRevenue = revenueStats.reduce(
+      (sum, day) => sum + day.dailyRevenue,
+      0
+    );
+    const totalBookings = revenueStats.reduce(
+      (sum, day) => sum + day.bookingCount,
+      0
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        period: `Last ${period} days`,
+        dailyRevenue: revenueStats.map((stat) => ({
+          date: stat._id.date,
+          revenue: stat.dailyRevenue,
+          bookings: stat.bookingCount,
+        })),
+        summary: {
+          totalRevenue,
+          totalBookings,
+          averageRevenuePerDay:
+            revenueStats.length > 0 ? totalRevenue / revenueStats.length : 0,
+          averageRevenuePerBooking:
+            totalBookings > 0 ? totalRevenue / totalBookings : 0,
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get popular routes statistics (airline only)
+export const getPopularRoutes = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId, role } = req.user || {};
+
+    if (role !== "airline") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Airline account required.",
+      });
+    }
+
+    const airline = await Airline.findOne({ userId, isActive: true });
+    if (!airline) {
+      return res.status(404).json({
+        success: false,
+        message: "Airline not found",
+      });
+    }
+
+    const { period = "30", limit = "10" } = req.query;
+    const dateFrom = new Date();
+    dateFrom.setDate(dateFrom.getDate() - Number(period));
+
+    // Get flights for this airline
+    const flights = await Flight.find({
+      airline: airline._id,
+      departureTime: { $gte: dateFrom },
+    }).populate("departureAirport arrivalAirport", "name city country code");
+
+    const flightIds = flights.map((f) => f._id);
+
+    // Get popular routes based on bookings
+    const popularRoutes = await Booking.aggregate([
+      {
+        $match: {
+          flight: { $in: flightIds },
+          status: "confirmed",
+        },
+      },
+      {
+        $lookup: {
+          from: "flights",
+          localField: "flight",
+          foreignField: "_id",
+          as: "flightInfo",
+        },
+      },
+      {
+        $unwind: "$flightInfo",
+      },
+      {
+        $lookup: {
+          from: "airports",
+          localField: "flightInfo.departureAirport",
+          foreignField: "_id",
+          as: "departureAirport",
+        },
+      },
+      {
+        $lookup: {
+          from: "airports",
+          localField: "flightInfo.arrivalAirport",
+          foreignField: "_id",
+          as: "arrivalAirport",
+        },
+      },
+      {
+        $unwind: "$departureAirport",
+      },
+      {
+        $unwind: "$arrivalAirport",
+      },
+      {
+        $group: {
+          _id: {
+            route: {
+              $concat: [
+                "$departureAirport.code",
+                " - ",
+                "$arrivalAirport.code",
+              ],
+            },
+            departureAirport: "$departureAirport",
+            arrivalAirport: "$arrivalAirport",
+          },
+          totalBookings: { $sum: 1 },
+          totalRevenue: { $sum: "$totalPrice" },
+          totalPassengers: { $sum: { $size: "$passengers" } },
+        },
+      },
+      {
+        $sort: { totalBookings: -1 },
+      },
+      {
+        $limit: Number(limit),
+      },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        period: `Last ${period} days`,
+        routes: popularRoutes.map((route) => ({
+          route: route._id.route,
+          departureAirport: {
+            code: route._id.departureAirport.code,
+            name: route._id.departureAirport.name,
+            city: route._id.departureAirport.city,
+            country: route._id.departureAirport.country,
+          },
+          arrivalAirport: {
+            code: route._id.arrivalAirport.code,
+            name: route._id.arrivalAirport.name,
+            city: route._id.arrivalAirport.city,
+            country: route._id.arrivalAirport.country,
+          },
+          bookings: route.totalBookings,
+          passengers: route.totalPassengers,
+          revenue: route.totalRevenue,
+          averageRevenuePerBooking:
+            route.totalBookings > 0
+              ? route.totalRevenue / route.totalBookings
+              : 0,
+        })),
+      },
+    });
+  } catch (error) {
     next(error);
   }
 };

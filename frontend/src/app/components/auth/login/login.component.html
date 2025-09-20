@@ -4,7 +4,8 @@
     <div class="hero-content">
       <div class="logo-container">
         <svg class="logo-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8">
+          </path>
         </svg>
         <h1>SkyBooker</h1>
       </div>
@@ -25,14 +26,12 @@
           <div class="form-group">
             <label for="email">Email</label>
             <div class="input-wrapper">
-              <input 
-                id="email"
-                type="email" 
-                formControlName="email" 
-                placeholder="Inserisci la tua email"
+              <input id="email" type="email" formControlName="email" placeholder="Inserisci la tua email"
                 class="form-input">
               <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207">
+                </path>
               </svg>
             </div>
             <div class="error-message" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
@@ -44,22 +43,20 @@
           <div class="form-group">
             <label for="password">Password</label>
             <div class="input-wrapper">
-              <input 
-                id="password"
-                [type]="hidePassword ? 'password' : 'text'"
-                formControlName="password" 
-                placeholder="Inserisci la tua password"
-                class="form-input">
-              <button 
-                type="button" 
-                class="password-toggle"
-                (click)="hidePassword = !hidePassword">
+              <input id="password" [type]="hidePassword ? 'password' : 'text'" formControlName="password"
+                placeholder="Inserisci la tua password" class="form-input">
+              <button type="button" class="password-toggle" (click)="hidePassword = !hidePassword">
                 <svg *ngIf="hidePassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                  </path>
                 </svg>
                 <svg *ngIf="!hidePassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21">
+                  </path>
                 </svg>
               </button>
             </div>
@@ -78,15 +75,14 @@
           </div>
 
           <div class="form-actions">
-            <button 
-              type="submit" 
-              class="btn-primary"
-              [disabled]="loginForm.invalid || loading">
+            <button type="submit" class="btn-primary" [disabled]="loginForm.invalid || loading">
               <span *ngIf="!loading">Accedi</span>
               <span *ngIf="loading" class="loading-spinner">
                 <svg class="animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                  </path>
                 </svg>
                 Accesso in corso...
               </span>

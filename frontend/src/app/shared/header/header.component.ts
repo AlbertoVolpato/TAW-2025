@@ -5,20 +5,18 @@ import { User } from '../../models/user.model';
 
 @Component({
   selector: 'app-header',
-  templateUrl: './header.component.html'
+  templateUrl: './header.component.html',
 })
 export class HeaderComponent implements OnInit {
   currentUser: User | null = null;
   isUserMenuOpen = false;
   isMobileMenuOpen = false;
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe(user => {
+    this.authService.currentUser$.subscribe((user) => {
+      console.log('Header: User changed to:', user);
       this.currentUser = user;
     });
   }
@@ -106,13 +104,13 @@ export class HeaderComponent implements OnInit {
 
   getUserRoleText(): string {
     if (!this.currentUser) return '';
-    
+
     const roleTexts: { [key: string]: string } = {
-      'admin': 'Amministratore',
-      'airline': 'Compagnia Aerea',
-      'passenger': 'Passeggero'
+      admin: 'Amministratore',
+      airline: 'Compagnia Aerea',
+      passenger: 'Passeggero',
     };
-    
+
     return roleTexts[this.currentUser.role] || this.currentUser.role;
   }
 

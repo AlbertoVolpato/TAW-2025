@@ -3,27 +3,24 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
-import { 
-  User, 
-  LoginRequest, 
-  RegisterRequest, 
-  AuthResponse, 
+import {
+  User,
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
   ChangePasswordRequest,
-  ForceChangePasswordRequest 
+  ForceChangePasswordRequest,
 } from '../models/user.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private apiUrl = environment.apiUrl;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(
-    private http: HttpClient,
-    private router: Router
-  ) {
+  constructor(private http: HttpClient, private router: Router) {
     // Check if user is already logged in
     this.loadUserFromStorage();
   }
@@ -31,7 +28,7 @@ export class AuthService {
   private loadUserFromStorage(): void {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
-    
+
     if (token && user) {
       try {
         const parsedUser = JSON.parse(user);
@@ -44,26 +41,36 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/users/login`, credentials)
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials)
       .pipe(
-        tap(response => {
+        tap((response) => {
+          console.log('Login response:', response);
           if (response.success && response.token && response.user) {
             localStorage.setItem('token', response.token);
             localStorage.setItem('user', JSON.stringify(response.user));
             this.currentUserSubject.next(response.user);
+            console.log('User logged in:', response.user);
+            console.log('Token saved:', response.token);
           }
         })
       );
   }
 
   register(userData: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/users/register`, userData);
+    return this.http.post<AuthResponse>(
+      `${this.apiUrl}/auth/register`,
+      userData
+    );
   }
 
-  forceChangePassword(data: ForceChangePasswordRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/users/force-change-password`, data)
+  forceChangePassword(
+    data: ForceChangePasswordRequest
+  ): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/auth/force-change-password`, data)
       .pipe(
-        tap(response => {
+        tap((response) => {
           if (response.success && response.token && response.user) {
             localStorage.setItem('token', response.token);
             localStorage.setItem('user', JSON.stringify(response.user));
@@ -74,28 +81,34 @@ export class AuthService {
   }
 
   changePassword(data: ChangePasswordRequest): Observable<AuthResponse> {
-    return this.http.put<AuthResponse>(`${this.apiUrl}/users/change-password`, data, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.put<AuthResponse>(
+      `${this.apiUrl}/users/change-password`,
+      data,
+      {
+        headers: this.getAuthHeaders(),
+      }
+    );
   }
 
   getProfile(): Observable<AuthResponse> {
     return this.http.get<AuthResponse>(`${this.apiUrl}/users/profile`, {
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
     });
   }
 
   updateProfile(userData: Partial<User>): Observable<AuthResponse> {
-    return this.http.put<AuthResponse>(`${this.apiUrl}/users/profile`, userData, {
-      headers: this.getAuthHeaders()
-    }).pipe(
-      tap(response => {
-        if (response.success && response.user) {
-          localStorage.setItem('user', JSON.stringify(response.user));
-          this.currentUserSubject.next(response.user);
-        }
+    return this.http
+      .put<AuthResponse>(`${this.apiUrl}/users/profile`, userData, {
+        headers: this.getAuthHeaders(),
       })
-    );
+      .pipe(
+        tap((response) => {
+          if (response.success && response.user) {
+            localStorage.setItem('user', JSON.stringify(response.user));
+            this.currentUserSubject.next(response.user);
+          }
+        })
+      );
   }
 
   logout(): void {
@@ -112,7 +125,7 @@ export class AuthService {
   isAuthenticated(): boolean {
     const token = this.getToken();
     if (!token) return false;
-    
+
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload.exp > Date.now() / 1000;
@@ -142,11 +155,43 @@ export class AuthService {
     return this.hasRole('passenger');
   }
 
+  mustChangePassword(): boolean {
+    const user = this.getCurrentUser();
+    return user ? user.mustChangePassword : false;
+  }
+
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('token');
+  }
+
+  redirectBasedOnRole(): void {
+    const user = this.getCurrentUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    switch (user.role) {
+      case 'admin':
+        this.router.navigate(['/admin']);
+        break;
+      case 'airline':
+        this.router.navigate(['/airline']);
+        break;
+      case 'passenger':
+        this.router.navigate(['/passenger']);
+        break;
+      default:
+        this.router.navigate(['/flights/search']);
+        break;
+    }
+  }
+
   private getAuthHeaders(): HttpHeaders {
     const token = this.getToken();
     return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     });
   }
 }
