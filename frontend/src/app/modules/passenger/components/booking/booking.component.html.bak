@@ -1,0 +1,526 @@
+<div class="booking-container">
+  <div class="header">
+    <h1>Prenota il tuo Volo</h1>
+    <div *ngIf="flight" class="flight-summary">
+      <div class="route">
+        <span class="airport">{{ flight.departureAirport.code }}</span>
+        <mat-icon>flight_takeoff</mat-icon>
+        <span class="airport">{{ flight.arrivalAirport.code }}</span>
+      </div>
+      <div class="details">
+        <span>{{ flight.departureTime | date:'dd/MM/yyyy HH:mm' }}</span>
+        <span>{{ formatDuration(flight.duration) }}</span>
+        <span>{{ formatPrice(basePrice) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50" class="btn-spinner"></mat-spinner>
+    <p>{{ currentStep === 0 ? 'Caricamento volo...' : 'Elaborazione prenotazione...' }}</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="status-message error">
+    <mat-icon>error</mat-icon>
+    <span>{{ error }}</span>
+    <button class="btn-secondary" (click)="error = null">Chiudi</button>
+  </div>
+
+  <!-- Success Message -->
+  <div class="status-message success" *ngIf="!error && !loading && flight">
+    <mat-icon>check_circle</mat-icon>
+    <span>Prenotazione in corso...</span>
+  </div>
+
+  <!-- Booking Stepper -->
+  <mat-stepper 
+    *ngIf="!loading && !error && flight" 
+    #stepper 
+    orientation="horizontal" 
+    (selectionChange)="onStepChange($event)"
+    class="booking-stepper"
+  >
+    <!-- Step 1: Passenger Information -->
+    <mat-step [stepControl]="passengersForm" label="Informazioni Passeggeri">
+      <form [formGroup]="passengersForm" class="passengers-form">
+        <div class="step-header">
+          <h2>Inserisci i dati dei passeggeri</h2>
+          <p>Assicurati che i dati corrispondano ai documenti di viaggio</p>
+        </div>
+
+        <div 
+          formArrayName="passengers" 
+          *ngFor="let passenger of getPassengersArray().controls; let i = index"
+          class="passenger-section"
+        >
+          <div [formGroupName]="i" class="passenger-form">
+            <h3>Passeggero {{ i + 1 }}</h3>
+            
+            <div class="form-row">
+              <div class="form-field">
+                <mat-form-field appearance="outline">
+                  <mat-label>Nome</mat-label>
+                  <input matInput formControlName="firstName" required>
+                  <mat-icon matSuffix>person</mat-icon>
+                  <mat-error *ngIf="passenger.get('firstName')?.hasError('required')">
+                    Il nome è obbligatorio
+                  </mat-error>
+                  <mat-error *ngIf="passenger.get('firstName')?.hasError('minlength')">
+                    Il nome deve avere almeno 2 caratteri
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-field">
+                <mat-form-field appearance="outline">
+                  <mat-label>Cognome</mat-label>
+                  <input matInput formControlName="lastName" required>
+                  <mat-icon matSuffix>person</mat-icon>
+                  <mat-error *ngIf="passenger.get('lastName')?.hasError('required')">
+                    Il cognome è obbligatorio
+                  </mat-error>
+                  <mat-error *ngIf="passenger.get('lastName')?.hasError('minlength')">
+                    Il cognome deve avere almeno 2 caratteri
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Data di Nascita</mat-label>
+                <input matInput [matDatepicker]="picker" formControlName="dateOfBirth" required>
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+                <mat-error *ngIf="passenger.get('dateOfBirth')?.hasError('required')">
+                  La data di nascita è obbligatoria
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Genere</mat-label>
+                <mat-select formControlName="gender" required>
+                  <mat-option value="M">Maschio</mat-option>
+                  <mat-option value="F">Femmina</mat-option>
+                  <mat-option value="X">Altro</mat-option>
+                </mat-select>
+                <mat-error *ngIf="passenger.get('gender')?.hasError('required')">
+                  Il genere è obbligatorio
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Tipo Documento</mat-label>
+                <mat-select formControlName="documentType" required>
+                  <mat-option value="passport">Passaporto</mat-option>
+                  <mat-option value="id_card">Carta d'Identità</mat-option>
+                  <mat-option value="driving_license">Patente</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Numero Documento</mat-label>
+                <input matInput formControlName="documentNumber" required>
+                <mat-error *ngIf="passenger.get('documentNumber')?.hasError('required')">
+                  Il numero documento è obbligatorio
+                </mat-error>
+                <mat-error *ngIf="passenger.get('documentNumber')?.hasError('minlength')">
+                  Il numero documento deve avere almeno 5 caratteri
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Scadenza Documento</mat-label>
+                <input matInput [matDatepicker]="expiryPicker" formControlName="documentExpiry" required>
+                <mat-datepicker-toggle matSuffix [for]="expiryPicker"></mat-datepicker-toggle>
+                <mat-datepicker #expiryPicker></mat-datepicker>
+                <mat-error *ngIf="passenger.get('documentExpiry')?.hasError('required')">
+                  La scadenza del documento è obbligatoria
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Nazionalità</mat-label>
+                <mat-select formControlName="nationality" required>
+                  <mat-option value="IT">Italiana</mat-option>
+                  <mat-option value="FR">Francese</mat-option>
+                  <mat-option value="DE">Tedesca</mat-option>
+                  <mat-option value="ES">Spagnola</mat-option>
+                  <mat-option value="US">Americana</mat-option>
+                  <mat-option value="GB">Britannica</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <mat-form-field appearance="outline">
+                  <mat-label>Email</mat-label>
+                  <input matInput type="email" formControlName="email">
+                  <mat-icon matSuffix>email</mat-icon>
+                  <mat-error *ngIf="passenger.get('email')?.hasError('email')">
+                    Inserisci un'email valida
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-field">
+                <mat-form-field appearance="outline">
+                  <mat-label>Telefono</mat-label>
+                  <input matInput formControlName="phone">
+                  <mat-icon matSuffix>phone</mat-icon>
+                  <mat-error *ngIf="passenger.get('phone')?.hasError('pattern')">
+                    Inserisci un numero di telefono valido
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn-primary" (click)="onNextStep(stepper)">
+            Continua
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+      </form>
+    </mat-step>
+
+    <!-- Step 2: Seat Selection -->
+    <mat-step label="Selezione Posti">
+      <div class="step-header">
+        <h2>Seleziona i posti</h2>
+        <p>Scegli un posto per ogni passeggero</p>
+      </div>
+
+      <div *ngIf="seatMap" class="seat-selection">
+        <div class="aircraft-layout">
+          <div class="aircraft-header">
+            <h3>{{ seatMap.aircraft.model }}</h3>
+            <div class="legend">
+              <div class="legend-item">
+                <div class="seat available"></div>
+                <span>Disponibile</span>
+              </div>
+              <div class="legend-item">
+                <div class="seat occupied"></div>
+                <span>Occupato</span>
+              </div>
+              <div class="legend-item">
+                <div class="seat selected"></div>
+                <span>Selezionato</span>
+              </div>
+              <div class="legend-item">
+                <div class="seat premium"></div>
+                <span>Premium</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="seat-map">
+            <div *ngFor="let row of seatMap.rows" class="seat-row" [class]="row.class">
+              <div class="row-number">{{ row.rowNumber }}</div>
+              <div class="seats">
+                <button
+                  *ngFor="let seat of row.seats; let seatIndex = index"
+                  class="seat-button"
+                  [class]="getSeatClass(seat)"
+                  [disabled]="!isSeatSelectable(seat)"
+                  (click)="onSeatSelected(seat.seatNumber, getCurrentPassengerIndex())"
+                >
+                  {{ seat.seatNumber }}
+                </button>
+              </div>
+              <div class="row-number">{{ row.rowNumber }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="selected-seats">
+          <h4>Posti Selezionati</h4>
+          <div class="passenger-seat-selection">
+            <div *ngFor="let passenger of getPassengersArray().controls; let i = index" 
+                 class="passenger-seat-item"
+                 [class.active]="currentPassengerIndex === i"
+                 (click)="setCurrentPassenger(i)">
+              <div class="passenger-info">
+                <span class="passenger-name">{{ passenger.get('firstName')?.value }} {{ passenger.get('lastName')?.value }}</span>
+                <span class="passenger-number">Passeggero {{ i + 1 }}</span>
+              </div>
+              <mat-chip [color]="selectedSeats[i] ? 'primary' : 'accent'" selected>
+                {{ selectedSeats[i] || 'Seleziona posto' }}
+              </mat-chip>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn-secondary" (click)="onPreviousStep(stepper)">
+          <mat-icon>arrow_back</mat-icon>
+          Indietro
+        </button>
+        <button class="btn-primary" (click)="onNextStep(stepper)">
+          Continua
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+    </mat-step>
+
+    <!-- Step 3: Extras -->
+    <mat-step [stepControl]="extrasForm" label="Servizi Extra">
+      <form [formGroup]="extrasForm" class="extras-form">
+        <div class="step-header">
+          <h2>Servizi aggiuntivi</h2>
+          <p>Personalizza la tua esperienza di volo</p>
+        </div>
+
+        <div class="extras-grid">
+          <mat-card class="extra-card">
+            <mat-card-header>
+              <mat-card-title>Bagaglio</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div formGroupName="baggage">
+                <mat-form-field appearance="outline">
+                  <mat-label>Bagagli da stiva</mat-label>
+                  <mat-select formControlName="checked" (selectionChange)="calculateTotalPrice()">
+                    <mat-option [value]="0">Nessuno (incluso: bagaglio a mano)</mat-option>
+                    <mat-option [value]="1">1 bagaglio (+€30)</mat-option>
+                    <mat-option [value]="2">2 bagagli (+€60)</mat-option>
+                    <mat-option [value]="3">3 bagagli (+€90)</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="extra-card">
+            <mat-card-header>
+              <mat-card-title>Assicurazione</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <mat-checkbox formControlName="insurance" (change)="calculateTotalPrice()">
+                Assicurazione viaggio (+€15)
+              </mat-checkbox>
+              <p class="extra-description">
+                Protezione completa per cancellazioni e ritardi
+              </p>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="extra-card">
+            <mat-card-header>
+              <mat-card-title>Imbarco Prioritario</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <mat-checkbox formControlName="priorityBoarding" (change)="calculateTotalPrice()">
+                Imbarco prioritario (+€20)
+              </mat-checkbox>
+              <p class="extra-description">
+                Sali a bordo per primo e sistema il bagaglio a mano
+              </p>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="extra-card">
+            <mat-card-header>
+              <mat-card-title>Spazio Extra</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <mat-checkbox formControlName="extraLegroom" (change)="calculateTotalPrice()">
+                Spazio extra per le gambe (+€35)
+              </mat-checkbox>
+              <p class="extra-description">
+                Posti con spazio aggiuntivo per maggiore comfort
+              </p>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <div class="price-summary">
+          <mat-card>
+            <mat-card-content>
+              <h3>Riepilogo Prezzo</h3>
+              <div class="price-breakdown">
+                <div class="price-item">
+                  <span>Volo base ({{ getPassengersArray().length }} pax)</span>
+                  <span>{{ formatPrice(basePrice * getPassengersArray().length) }}</span>
+                </div>
+                <div class="price-item" *ngIf="extrasForm.get('baggage.checked')?.value > 0">
+                  <span>Bagagli da stiva</span>
+                  <span>{{ formatPrice(extrasForm.get('baggage.checked')?.value * 30) }}</span>
+                </div>
+                <div class="price-item" *ngIf="extrasForm.get('insurance')?.value">
+                  <span>Assicurazione</span>
+                  <span>{{ formatPrice(15) }}</span>
+                </div>
+                <div class="price-item" *ngIf="extrasForm.get('priorityBoarding')?.value">
+                  <span>Imbarco prioritario</span>
+                  <span>{{ formatPrice(20) }}</span>
+                </div>
+                <div class="price-item" *ngIf="extrasForm.get('extraLegroom')?.value">
+                  <span>Spazio extra</span>
+                  <span>{{ formatPrice(35) }}</span>
+                </div>
+                <mat-divider></mat-divider>
+                <div class="price-total">
+                  <span>Totale</span>
+                  <span>{{ formatPrice(totalPrice) }}</span>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn-secondary" (click)="onPreviousStep(stepper)">
+            <mat-icon>arrow_back</mat-icon>
+            Indietro
+          </button>
+          <button class="btn-primary" (click)="onNextStep(stepper)">
+            Continua
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+      </form>
+    </mat-step>
+
+    <!-- Step 4: Payment -->
+    <mat-step [stepControl]="paymentForm" label="Pagamento">
+      <form [formGroup]="paymentForm" class="payment-form">
+        <div class="step-header">
+          <h2>Completa il pagamento</h2>
+          <p>Inserisci i dati della carta di credito</p>
+        </div>
+
+        <div class="payment-content">
+          <div class="payment-details">
+            <div class="form-row">
+              <div class="form-field">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Numero Carta</mat-label>
+                  <input matInput formControlName="cardNumber" placeholder="1234 5678 9012 3456" maxlength="16">
+                  <mat-icon matSuffix>credit_card</mat-icon>
+                  <mat-error *ngIf="paymentForm.get('cardNumber')?.hasError('required')">
+                    Il numero della carta è obbligatorio
+                  </mat-error>
+                  <mat-error *ngIf="paymentForm.get('cardNumber')?.hasError('pattern')">
+                    Inserisci un numero di carta valido (16 cifre)
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <mat-form-field appearance="outline">
+                  <mat-label>Scadenza (MM/AA)</mat-label>
+                  <input matInput formControlName="expiryDate" placeholder="12/25" maxlength="5">
+                  <mat-icon matSuffix>date_range</mat-icon>
+                  <mat-error *ngIf="paymentForm.get('expiryDate')?.hasError('required')">
+                    La scadenza è obbligatoria
+                  </mat-error>
+                  <mat-error *ngIf="paymentForm.get('expiryDate')?.hasError('pattern')">
+                    Formato: MM/AA
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-field">
+                <mat-form-field appearance="outline">
+                  <mat-label>CVV</mat-label>
+                  <input matInput formControlName="cvv" placeholder="123" maxlength="4" type="password">
+                  <mat-icon matSuffix>lock</mat-icon>
+                  <mat-error *ngIf="paymentForm.get('cvv')?.hasError('required')">
+                    Il CVV è obbligatorio
+                  </mat-error>
+                  <mat-error *ngIf="paymentForm.get('cvv')?.hasError('pattern')">
+                    CVV deve essere di 3 o 4 cifre
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Nome Intestatario</mat-label>
+                  <input matInput formControlName="cardholderName" placeholder="Mario Rossi">
+                  <mat-icon matSuffix>person</mat-icon>
+                  <mat-error *ngIf="paymentForm.get('cardholderName')?.hasError('required')">
+                    Il nome dell'intestatario è obbligatorio
+                  </mat-error>
+                  <mat-error *ngIf="paymentForm.get('cardholderName')?.hasError('minlength')">
+                    Il nome deve avere almeno 2 caratteri
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+
+          <div class="booking-summary">
+            <mat-card>
+              <mat-card-header>
+                <mat-card-title>Riepilogo Prenotazione</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="summary-section">
+                  <h4>Volo</h4>
+                  <div class="flight-summary-item">
+                    <div class="route">
+                      <span>{{ flight?.departureAirport?.code }}</span>
+                      <mat-icon>arrow_forward</mat-icon>
+                      <span>{{ flight?.arrivalAirport?.code }}</span>
+                    </div>
+                    <div class="datetime">
+                      {{ flight?.departureTime | date:'dd/MM/yyyy HH:mm' }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="summary-section">
+                  <h4>Passeggeri</h4>
+                  <div *ngFor="let passenger of getPassengersArray().controls; let i = index" class="passenger-summary">
+                    <span>{{ passenger.get('firstName')?.value }} {{ passenger.get('lastName')?.value }}</span>
+                    <span class="seat">Posto {{ selectedSeats[i] }}</span>
+                  </div>
+                </div>
+
+                <mat-divider></mat-divider>
+                
+                <div class="total-price">
+                  <span>Totale da pagare</span>
+                  <span class="amount">{{ formatPrice(totalPrice) }}</span>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn-secondary" (click)="onPreviousStep(stepper)">
+            <mat-icon>arrow_back</mat-icon>
+            Indietro
+          </button>
+          <button 
+            class="btn-primary" 
+            (click)="onConfirmBooking()"
+            [disabled]="!paymentForm.valid || loading"
+          >
+            <mat-icon>payment</mat-icon>
+            <span *ngIf="!loading">Conferma e Paga {{ formatPrice(totalPrice) }}</span>
+            <mat-spinner *ngIf="loading" class="btn-spinner" diameter="20"></mat-spinner>
+          </button>
+        </div>
+      </form>
+    </mat-step>
+  </mat-stepper>
+</div>

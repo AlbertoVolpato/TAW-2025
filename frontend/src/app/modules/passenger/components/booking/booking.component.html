@@ -1,11 +1,16 @@
+<!-- Booking Component Template -->
 <div class="booking-container">
+  <!-- Header Section -->
   <div class="header">
     <h1>Prenota il tuo Volo</h1>
     <div *ngIf="flight" class="flight-summary">
       <div class="route">
-        <span class="airport">{{ flight.departureAirport.code }}</span>
-        <mat-icon>flight_takeoff</mat-icon>
-        <span class="airport">{{ flight.arrivalAirport.code }}</span>
+        <span class="airport">{{ flight.departureAirport?.code || 'N/A' }}</span>
+        <svg class="plane-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8">
+          </path>
+        </svg>
+        <span class="airport">{{ flight.arrivalAirport?.code || 'N/A' }}</span>
       </div>
       <div class="details">
         <span>{{ flight.departureTime | date:'dd/MM/yyyy HH:mm' }}</span>
@@ -15,512 +20,541 @@
     </div>
   </div>
 
+  <!-- Step Indicator -->
+  <div class="step-indicator">
+    <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+      <span>1</span>
+      <label>Passeggeri</label>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+      <span>2</span>
+      <label>Posti</label>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
+      <span>3</span>
+      <label>Extra</label>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" [class.active]="currentStep === 4" [class.completed]="currentStep > 4">
+      <span>4</span>
+      <label>Pagamento</label>
+    </div>
+    <div class="step-line" *ngIf="currentStep === 5"></div>
+    <div class="step" *ngIf="currentStep === 5" [class.active]="currentStep === 5" [class.completed]="false">
+      <span>✓</span>
+      <label>Conferma</label>
+    </div>
+  </div>
+
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
-    <mat-spinner diameter="50" class="btn-spinner"></mat-spinner>
-    <p>{{ currentStep === 0 ? 'Caricamento volo...' : 'Elaborazione prenotazione...' }}</p>
+    <div class="spinner"></div>
+    <p>{{ currentStep === 1 ? 'Caricamento volo...' : 'Elaborazione prenotazione...' }}</p>
   </div>
 
   <!-- Error State -->
   <div *ngIf="error && !loading" class="status-message error">
-    <mat-icon>error</mat-icon>
+    <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"></path>
+    </svg>
     <span>{{ error }}</span>
-    <button class="btn-secondary" (click)="error = null">Chiudi</button>
+    <button class="btn-secondary" (click)="error = ''">Chiudi</button>
   </div>
 
-  <!-- Success Message -->
-  <div class="status-message success" *ngIf="!error && !loading && flight">
-    <mat-icon>check_circle</mat-icon>
-    <span>Prenotazione in corso...</span>
-  </div>
+  <!-- Booking Content -->
+  <div class="booking-content" *ngIf="(!loading && !error) || currentStep === 5">
+    <!-- Temporary Debug Info -->
+    <div
+      style="position: fixed; top: 10px; right: 10px; background: #f0f0f0; padding: 10px; border-radius: 5px; z-index: 1000;">
+      <strong>Debug Info:</strong><br>
+      Current Step: {{ currentStep }}<br>
+      Loading: {{ loading }}<br>
+      Error: {{ !!error }}<br>
+      Booking Confirmation: {{ !!bookingConfirmation }}<br>
+      <span *ngIf="bookingConfirmation">Ref: {{ bookingConfirmation.bookingReference }}</span>
+    </div>
 
-  <!-- Booking Stepper -->
-  <mat-stepper 
-    *ngIf="!loading && !error && flight" 
-    #stepper 
-    orientation="horizontal" 
-    (selectionChange)="onStepChange($event)"
-    class="booking-stepper"
-  >
     <!-- Step 1: Passenger Information -->
-    <mat-step [stepControl]="passengersForm" label="Informazioni Passeggeri">
+    <div *ngIf="currentStep === 1" class="booking-step active">
+      <div class="step-header">
+        <h2>Informazioni Passeggeri</h2>
+        <p>Inserisci i dati di tutti i passeggeri</p>
+      </div>
+
       <form [formGroup]="passengersForm" class="passengers-form">
-        <div class="step-header">
-          <h2>Inserisci i dati dei passeggeri</h2>
-          <p>Assicurati che i dati corrispondano ai documenti di viaggio</p>
-        </div>
-
-        <div 
-          formArrayName="passengers" 
-          *ngFor="let passenger of getPassengersArray().controls; let i = index"
-          class="passenger-section"
-        >
-          <div [formGroupName]="i" class="passenger-form">
+        <div formArrayName="passengers" class="passengers-list">
+          <div *ngFor="let passenger of getPassengersArray().controls; let i = index" class="passenger-card"
+            [formGroupName]="i">
             <h3>Passeggero {{ i + 1 }}</h3>
-            
+
             <div class="form-row">
-              <div class="form-field">
-                <mat-form-field appearance="outline">
-                  <mat-label>Nome</mat-label>
-                  <input matInput formControlName="firstName" required>
-                  <mat-icon matSuffix>person</mat-icon>
-                  <mat-error *ngIf="passenger.get('firstName')?.hasError('required')">
-                    Il nome è obbligatorio
-                  </mat-error>
-                  <mat-error *ngIf="passenger.get('firstName')?.hasError('minlength')">
-                    Il nome deve avere almeno 2 caratteri
-                  </mat-error>
-                </mat-form-field>
+              <div class="form-group">
+                <label>Nome *</label>
+                <input type="text" formControlName="firstName" placeholder="Inserisci il nome">
+                <div class="error" *ngIf="passenger.get('firstName')?.invalid && passenger.get('firstName')?.touched">
+                  Il nome è obbligatorio
+                </div>
               </div>
 
-              <div class="form-field">
-                <mat-form-field appearance="outline">
-                  <mat-label>Cognome</mat-label>
-                  <input matInput formControlName="lastName" required>
-                  <mat-icon matSuffix>person</mat-icon>
-                  <mat-error *ngIf="passenger.get('lastName')?.hasError('required')">
-                    Il cognome è obbligatorio
-                  </mat-error>
-                  <mat-error *ngIf="passenger.get('lastName')?.hasError('minlength')">
-                    Il cognome deve avere almeno 2 caratteri
-                  </mat-error>
-                </mat-form-field>
+              <div class="form-group">
+                <label>Cognome *</label>
+                <input type="text" formControlName="lastName" placeholder="Inserisci il cognome">
+                <div class="error" *ngIf="passenger.get('lastName')?.invalid && passenger.get('lastName')?.touched">
+                  Il cognome è obbligatorio
+                </div>
               </div>
             </div>
 
             <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Data di Nascita</mat-label>
-                <input matInput [matDatepicker]="picker" formControlName="dateOfBirth" required>
-                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-                <mat-error *ngIf="passenger.get('dateOfBirth')?.hasError('required')">
+              <div class="form-group">
+                <label>Data di Nascita *</label>
+                <input type="date" formControlName="dateOfBirth" [max]="getMaxBirthDate()">
+                <div class="error"
+                  *ngIf="passenger.get('dateOfBirth')?.invalid && passenger.get('dateOfBirth')?.touched">
                   La data di nascita è obbligatoria
-                </mat-error>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Genere</mat-label>
-                <mat-select formControlName="gender" required>
-                  <mat-option value="M">Maschio</mat-option>
-                  <mat-option value="F">Femmina</mat-option>
-                  <mat-option value="X">Altro</mat-option>
-                </mat-select>
-                <mat-error *ngIf="passenger.get('gender')?.hasError('required')">
-                  Il genere è obbligatorio
-                </mat-error>
-              </mat-form-field>
-            </div>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Tipo Documento</mat-label>
-                <mat-select formControlName="documentType" required>
-                  <mat-option value="passport">Passaporto</mat-option>
-                  <mat-option value="id_card">Carta d'Identità</mat-option>
-                  <mat-option value="driving_license">Patente</mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Numero Documento</mat-label>
-                <input matInput formControlName="documentNumber" required>
-                <mat-error *ngIf="passenger.get('documentNumber')?.hasError('required')">
-                  Il numero documento è obbligatorio
-                </mat-error>
-                <mat-error *ngIf="passenger.get('documentNumber')?.hasError('minlength')">
-                  Il numero documento deve avere almeno 5 caratteri
-                </mat-error>
-              </mat-form-field>
-            </div>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Scadenza Documento</mat-label>
-                <input matInput [matDatepicker]="expiryPicker" formControlName="documentExpiry" required>
-                <mat-datepicker-toggle matSuffix [for]="expiryPicker"></mat-datepicker-toggle>
-                <mat-datepicker #expiryPicker></mat-datepicker>
-                <mat-error *ngIf="passenger.get('documentExpiry')?.hasError('required')">
-                  La scadenza del documento è obbligatoria
-                </mat-error>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Nazionalità</mat-label>
-                <mat-select formControlName="nationality" required>
-                  <mat-option value="IT">Italiana</mat-option>
-                  <mat-option value="FR">Francese</mat-option>
-                  <mat-option value="DE">Tedesca</mat-option>
-                  <mat-option value="ES">Spagnola</mat-option>
-                  <mat-option value="US">Americana</mat-option>
-                  <mat-option value="GB">Britannica</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-
-            <div class="form-row">
-              <div class="form-field">
-                <mat-form-field appearance="outline">
-                  <mat-label>Email</mat-label>
-                  <input matInput type="email" formControlName="email">
-                  <mat-icon matSuffix>email</mat-icon>
-                  <mat-error *ngIf="passenger.get('email')?.hasError('email')">
-                    Inserisci un'email valida
-                  </mat-error>
-                </mat-form-field>
+                </div>
               </div>
 
-              <div class="form-field">
-                <mat-form-field appearance="outline">
-                  <mat-label>Telefono</mat-label>
-                  <input matInput formControlName="phone">
-                  <mat-icon matSuffix>phone</mat-icon>
-                  <mat-error *ngIf="passenger.get('phone')?.hasError('pattern')">
-                    Inserisci un numero di telefono valido
-                  </mat-error>
-                </mat-form-field>
+              <div class="form-group">
+                <label>Genere *</label>
+                <select formControlName="gender">
+                  <option value="">Seleziona genere</option>
+                  <option value="male">Maschio</option>
+                  <option value="female">Femmina</option>
+                  <option value="other">Altro</option>
+                </select>
+                <div class="error" *ngIf="passenger.get('gender')?.invalid && passenger.get('gender')?.touched">
+                  Il genere è obbligatorio
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Numero Documento *</label>
+                <input type="text" formControlName="documentNumber" placeholder="Numero passaporto">
+                <div class="error"
+                  *ngIf="passenger.get('documentNumber')?.invalid && passenger.get('documentNumber')?.touched">
+                  Il numero documento è obbligatorio
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Email *</label>
+                <input type="email" formControlName="email" placeholder="email@example.com">
+                <div class="error" *ngIf="passenger.get('email')?.invalid && passenger.get('email')?.touched">
+                  Email valida richiesta
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Telefono *</label>
+                <input type="tel" formControlName="phone" placeholder="Es: +39 123 456 7890">
+                <div class="error" *ngIf="passenger.get('phone')?.invalid && passenger.get('phone')?.touched">
+                  Numero di telefono richiesto
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Nazionalità *</label>
+                <select formControlName="nationality">
+                  <option value="">Seleziona nazionalità</option>
+                  <option value="IT">Italiana</option>
+                  <option value="US">Americana</option>
+                  <option value="GB">Britannica</option>
+                  <option value="FR">Francese</option>
+                  <option value="DE">Tedesca</option>
+                  <option value="ES">Spagnola</option>
+                  <option value="CH">Svizzera</option>
+                  <option value="AT">Austriaca</option>
+                  <option value="NL">Olandese</option>
+                  <option value="BE">Belga</option>
+                </select>
+                <div class="error"
+                  *ngIf="passenger.get('nationality')?.invalid && passenger.get('nationality')?.touched">
+                  Seleziona la nazionalità
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <div class="step-actions">
-          <button class="btn-primary" (click)="onNextStep(stepper)">
-            Continua
-            <mat-icon>arrow_forward</mat-icon>
+          <button type="button" class="btn-primary" [disabled]="passengersForm.invalid" (click)="nextStep()">
+            Continua con la selezione posti
           </button>
         </div>
       </form>
-    </mat-step>
+    </div>
 
     <!-- Step 2: Seat Selection -->
-    <mat-step label="Selezione Posti">
+    <div *ngIf="currentStep === 2" class="booking-step active">
       <div class="step-header">
-        <h2>Seleziona i posti</h2>
-        <p>Scegli un posto per ogni passeggero</p>
+        <h2>Seleziona i Posti</h2>
+        <p>Scegli i posti per tutti i passeggeri</p>
       </div>
 
-      <div *ngIf="seatMap" class="seat-selection">
-        <div class="aircraft-layout">
-          <div class="aircraft-header">
-            <h3>{{ seatMap.aircraft.model }}</h3>
-            <div class="legend">
-              <div class="legend-item">
-                <div class="seat available"></div>
-                <span>Disponibile</span>
-              </div>
-              <div class="legend-item">
-                <div class="seat occupied"></div>
-                <span>Occupato</span>
-              </div>
-              <div class="legend-item">
-                <div class="seat selected"></div>
-                <span>Selezionato</span>
-              </div>
-              <div class="legend-item">
-                <div class="seat premium"></div>
-                <span>Premium</span>
-              </div>
-            </div>
+      <div class="seat-selection">
+        <div class="seat-legend">
+          <div class="legend-item">
+            <div class="seat-example available"></div>
+            <span>Disponibile</span>
           </div>
+          <div class="legend-item">
+            <div class="seat-example selected"></div>
+            <span>Selezionato</span>
+          </div>
+          <div class="legend-item">
+            <div class="seat-example occupied"></div>
+            <span>Occupato</span>
+          </div>
+        </div>
 
-          <div class="seat-map">
-            <div *ngFor="let row of seatMap.rows" class="seat-row" [class]="row.class">
-              <div class="row-number">{{ row.rowNumber }}</div>
-              <div class="seats">
-                <button
-                  *ngFor="let seat of row.seats; let seatIndex = index"
-                  class="seat-button"
-                  [class]="getSeatClass(seat)"
-                  [disabled]="!isSeatSelectable(seat)"
-                  (click)="onSeatSelected(seat.seatNumber, getCurrentPassengerIndex())"
-                >
-                  {{ seat.seatNumber }}
-                </button>
+        <div class="aircraft-layout">
+          <div class="seat-map" *ngIf="seatMap">
+            <div class="row" *ngFor="let row of seatMap.rows">
+              <div class="row-number">{{row.rowNumber}}</div>
+              <div class="seat-row">
+                <div *ngFor="let seat of row.seats" class="seat"
+                  [class.available]="seat.isAvailable && !seat.isSelected" [class.selected]="seat.isSelected"
+                  [class.occupied]="!seat.isAvailable" [title]="seat.seatNumber + ' - €' + seat.price"
+                  (click)="selectSeat(seat.seatNumber)">
+                  {{seat.seatNumber.slice(-1)}}
+                </div>
               </div>
-              <div class="row-number">{{ row.rowNumber }}</div>
+              <div class="row-number">{{row.rowNumber}}</div>
             </div>
           </div>
         </div>
 
-        <div class="selected-seats">
-          <h4>Posti Selezionati</h4>
-          <div class="passenger-seat-selection">
-            <div *ngFor="let passenger of getPassengersArray().controls; let i = index" 
-                 class="passenger-seat-item"
-                 [class.active]="currentPassengerIndex === i"
-                 (click)="setCurrentPassenger(i)">
-              <div class="passenger-info">
-                <span class="passenger-name">{{ passenger.get('firstName')?.value }} {{ passenger.get('lastName')?.value }}</span>
-                <span class="passenger-number">Passeggero {{ i + 1 }}</span>
-              </div>
-              <mat-chip [color]="selectedSeats[i] ? 'primary' : 'accent'" selected>
-                {{ selectedSeats[i] || 'Seleziona posto' }}
-              </mat-chip>
+        <div class="selected-seats" *ngIf="selectedSeats.length > 0">
+          <h3>Posti Selezionati:</h3>
+          <div class="selected-seats-list">
+            <span *ngFor="let seat of selectedSeats" class="selected-seat">{{ seat }}</span>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button type="button" class="btn-secondary" (click)="previousStep()">
+            Indietro
+          </button>
+          <button type="button" class="btn-primary" [disabled]="selectedSeats.length !== getPassengersArray().length"
+            (click)="nextStep()">
+            Continua con il pagamento
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Extra Services -->
+    <!-- Step 3: Extra Services -->
+    <div *ngIf="currentStep === 3" class="booking-step active">
+      <div class="step-header">
+        <h2>Servizi Extra</h2>
+        <p>Seleziona i servizi aggiuntivi per il tuo viaggio</p>
+      </div>
+
+      <!-- Flight Services Info -->
+      <div class="flight-services" *ngIf="availableExtras.hasWifi || availableExtras.hasEntertainment">
+        <h3>Servizi Inclusi</h3>
+        <div class="included-services">
+          <div class="service" *ngIf="availableExtras.hasWifi">
+            <svg class="service-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0">
+              </path>
+            </svg>
+            <span>Wi-Fi gratuito</span>
+          </div>
+          <div class="service" *ngIf="availableExtras.hasEntertainment">
+            <svg class="service-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h2a1 1 0 011 1v18a1 1 0 01-1 1V1a1 1 0 011-1h2a1 1 0 011 1v3z">
+              </path>
+            </svg>
+            <span>Intrattenimento di bordo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Extra Services Selection -->
+      <div class="extra-services-section">
+        <h3>Servizi Aggiuntivi</h3>
+
+        <!-- Extra Baggage -->
+        <div class="service-option" *ngIf="availableExtras.extraBaggage.available">
+          <div class="service-header">
+            <div class="service-info">
+              <h4>Bagaglio Aggiuntivo</h4>
+              <p>Max {{ availableExtras.extraBaggage.maxWeight }}kg per bagaglio</p>
             </div>
+            <div class="service-price">€{{ availableExtras.extraBaggage.price }} per bagaglio</div>
+          </div>
+          <div class="service-controls">
+            <button type="button" class="quantity-btn" (click)="updateExtraBaggage(selectedExtras.extraBaggage - 1)"
+              [disabled]="selectedExtras.extraBaggage <= 0">-</button>
+            <span class="quantity">{{ selectedExtras.extraBaggage }}</span>
+            <button type="button" class="quantity-btn"
+              (click)="updateExtraBaggage(selectedExtras.extraBaggage + 1)">+</button>
+          </div>
+        </div>
+
+        <!-- Travel Insurance -->
+        <div class="service-option">
+          <div class="service-header">
+            <div class="service-info">
+              <h4>Assicurazione di Viaggio</h4>
+              <p>Copre cancellazione, ritardi e bagagli smarriti</p>
+            </div>
+            <div class="service-price">€25</div>
+          </div>
+          <div class="service-controls">
+            <label class="checkbox-container">
+              <input type="checkbox" [checked]="selectedExtras.insurance" (change)="toggleInsurance()">
+              <span class="checkmark"></span>
+              <span>Aggiungi assicurazione</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Priority Boarding -->
+        <div class="service-option">
+          <div class="service-header">
+            <div class="service-info">
+              <h4>Imbarco Prioritario</h4>
+              <p>Salta la coda e imbarcati per primo</p>
+            </div>
+            <div class="service-price">€15</div>
+          </div>
+          <div class="service-controls">
+            <label class="checkbox-container">
+              <input type="checkbox" [checked]="selectedExtras.priorityBoarding" (change)="togglePriorityBoarding()">
+              <span class="checkmark"></span>
+              <span>Aggiungi imbarco prioritario</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Extra Legroom -->
+        <div class="service-option">
+          <div class="service-header">
+            <div class="service-info">
+              <h4>Spazio Gambe Extra</h4>
+              <p>Maggiore comfort con posti a spazio gambe aumentato</p>
+            </div>
+            <div class="service-price">€35</div>
+          </div>
+          <div class="service-controls">
+            <label class="checkbox-container">
+              <input type="checkbox" [checked]="selectedExtras.extraLegroom" (change)="toggleExtraLegroom()">
+              <span class="checkmark"></span>
+              <span>Aggiungi spazio gambe extra</span>
+            </label>
           </div>
         </div>
       </div>
 
       <div class="step-actions">
-        <button class="btn-secondary" (click)="onPreviousStep(stepper)">
-          <mat-icon>arrow_back</mat-icon>
+        <button type="button" class="btn-secondary" (click)="previousStep()">
           Indietro
         </button>
-        <button class="btn-primary" (click)="onNextStep(stepper)">
-          Continua
-          <mat-icon>arrow_forward</mat-icon>
+        <button type="button" class="btn-primary" (click)="nextStep()">
+          Continua al pagamento
         </button>
       </div>
-    </mat-step>
+    </div> <!-- Step 4: Payment -->
+    <div *ngIf="currentStep === 4" class="booking-step active">
+      <div class="step-header">
+        <h2>Pagamento</h2>
+        <p>Conferma e completa la prenotazione</p>
+      </div>
 
-    <!-- Step 3: Extras -->
-    <mat-step [stepControl]="extrasForm" label="Servizi Extra">
-      <form [formGroup]="extrasForm" class="extras-form">
-        <div class="step-header">
-          <h2>Servizi aggiuntivi</h2>
-          <p>Personalizza la tua esperienza di volo</p>
-        </div>
-
-        <div class="extras-grid">
-          <mat-card class="extra-card">
-            <mat-card-header>
-              <mat-card-title>Bagaglio</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <div formGroupName="baggage">
-                <mat-form-field appearance="outline">
-                  <mat-label>Bagagli da stiva</mat-label>
-                  <mat-select formControlName="checked" (selectionChange)="calculateTotalPrice()">
-                    <mat-option [value]="0">Nessuno (incluso: bagaglio a mano)</mat-option>
-                    <mat-option [value]="1">1 bagaglio (+€30)</mat-option>
-                    <mat-option [value]="2">2 bagagli (+€60)</mat-option>
-                    <mat-option [value]="3">3 bagagli (+€90)</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card class="extra-card">
-            <mat-card-header>
-              <mat-card-title>Assicurazione</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <mat-checkbox formControlName="insurance" (change)="calculateTotalPrice()">
-                Assicurazione viaggio (+€15)
-              </mat-checkbox>
-              <p class="extra-description">
-                Protezione completa per cancellazioni e ritardi
-              </p>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card class="extra-card">
-            <mat-card-header>
-              <mat-card-title>Imbarco Prioritario</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <mat-checkbox formControlName="priorityBoarding" (change)="calculateTotalPrice()">
-                Imbarco prioritario (+€20)
-              </mat-checkbox>
-              <p class="extra-description">
-                Sali a bordo per primo e sistema il bagaglio a mano
-              </p>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card class="extra-card">
-            <mat-card-header>
-              <mat-card-title>Spazio Extra</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <mat-checkbox formControlName="extraLegroom" (change)="calculateTotalPrice()">
-                Spazio extra per le gambe (+€35)
-              </mat-checkbox>
-              <p class="extra-description">
-                Posti con spazio aggiuntivo per maggiore comfort
-              </p>
-            </mat-card-content>
-          </mat-card>
+      <div class="payment-section">
+        <div class="virtual-wallet">
+          <div class="wallet-card">
+            <h3>💳 Portafoglio Virtuale</h3>
+            <div class="balance">
+              <span class="balance-label">Saldo disponibile:</span>
+              <span class="balance-amount">€2,000.00</span>
+            </div>
+            <p class="wallet-note">Il pagamento verrà elaborato dal tuo portafoglio virtuale</p>
+          </div>
         </div>
 
         <div class="price-summary">
-          <mat-card>
-            <mat-card-content>
-              <h3>Riepilogo Prezzo</h3>
-              <div class="price-breakdown">
-                <div class="price-item">
-                  <span>Volo base ({{ getPassengersArray().length }} pax)</span>
-                  <span>{{ formatPrice(basePrice * getPassengersArray().length) }}</span>
-                </div>
-                <div class="price-item" *ngIf="extrasForm.get('baggage.checked')?.value > 0">
-                  <span>Bagagli da stiva</span>
-                  <span>{{ formatPrice(extrasForm.get('baggage.checked')?.value * 30) }}</span>
-                </div>
-                <div class="price-item" *ngIf="extrasForm.get('insurance')?.value">
-                  <span>Assicurazione</span>
-                  <span>{{ formatPrice(15) }}</span>
-                </div>
-                <div class="price-item" *ngIf="extrasForm.get('priorityBoarding')?.value">
-                  <span>Imbarco prioritario</span>
-                  <span>{{ formatPrice(20) }}</span>
-                </div>
-                <div class="price-item" *ngIf="extrasForm.get('extraLegroom')?.value">
-                  <span>Spazio extra</span>
-                  <span>{{ formatPrice(35) }}</span>
-                </div>
-                <mat-divider></mat-divider>
-                <div class="price-total">
-                  <span>Totale</span>
-                  <span>{{ formatPrice(totalPrice) }}</span>
-                </div>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </div>
-
-        <div class="step-actions">
-          <button class="btn-secondary" (click)="onPreviousStep(stepper)">
-            <mat-icon>arrow_back</mat-icon>
-            Indietro
-          </button>
-          <button class="btn-primary" (click)="onNextStep(stepper)">
-            Continua
-            <mat-icon>arrow_forward</mat-icon>
-          </button>
-        </div>
-      </form>
-    </mat-step>
-
-    <!-- Step 4: Payment -->
-    <mat-step [stepControl]="paymentForm" label="Pagamento">
-      <form [formGroup]="paymentForm" class="payment-form">
-        <div class="step-header">
-          <h2>Completa il pagamento</h2>
-          <p>Inserisci i dati della carta di credito</p>
-        </div>
-
-        <div class="payment-content">
-          <div class="payment-details">
-            <div class="form-row">
-              <div class="form-field">
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Numero Carta</mat-label>
-                  <input matInput formControlName="cardNumber" placeholder="1234 5678 9012 3456" maxlength="16">
-                  <mat-icon matSuffix>credit_card</mat-icon>
-                  <mat-error *ngIf="paymentForm.get('cardNumber')?.hasError('required')">
-                    Il numero della carta è obbligatorio
-                  </mat-error>
-                  <mat-error *ngIf="paymentForm.get('cardNumber')?.hasError('pattern')">
-                    Inserisci un numero di carta valido (16 cifre)
-                  </mat-error>
-                </mat-form-field>
-              </div>
+          <h3>Riepilogo Prenotazione</h3>
+          <div class="price-breakdown">
+            <div class="price-item">
+              <span>Volo base ({{ getPassengersArray().length }} {{ getPassengersArray().length === 1 ? 'passeggero' :
+                'passeggeri' }})</span>
+              <span>€{{ priceBreakdown.basePrice }}</span>
             </div>
-
-            <div class="form-row">
-              <div class="form-field">
-                <mat-form-field appearance="outline">
-                  <mat-label>Scadenza (MM/AA)</mat-label>
-                  <input matInput formControlName="expiryDate" placeholder="12/25" maxlength="5">
-                  <mat-icon matSuffix>date_range</mat-icon>
-                  <mat-error *ngIf="paymentForm.get('expiryDate')?.hasError('required')">
-                    La scadenza è obbligatoria
-                  </mat-error>
-                  <mat-error *ngIf="paymentForm.get('expiryDate')?.hasError('pattern')">
-                    Formato: MM/AA
-                  </mat-error>
-                </mat-form-field>
-              </div>
-
-              <div class="form-field">
-                <mat-form-field appearance="outline">
-                  <mat-label>CVV</mat-label>
-                  <input matInput formControlName="cvv" placeholder="123" maxlength="4" type="password">
-                  <mat-icon matSuffix>lock</mat-icon>
-                  <mat-error *ngIf="paymentForm.get('cvv')?.hasError('required')">
-                    Il CVV è obbligatorio
-                  </mat-error>
-                  <mat-error *ngIf="paymentForm.get('cvv')?.hasError('pattern')">
-                    CVV deve essere di 3 o 4 cifre
-                  </mat-error>
-                </mat-form-field>
-              </div>
+            <div class="price-item" *ngIf="priceBreakdown.seatPrice > 0">
+              <span>Selezione posti</span>
+              <span>€{{ priceBreakdown.seatPrice }}</span>
             </div>
-
-            <div class="form-row">
-              <div class="form-field">
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Nome Intestatario</mat-label>
-                  <input matInput formControlName="cardholderName" placeholder="Mario Rossi">
-                  <mat-icon matSuffix>person</mat-icon>
-                  <mat-error *ngIf="paymentForm.get('cardholderName')?.hasError('required')">
-                    Il nome dell'intestatario è obbligatorio
-                  </mat-error>
-                  <mat-error *ngIf="paymentForm.get('cardholderName')?.hasError('minlength')">
-                    Il nome deve avere almeno 2 caratteri
-                  </mat-error>
-                </mat-form-field>
-              </div>
+            <div class="price-item" *ngFor="let extra of priceBreakdown.extras">
+              <span>{{ extra.name }}</span>
+              <span>€{{ extra.price }}</span>
             </div>
-          </div>
-
-          <div class="booking-summary">
-            <mat-card>
-              <mat-card-header>
-                <mat-card-title>Riepilogo Prenotazione</mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                <div class="summary-section">
-                  <h4>Volo</h4>
-                  <div class="flight-summary-item">
-                    <div class="route">
-                      <span>{{ flight?.departureAirport?.code }}</span>
-                      <mat-icon>arrow_forward</mat-icon>
-                      <span>{{ flight?.arrivalAirport?.code }}</span>
-                    </div>
-                    <div class="datetime">
-                      {{ flight?.departureTime | date:'dd/MM/yyyy HH:mm' }}
-                    </div>
-                  </div>
-                </div>
-
-                <div class="summary-section">
-                  <h4>Passeggeri</h4>
-                  <div *ngFor="let passenger of getPassengersArray().controls; let i = index" class="passenger-summary">
-                    <span>{{ passenger.get('firstName')?.value }} {{ passenger.get('lastName')?.value }}</span>
-                    <span class="seat">Posto {{ selectedSeats[i] }}</span>
-                  </div>
-                </div>
-
-                <mat-divider></mat-divider>
-                
-                <div class="total-price">
-                  <span>Totale da pagare</span>
-                  <span class="amount">{{ formatPrice(totalPrice) }}</span>
-                </div>
-              </mat-card-content>
-            </mat-card>
+            <div class="price-item">
+              <span>Tasse e commissioni</span>
+              <span>€{{ priceBreakdown.taxes }}</span>
+            </div>
+            <div class="price-item total">
+              <span>Totale</span>
+              <span>€{{ priceBreakdown.total }}</span>
+            </div>
           </div>
         </div>
 
         <div class="step-actions">
-          <button class="btn-secondary" (click)="onPreviousStep(stepper)">
-            <mat-icon>arrow_back</mat-icon>
+          <button type="button" class="btn-secondary" (click)="previousStep()">
             Indietro
           </button>
-          <button 
-            class="btn-primary" 
-            (click)="onConfirmBooking()"
-            [disabled]="!paymentForm.valid || loading"
-          >
-            <mat-icon>payment</mat-icon>
-            <span *ngIf="!loading">Conferma e Paga {{ formatPrice(totalPrice) }}</span>
-            <mat-spinner *ngIf="loading" class="btn-spinner" diameter="20"></mat-spinner>
+          <button type="button" class="btn-primary" [disabled]="loading" (click)="confirmBooking()">
+            <div class="spinner" *ngIf="loading"></div>
+            {{ loading ? 'Elaborazione...' : 'Conferma Prenotazione' }}
           </button>
         </div>
-      </form>
-    </mat-step>
-  </mat-stepper>
-</div>
+      </div>
+    </div>
+
+    <!-- Step 5: Success -->
+    <div *ngIf="currentStep === 5" class="booking-step success-step active">
+      <div class="success-container">
+        <!-- Success Animation & Icon -->
+        <div class="success-header">
+          <div class="success-icon-container">
+            <div class="success-icon-bg"></div>
+            <svg class="success-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h1>🎉 Prenotazione Confermata!</h1>
+          <p class="success-message">La tua prenotazione è stata completata con successo</p>
+        </div>
+
+        <!-- Booking Summary Card -->
+        <div class="booking-summary-card" *ngIf="bookingConfirmation">
+          <div class="card-header">
+            <h3>Dettagli Prenotazione</h3>
+            <div class="booking-reference">
+              <span class="ref-label">Codice</span>
+              <span class="ref-value">{{ bookingConfirmation.bookingReference }}</span>
+            </div>
+          </div>
+
+          <!-- Flight Information -->
+          <div class="flight-summary" *ngIf="flight">
+            <div class="flight-route">
+              <div class="airport-info">
+                <span class="airport-code">{{ flight.departureAirport?.code || 'N/A' }}</span>
+                <span class="airport-city">{{ flight.departureAirport?.city || 'N/A' }}</span>
+              </div>
+              <div class="route-line">
+                <div class="plane-icon">✈️</div>
+                <div class="route-duration">{{ formatDuration(flight.duration) }}</div>
+              </div>
+              <div class="airport-info">
+                <span class="airport-code">{{ flight.arrivalAirport?.code || 'N/A' }}</span>
+                <span class="airport-city">{{ flight.arrivalAirport?.city || 'N/A' }}</span>
+              </div>
+            </div>
+
+            <div class="flight-details-grid">
+              <div class="detail-item">
+                <span class="label">📅 Data partenza</span>
+                <span class="value">{{ flight.departureTime | date:'dd MMM yyyy' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">🕐 Orario partenza</span>
+                <span class="value">{{ flight.departureTime | date:'HH:mm' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">✈️ Volo</span>
+                <span class="value">{{ flight.flightNumber }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">💺 Posti selezionati</span>
+                <span class="value">{{ selectedSeats.join(', ') || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Passenger Information -->
+          <div class="passenger-info">
+            <h4>👥 Passeggeri ({{ getPassengersArray().length }})</h4>
+            <div class="passenger-list">
+              <div *ngFor="let passenger of getPassengersArray().controls; let i = index" class="passenger-item">
+                <span class="passenger-name">{{ passenger.get('firstName')?.value }} {{ passenger.get('lastName')?.value
+                  }}</span>
+                <span class="passenger-seat">Posto {{ selectedSeats[i] || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Price Summary -->
+          <div class="price-summary">
+            <h4>💰 Riepilogo Costi</h4>
+            <div class="price-breakdown">
+              <div class="price-item">
+                <span>Volo base</span>
+                <span>€{{ priceBreakdown.basePrice }}</span>
+              </div>
+              <div class="price-item" *ngIf="priceBreakdown.seatPrice > 0">
+                <span>Selezione posti</span>
+                <span>€{{ priceBreakdown.seatPrice }}</span>
+              </div>
+              <div class="price-item" *ngFor="let extra of priceBreakdown.extras">
+                <span>{{ extra.name }}</span>
+                <span>€{{ extra.price }}</span>
+              </div>
+              <div class="price-item">
+                <span>Tasse e commissioni</span>
+                <span>€{{ priceBreakdown.taxes }}</span>
+              </div>
+              <div class="price-item total">
+                <span>Totale pagato</span>
+                <span>€{{ priceBreakdown.total }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Information -->
+          <div class="contact-info">
+            <div class="info-item">
+              <span class="label">📧 Email di conferma inviata a:</span>
+              <span class="value">{{ getPassengersArray().controls[0]?.get('email')?.value }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">📱 Telefono di contatto:</span>
+              <span class="value">{{ getPassengersArray().controls[0]?.get('phone')?.value }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="success-actions">
+          <button type="button" class="btn btn-primary btn-large" (click)="goToBookings()">
+            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+              </path>
+            </svg>
+            Visualizza le mie prenotazioni
+          </button>
+          <button type="button" class="btn btn-outline btn-large" (click)="searchNewFlight()">
+            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+            Cerca un nuovo volo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

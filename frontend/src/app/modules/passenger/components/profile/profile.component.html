@@ -38,14 +38,28 @@
       </div>
     </div>
 
+    <!-- Wallet Balance Section -->
+    <div class="wallet-section">
+      <div class="wallet-card">
+        <div class="wallet-header">
+          <mat-icon class="wallet-icon">account_balance_wallet</mat-icon>
+          <h3>Portafoglio Virtuale</h3>
+        </div>
+        <div class="wallet-balance">
+          <span class="balance-label">Saldo disponibile:</span>
+          <span class="balance-amount">€{{ (currentUser?.walletBalance || 0) | number:'1.2-2' }}</span>
+        </div>
+        <p class="wallet-description">
+          Il saldo viene aggiornato automaticamente con i rimborsi delle prenotazioni cancellate.
+        </p>
+      </div>
+    </div>
+
     <!-- Profile Form -->
     <div class="profile-form-section">
       <div class="section-header">
         <h2>Informazioni Personali</h2>
-        <button 
-          class="btn-secondary edit-button"
-          (click)="toggleEdit()"
-          [disabled]="loading">
+        <button class="btn-secondary edit-button" (click)="toggleEdit()" [disabled]="loading">
           <mat-icon>{{ isEditing ? 'close' : 'edit' }}</mat-icon>
           {{ isEditing ? 'Annulla' : 'Modifica' }}
         </button>
@@ -67,11 +81,7 @@
         <div class="form-row">
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>Nome</mat-label>
-            <input 
-              matInput 
-              formControlName="firstName" 
-              [readonly]="!isEditing"
-              required>
+            <input matInput formControlName="firstName" [readonly]="!isEditing" required>
             <mat-icon matSuffix>person</mat-icon>
             <mat-error *ngIf="f['firstName'].hasError('required')">
               Il nome è obbligatorio
@@ -83,11 +93,7 @@
 
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>Cognome</mat-label>
-            <input 
-              matInput 
-              formControlName="lastName" 
-              [readonly]="!isEditing"
-              required>
+            <input matInput formControlName="lastName" [readonly]="!isEditing" required>
             <mat-icon matSuffix>person</mat-icon>
             <mat-error *ngIf="f['lastName'].hasError('required')">
               Il cognome è obbligatorio
@@ -101,27 +107,17 @@
         <div class="form-row">
           <mat-form-field appearance="outline" class="form-field full-width">
             <mat-label>Email</mat-label>
-            <input 
-              matInput 
-              formControlName="email" 
-              readonly>
+            <input matInput formControlName="email" readonly>
             <mat-icon matSuffix>email</mat-icon>
             <mat-hint>L'email non può essere modificata</mat-hint>
           </mat-form-field>
         </div>
 
         <div class="form-actions" *ngIf="isEditing">
-          <button 
-            type="button" 
-            class="btn-secondary"
-            (click)="toggleEdit()"
-            [disabled]="loading">
+          <button type="button" class="btn-secondary" (click)="toggleEdit()" [disabled]="loading">
             Annulla
           </button>
-          <button 
-            type="submit" 
-            class="btn-primary"
-            [disabled]="loading || profileForm.invalid">
+          <button type="submit" class="btn-primary" [disabled]="loading || profileForm.invalid">
             <mat-spinner diameter="20" *ngIf="loading" class="btn-spinner"></mat-spinner>
             <span *ngIf="!loading">Salva Modifiche</span>
           </button>
@@ -133,11 +129,13 @@
     <div class="account-actions">
       <h3>Azioni Account</h3>
       <div class="danger-zone">
-        <button 
-          class="btn-danger logout-button"
-          (click)="logout()">
+        <button class="btn-danger logout-button" (click)="logout()">
           <mat-icon>logout</mat-icon>
           Esci dall'Account
+        </button>
+        <button class="btn-danger delete-button" (click)="deleteAccount()">
+          <mat-icon>delete_forever</mat-icon>
+          Elimina Account
         </button>
       </div>
     </div>

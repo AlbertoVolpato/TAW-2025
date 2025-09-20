@@ -1,0 +1,240 @@
+.invite-dialog {
+  width: 100%;
+  max-width: 800px;
+  
+  ::ng-deep .mat-dialog-container {
+    border-radius: 20px;
+    padding: 0;
+    overflow: hidden;
+  }
+}
+
+// Header
+::ng-deep mat-dialog-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  margin: 0;
+
+  .dialog-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    
+    .dialog-icon {
+      font-size: 1.5rem;
+      opacity: 0.9;
+    }
+    
+    h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+  }
+
+  .close-button {
+    color: white;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    
+    &:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+// Content
+::ng-deep mat-dialog-content {
+  padding: 2rem;
+  margin: 0;
+  max-height: 70vh;
+  overflow-y: auto;
+
+  .dialog-description {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+    margin-bottom: 2rem;
+
+    p {
+      margin: 0;
+      color: #475569;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+  }
+
+  .form-section {
+    margin-bottom: 2rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #f1f5f9;
+
+      mat-icon {
+        color: #667eea;
+        font-size: 1.25rem;
+      }
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+  }
+
+  ::ng-deep .mat-form-field {
+    width: 100%;
+
+    .mat-form-field-outline {
+      border-radius: 12px;
+    }
+
+    &.mat-focused .mat-form-field-outline-thick {
+      color: #667eea;
+    }
+
+    .mat-form-field-label {
+      font-weight: 500;
+    }
+
+    .mat-form-field-suffix mat-icon {
+      color: #64748b;
+    }
+
+    .mat-hint {
+      color: #64748b;
+      font-size: 0.75rem;
+    }
+
+    .mat-error {
+      color: #dc2626;
+      font-size: 0.75rem;
+    }
+  }
+
+  ::ng-deep .mat-select-panel {
+    border-radius: 12px;
+  }
+}
+
+// Actions
+::ng-deep mat-dialog-actions {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 1.5rem 2rem;
+  margin: 0;
+  border-top: 1px solid #e2e8f0;
+
+  .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    width: 100%;
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+    }
+
+    .cancel-button {
+      padding: 0.5rem 1.5rem;
+      font-weight: 500;
+      color: #64748b;
+      
+      &:hover:not([disabled]) {
+        background: rgba(100, 116, 139, 0.1);
+      }
+    }
+
+    .submit-button {
+      padding: 0.5rem 1.5rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      
+      &:hover:not([disabled]) {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .btn-spinner {
+        width: 16px;
+        height: 16px;
+        
+        ::ng-deep circle {
+          stroke: white;
+        }
+      }
+
+      mat-icon {
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .invite-dialog {
+    max-width: 95vw;
+    
+    ::ng-deep mat-dialog-header {
+      padding: 1rem 1.5rem;
+      
+      .dialog-title h2 {
+        font-size: 1.1rem;
+      }
+    }
+
+    ::ng-deep mat-dialog-content {
+      padding: 1.5rem;
+    }
+
+    ::ng-deep mat-dialog-actions {
+      padding: 1rem 1.5rem;
+    }
+  }
+}
+
+// Success/Error snackbars
+::ng-deep .success-snackbar {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+::ng-deep .error-snackbar {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}

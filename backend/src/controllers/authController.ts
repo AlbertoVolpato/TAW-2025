@@ -268,14 +268,26 @@ export const getProfile = async (
 
     return res.status(200).json({
       success: true,
+      user: {
+        _id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        isActive: user.isActive,
+        walletBalance: user.walletBalance,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
       data: {
         user: {
-          id: user._id,
+          _id: user._id,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
           isActive: user.isActive,
+          walletBalance: user.walletBalance,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
@@ -313,13 +325,28 @@ export const updateProfile = async (
     return res.status(200).json({
       success: true,
       message: "Profile updated successfully",
+      user: {
+        _id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        isActive: user.isActive,
+        walletBalance: user.walletBalance,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
       data: {
         user: {
-          id: user._id,
+          _id: user._id,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
+          isActive: user.isActive,
+          walletBalance: user.walletBalance,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
         },
       },
     });

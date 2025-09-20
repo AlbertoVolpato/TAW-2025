@@ -7,6 +7,7 @@ export interface User {
   isActive: boolean;
   isEmailVerified: boolean;
   mustChangePassword: boolean;
+  walletBalance?: number;
   airline?: {
     _id: string;
     name: string;
@@ -32,8 +33,14 @@ export interface RegisterRequest {
 export interface AuthResponse {
   success: boolean;
   message: string;
-  user?: User;
-  token?: string;
+  user?: User; // For backward compatibility
+  token?: string; // For backward compatibility
+  data?: {
+    // New structure used by backend
+    user: User;
+    token: string;
+    requiresPasswordChange?: boolean;
+  };
 }
 
 export interface ChangePasswordRequest {
@@ -61,6 +68,7 @@ export interface UserSearchParams {
   page?: number;
   limit?: number;
   search?: string;
+  excludeRole?: string | string[];
 }
 
 export interface UserListResponse {

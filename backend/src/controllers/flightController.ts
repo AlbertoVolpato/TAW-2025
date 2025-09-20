@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
-import { Flight, IFlight } from '../models/Flight';
-import { Airport } from '../models/Airport';
-import { Airline } from '../models/Airline';
-import mongoose from 'mongoose';
+import { Request, Response } from "express";
+import { Flight, IFlight } from "../models/Flight";
+import { Airport } from "../models/Airport";
+import { Airline } from "../models/Airline";
+import mongoose from "mongoose";
 
 // Search flights with optional layovers
 export const searchFlights = async (req: Request, res: Response) => {
@@ -13,38 +13,42 @@ export const searchFlights = async (req: Request, res: Response) => {
       departureDate,
       returnDate,
       passengers = 1,
-      class: seatClass = 'economy',
+      class: seatClass = "economy",
       maxLayovers = 1,
-      minLayoverTime = 120 // minimum 2 hours in minutes
+      minLayoverTime = 120, // minimum 2 hours in minutes
     } = req.query;
 
     // Validate required parameters
     if (!origin || !destination || !departureDate) {
       return res.status(400).json({
         success: false,
-        message: 'Origin, destination, and departure date are required'
+        message: "Origin, destination, and departure date are required",
       });
     }
 
     // Validate airports exist
     // First try to find by code (IATA), then by ObjectId if it's a valid ObjectId
-    const originQuery = mongoose.Types.ObjectId.isValid(origin as string) && (origin as string).length === 24
-      ? { $or: [{ code: origin }, { _id: origin }] }
-      : { code: origin };
-    
-    const destinationQuery = mongoose.Types.ObjectId.isValid(destination as string) && (destination as string).length === 24
-      ? { $or: [{ code: destination }, { _id: destination }] }
-      : { code: destination };
-    
+    const originQuery =
+      mongoose.Types.ObjectId.isValid(origin as string) &&
+      (origin as string).length === 24
+        ? { $or: [{ code: origin }, { _id: origin }] }
+        : { code: origin };
+
+    const destinationQuery =
+      mongoose.Types.ObjectId.isValid(destination as string) &&
+      (destination as string).length === 24
+        ? { $or: [{ code: destination }, { _id: destination }] }
+        : { code: destination };
+
     const [originAirport, destinationAirport] = await Promise.all([
       Airport.findOne(originQuery),
-      Airport.findOne(destinationQuery)
+      Airport.findOne(destinationQuery),
     ]);
 
     if (!originAirport || !destinationAirport) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid origin or destination airport'
+        message: "Invalid origin or destination airport",
       });
     }
 
@@ -59,12 +63,12 @@ export const searchFlights = async (req: Request, res: Response) => {
       departureAirport: originAirport._id,
       arrivalAirport: destinationAirport._id,
       departureTime: { $gte: startOfDay, $lte: endOfDay },
-      status: { $in: ['scheduled', 'boarding'] },
-      isActive: true
+      status: { $in: ["scheduled", "boarding"] },
+      isActive: true,
     })
-      .populate('airline', 'name code')
-      .populate('departureAirport', 'name city country code')
-      .populate('arrivalAirport', 'name city country code')
+      .populate("airline", "name code")
+      .populate("departureAirport", "name city country code")
+      .populate("arrivalAirport", "name city country code")
       .sort({ departureTime: 1 });
 
     let connectingFlights: any[] = [];
@@ -76,20 +80,22 @@ export const searchFlights = async (req: Request, res: Response) => {
         departureAirport: originAirport._id,
         arrivalAirport: { $ne: destinationAirport._id },
         departureTime: { $gte: startOfDay, $lte: endOfDay },
-        status: { $in: ['scheduled', 'boarding'] },
-        isActive: true
+        status: { $in: ["scheduled", "boarding"] },
+        isActive: true,
       })
-        .populate('airline', 'name code')
-        .populate('departureAirport', 'name city country code')
-        .populate('arrivalAirport', 'name city country code')
+        .populate("airline", "name code")
+        .populate("departureAirport", "name city country code")
+        .populate("arrivalAirport", "name city country code")
         .sort({ departureTime: 1 });
 
       // For each first leg flight, find connecting flights
       for (const firstFlight of firstLegFlights) {
         const layoverAirport = firstFlight.arrivalAirport;
         const minConnectionTime = new Date(firstFlight.arrivalTime);
-        minConnectionTime.setMinutes(minConnectionTime.getMinutes() + Number(minLayoverTime));
-        
+        minConnectionTime.setMinutes(
+          minConnectionTime.getMinutes() + Number(minLayoverTime)
+        );
+
         const maxConnectionTime = new Date(firstFlight.arrivalTime);
         maxConnectionTime.setHours(maxConnectionTime.getHours() + 12); // Max 12 hours layover
 
@@ -97,66 +103,73 @@ export const searchFlights = async (req: Request, res: Response) => {
           departureAirport: layoverAirport._id,
           arrivalAirport: destinationAirport._id,
           departureTime: { $gte: minConnectionTime, $lte: maxConnectionTime },
-          status: { $in: ['scheduled', 'boarding'] },
-          isActive: true
+          status: { $in: ["scheduled", "boarding"] },
+          isActive: true,
         })
-          .populate('airline', 'name code')
-          .populate('departureAirport', 'name city country code')
-          .populate('arrivalAirport', 'name city country code');
+          .populate("airline", "name code")
+          .populate("departureAirport", "name city country code")
+          .populate("arrivalAirport", "name city country code");
 
         // Create connecting flight combinations
         for (const secondFlight of secondLegFlights) {
           const layoverDuration = Math.floor(
-            (secondFlight.departureTime.getTime() - firstFlight.arrivalTime.getTime()) / (1000 * 60)
+            (secondFlight.departureTime.getTime() -
+              firstFlight.arrivalTime.getTime()) /
+              (1000 * 60)
           );
 
           connectingFlights.push({
-            type: 'connecting',
-            totalDuration: firstFlight.duration + secondFlight.duration + layoverDuration,
+            type: "connecting",
+            totalDuration:
+              firstFlight.duration + secondFlight.duration + layoverDuration,
             totalPrice: {
-              economy: firstFlight.basePrice.economy + secondFlight.basePrice.economy,
-              business: firstFlight.basePrice.business + secondFlight.basePrice.business,
-              first: firstFlight.basePrice.first + secondFlight.basePrice.first
+              economy:
+                firstFlight.basePrice.economy + secondFlight.basePrice.economy,
+              business:
+                firstFlight.basePrice.business +
+                secondFlight.basePrice.business,
+              first: firstFlight.basePrice.first + secondFlight.basePrice.first,
             },
             layovers: 1,
             segments: [
               {
                 flight: firstFlight,
-                segmentType: 'departure'
+                segmentType: "departure",
               },
               {
                 layover: {
                   airport: layoverAirport,
-                  duration: layoverDuration
-                }
+                  duration: layoverDuration,
+                },
               },
               {
                 flight: secondFlight,
-                segmentType: 'arrival'
-              }
-            ]
+                segmentType: "arrival",
+              },
+            ],
           });
         }
       }
     }
 
     // Format direct flights
-    const formattedDirectFlights = directFlights.map(flight => ({
-      type: 'direct',
+    const formattedDirectFlights = directFlights.map((flight) => ({
+      type: "direct",
       totalDuration: flight.duration,
       totalPrice: flight.basePrice,
       layovers: 0,
       segments: [
         {
           flight: flight,
-          segmentType: 'direct'
-        }
-      ]
+          segmentType: "direct",
+        },
+      ],
     }));
 
     // Combine and sort all flights by total duration
-    const allFlights = [...formattedDirectFlights, ...connectingFlights]
-      .sort((a, b) => a.totalDuration - b.totalDuration);
+    const allFlights = [...formattedDirectFlights, ...connectingFlights].sort(
+      (a, b) => a.totalDuration - b.totalDuration
+    );
 
     res.json({
       success: true,
@@ -168,20 +181,20 @@ export const searchFlights = async (req: Request, res: Response) => {
           departureDate: searchDate,
           passengers: Number(passengers),
           class: seatClass,
-          maxLayovers: Number(maxLayovers)
+          maxLayovers: Number(maxLayovers),
         },
         summary: {
           total: allFlights.length,
           direct: formattedDirectFlights.length,
-          connecting: connectingFlights.length
-        }
-      }
+          connecting: connectingFlights.length,
+        },
+      },
     });
   } catch (error) {
-    console.error('Error searching flights:', error);
+    console.error("Error searching flights:", error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
@@ -196,7 +209,7 @@ export const getAllFlights = async (req: Request, res: Response) => {
       origin,
       destination,
       date,
-      status
+      status,
     } = req.query;
 
     const filter: any = { isActive: true };
@@ -227,9 +240,9 @@ export const getAllFlights = async (req: Request, res: Response) => {
     }
 
     const flights = await Flight.find(filter)
-      .populate('airline', 'name code')
-      .populate('departureAirport', 'name city country code')
-      .populate('arrivalAirport', 'name city country code')
+      .populate("airline", "name code")
+      .populate("departureAirport", "name city country code")
+      .populate("arrivalAirport", "name city country code")
       .limit(Number(limit))
       .skip((Number(page) - 1) * Number(limit))
       .sort({ departureTime: 1 });
@@ -244,15 +257,15 @@ export const getAllFlights = async (req: Request, res: Response) => {
           page: Number(page),
           limit: Number(limit),
           total,
-          pages: Math.ceil(total / Number(limit))
-        }
-      }
+          pages: Math.ceil(total / Number(limit)),
+        },
+      },
     });
   } catch (error) {
-    console.error('Error fetching flights:', error);
+    console.error("Error fetching flights:", error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
@@ -265,31 +278,31 @@ export const getFlightById = async (req: Request, res: Response) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid flight ID'
+        message: "Invalid flight ID",
       });
     }
 
     const flight = await Flight.findById(id)
-      .populate('airline', 'name code')
-      .populate('departureAirport', 'name city country code')
-      .populate('arrivalAirport', 'name city country code');
+      .populate("airline", "name code")
+      .populate("departureAirport", "name city country code")
+      .populate("arrivalAirport", "name city country code");
 
     if (!flight) {
       return res.status(404).json({
         success: false,
-        message: 'Flight not found'
+        message: "Flight not found",
       });
     }
 
     res.json({
       success: true,
-      data: { flight }
+      data: { flight },
     });
   } catch (error) {
-    console.error('Error fetching flight:', error);
+    console.error("Error fetching flight:", error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
@@ -299,10 +312,10 @@ export const createFlight = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.userId;
 
-    if (!userId || req.user?.role !== 'airline') {
+    if (!userId || req.user?.role !== "airline") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Airline account required.'
+        message: "Access denied. Airline account required.",
       });
     }
 
@@ -311,7 +324,7 @@ export const createFlight = async (req: Request, res: Response) => {
     if (!airline) {
       return res.status(404).json({
         success: false,
-        message: 'No airline found for current user'
+        message: "No airline found for current user",
       });
     }
 
@@ -324,27 +337,33 @@ export const createFlight = async (req: Request, res: Response) => {
       aircraft,
       basePrice,
       baggage,
-      services
+      services,
     } = req.body;
 
     // Validate required fields
-    if (!flightNumber || !departureAirport || !arrivalAirport || !departureTime || !arrivalTime) {
+    if (
+      !flightNumber ||
+      !departureAirport ||
+      !arrivalAirport ||
+      !departureTime ||
+      !arrivalTime
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields'
+        message: "Missing required fields",
       });
     }
 
     // Validate airports exist
     const [depAirport, arrAirport] = await Promise.all([
       Airport.findById(departureAirport),
-      Airport.findById(arrivalAirport)
+      Airport.findById(arrivalAirport),
     ]);
 
     if (!depAirport || !arrAirport) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid departure or arrival airport'
+        message: "Invalid departure or arrival airport",
       });
     }
 
@@ -354,20 +373,21 @@ export const createFlight = async (req: Request, res: Response) => {
       airline: airline._id,
       departureTime: {
         $gte: new Date(new Date(departureTime).setHours(0, 0, 0, 0)),
-        $lt: new Date(new Date(departureTime).setHours(23, 59, 59, 999))
-      }
+        $lt: new Date(new Date(departureTime).setHours(23, 59, 59, 999)),
+      },
     });
 
     if (existingFlight) {
       return res.status(400).json({
         success: false,
-        message: 'Flight with this number already exists for the selected date'
+        message: "Flight with this number already exists for the selected date",
       });
     }
 
     // Calculate duration
     const duration = Math.floor(
-      (new Date(arrivalTime).getTime() - new Date(departureTime).getTime()) / (1000 * 60)
+      (new Date(arrivalTime).getTime() - new Date(departureTime).getTime()) /
+        (1000 * 60)
     );
 
     // Generate seats based on aircraft capacity
@@ -380,10 +400,12 @@ export const createFlight = async (req: Request, res: Response) => {
     // Generate economy seats
     for (let i = 1; i <= economySeats; i++) {
       seats.push({
-        seatNumber: `${Math.ceil(i / 6)}${String.fromCharCode(65 + ((i - 1) % 6))}`,
-        class: 'economy',
+        seatNumber: `${Math.ceil(i / 6)}${String.fromCharCode(
+          65 + ((i - 1) % 6)
+        )}`,
+        class: "economy",
         isAvailable: true,
-        price: basePrice.economy
+        price: basePrice.economy,
       });
     }
 
@@ -391,9 +413,9 @@ export const createFlight = async (req: Request, res: Response) => {
     for (let i = 1; i <= businessSeats; i++) {
       seats.push({
         seatNumber: `B${i}${String.fromCharCode(65 + ((i - 1) % 4))}`,
-        class: 'business',
+        class: "business",
         isAvailable: true,
-        price: basePrice.business
+        price: basePrice.business,
       });
     }
 
@@ -401,9 +423,9 @@ export const createFlight = async (req: Request, res: Response) => {
     for (let i = 1; i <= firstSeats; i++) {
       seats.push({
         seatNumber: `F${i}${String.fromCharCode(65 + ((i - 1) % 2))}`,
-        class: 'first',
+        class: "first",
         isAvailable: true,
-        price: basePrice.first
+        price: basePrice.first,
       });
     }
 
@@ -419,34 +441,34 @@ export const createFlight = async (req: Request, res: Response) => {
       seats,
       basePrice,
       baggage: baggage || {
-        carryOn: { maxWeight: 7, maxDimensions: '55x40x20 cm' },
-        checked: { included: 1, maxWeight: 23, extraBagPrice: 50 }
+        carryOn: { maxWeight: 7, maxDimensions: "55x40x20 cm" },
+        checked: { included: 1, maxWeight: 23, extraBagPrice: 50 },
       },
       services: services || {
         meal: false,
         wifi: false,
         entertainment: false,
-        extraLegroom: false
-      }
+        extraLegroom: false,
+      },
     });
 
     await newFlight.save();
 
     const populatedFlight = await Flight.findById(newFlight._id)
-      .populate('airline', 'name code')
-      .populate('departureAirport', 'name city country code')
-      .populate('arrivalAirport', 'name city country code');
+      .populate("airline", "name code")
+      .populate("departureAirport", "name city country code")
+      .populate("arrivalAirport", "name city country code");
 
     return res.status(201).json({
       success: true,
       data: { flight: populatedFlight },
-      message: 'Flight created successfully'
+      message: "Flight created successfully",
     });
   } catch (error) {
-    console.error('Error creating flight:', error);
+    console.error("Error creating flight:", error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
@@ -457,10 +479,10 @@ export const updateFlight = async (req: Request, res: Response) => {
     const userId = req.user?.userId;
     const { id } = req.params;
 
-    if (!userId || req.user?.role !== 'airline') {
+    if (!userId || req.user?.role !== "airline") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Airline account required.'
+        message: "Access denied. Airline account required.",
       });
     }
 
@@ -469,14 +491,14 @@ export const updateFlight = async (req: Request, res: Response) => {
     if (!airline) {
       return res.status(404).json({
         success: false,
-        message: 'No airline found for current user'
+        message: "No airline found for current user",
       });
     }
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid flight ID'
+        message: "Invalid flight ID",
       });
     }
 
@@ -486,7 +508,7 @@ export const updateFlight = async (req: Request, res: Response) => {
     if (!flight) {
       return res.status(404).json({
         success: false,
-        message: 'Flight not found or access denied'
+        message: "Flight not found or access denied",
       });
     }
 
@@ -494,30 +516,35 @@ export const updateFlight = async (req: Request, res: Response) => {
 
     // Recalculate duration if times are updated
     if (updateData.departureTime || updateData.arrivalTime) {
-      const depTime = updateData.departureTime ? new Date(updateData.departureTime) : flight.departureTime;
-      const arrTime = updateData.arrivalTime ? new Date(updateData.arrivalTime) : flight.arrivalTime;
-      updateData.duration = Math.floor((arrTime.getTime() - depTime.getTime()) / (1000 * 60));
+      const depTime = updateData.departureTime
+        ? new Date(updateData.departureTime)
+        : flight.departureTime;
+      const arrTime = updateData.arrivalTime
+        ? new Date(updateData.arrivalTime)
+        : flight.arrivalTime;
+      updateData.duration = Math.floor(
+        (arrTime.getTime() - depTime.getTime()) / (1000 * 60)
+      );
     }
 
-    const updatedFlight = await Flight.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    )
-      .populate('airline', 'name code')
-      .populate('departureAirport', 'name city country code')
-      .populate('arrivalAirport', 'name city country code');
+    const updatedFlight = await Flight.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    })
+      .populate("airline", "name code")
+      .populate("departureAirport", "name city country code")
+      .populate("arrivalAirport", "name city country code");
 
     res.json({
       success: true,
       data: { flight: updatedFlight },
-      message: 'Flight updated successfully'
+      message: "Flight updated successfully",
     });
   } catch (error) {
-    console.error('Error updating flight:', error);
+    console.error("Error updating flight:", error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
@@ -528,10 +555,10 @@ export const deleteFlight = async (req: Request, res: Response) => {
     const userId = req.user?.userId;
     const { id } = req.params;
 
-    if (!userId || req.user?.role !== 'airline') {
+    if (!userId || req.user?.role !== "airline") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Airline account required.'
+        message: "Access denied. Airline account required.",
       });
     }
 
@@ -540,14 +567,14 @@ export const deleteFlight = async (req: Request, res: Response) => {
     if (!airline) {
       return res.status(404).json({
         success: false,
-        message: 'No airline found for current user'
+        message: "No airline found for current user",
       });
     }
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid flight ID'
+        message: "Invalid flight ID",
       });
     }
 
@@ -557,22 +584,25 @@ export const deleteFlight = async (req: Request, res: Response) => {
     if (!flight) {
       return res.status(404).json({
         success: false,
-        message: 'Flight not found or access denied'
+        message: "Flight not found or access denied",
       });
     }
 
     // Soft delete by setting isActive to false
-    await Flight.findByIdAndUpdate(id, { isActive: false, status: 'cancelled' });
+    await Flight.findByIdAndUpdate(id, {
+      isActive: false,
+      status: "cancelled",
+    });
 
     res.json({
       success: true,
-      message: 'Flight cancelled successfully'
+      message: "Flight cancelled successfully",
     });
   } catch (error) {
-    console.error('Error deleting flight:', error);
+    console.error("Error deleting flight:", error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
@@ -582,10 +612,10 @@ export const getAirlineFlights = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.userId;
 
-    if (!userId || req.user?.role !== 'airline') {
+    if (!userId || req.user?.role !== "airline") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Airline account required.'
+        message: "Access denied. Airline account required.",
       });
     }
 
@@ -594,7 +624,7 @@ export const getAirlineFlights = async (req: Request, res: Response) => {
     if (!airline) {
       return res.status(404).json({
         success: false,
-        message: 'No airline found for current user'
+        message: "No airline found for current user",
       });
     }
 
@@ -615,9 +645,9 @@ export const getAirlineFlights = async (req: Request, res: Response) => {
     }
 
     const flights = await Flight.find(filter)
-      .populate('airline', 'name code')
-      .populate('departureAirport', 'name city country code')
-      .populate('arrivalAirport', 'name city country code')
+      .populate("airline", "name code")
+      .populate("departureAirport", "name city country code")
+      .populate("arrivalAirport", "name city country code")
       .limit(Number(limit))
       .skip((Number(page) - 1) * Number(limit))
       .sort({ departureTime: 1 });
@@ -632,15 +662,57 @@ export const getAirlineFlights = async (req: Request, res: Response) => {
           page: Number(page),
           limit: Number(limit),
           total,
-          pages: Math.ceil(total / Number(limit))
-        }
-      }
+          pages: Math.ceil(total / Number(limit)),
+        },
+      },
     });
   } catch (error) {
-    console.error('Error fetching airline flights:', error);
+    console.error("Error fetching airline flights:", error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
+    });
+  }
+};
+
+// Get cheapest flights for homepage
+export const getCheapestFlights = async (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 5;
+
+    // Get active flights for the next 30 days, sorted by cheapest economy price
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+    const flights = await Flight.find({
+      isActive: true,
+      status: "scheduled",
+      departureTime: {
+        $gte: new Date(),
+        $lte: thirtyDaysFromNow,
+      },
+      "basePrice.economy": { $exists: true, $gt: 0 },
+    })
+      .populate("airline", "name code logo")
+      .populate("departureAirport", "name code city country")
+      .populate("arrivalAirport", "name code city country")
+      .populate("aircraft", "model")
+      .sort({ "basePrice.economy": 1 })
+      .limit(limit)
+      .select(
+        "flightNumber departureTime arrivalTime basePrice duration airline departureAirport arrivalAirport aircraft status"
+      );
+
+    return res.status(200).json({
+      success: true,
+      message: "Cheapest flights retrieved successfully",
+      data: flights,
+    });
+  } catch (error) {
+    console.error("Error fetching cheapest flights:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
     });
   }
 };

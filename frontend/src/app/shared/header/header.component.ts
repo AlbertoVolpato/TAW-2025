@@ -18,6 +18,7 @@ export class HeaderComponent implements OnInit {
     this.authService.currentUser$.subscribe((user) => {
       console.log('Header: User changed to:', user);
       this.currentUser = user;
+      console.log('Header: isAuthenticated =', this.isAuthenticated());
     });
   }
 
@@ -56,7 +57,25 @@ export class HeaderComponent implements OnInit {
   }
 
   navigateToProfile(): void {
-    this.router.navigate(['/profile']);
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Navigate to role-specific profile
+    switch (user.role) {
+      case 'admin':
+        this.router.navigate(['/admin/profile']);
+        break;
+      case 'airline':
+        this.router.navigate(['/airline']); // Airline dashboard serves as profile
+        break;
+      case 'passenger':
+      default:
+        this.router.navigate(['/passenger/profile']);
+        break;
+    }
     this.closeMobileMenu();
   }
 
@@ -70,6 +89,13 @@ export class HeaderComponent implements OnInit {
   navigateToUserManagement(): void {
     if (this.isAdmin()) {
       this.router.navigate(['/admin/users']);
+      this.closeMobileMenu();
+    }
+  }
+
+  navigateToAirlineManagement(): void {
+    if (this.isAdmin()) {
+      this.router.navigate(['/admin/airlines']);
       this.closeMobileMenu();
     }
   }
@@ -116,6 +142,7 @@ export class HeaderComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
+    this.router.navigate(['/']);
     this.closeMobileMenu();
     this.isUserMenuOpen = false;
   }

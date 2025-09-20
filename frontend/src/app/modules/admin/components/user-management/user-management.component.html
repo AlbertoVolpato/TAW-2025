@@ -1,100 +1,53 @@
 <div class="user-management">
   <div class="page-header">
-    <h1>Gestione Utenti</h1>
-    <p>Gestisci utenti e invita nuove compagnie aeree</p>
+    <div class="header-content">
+      <h1>
+        <mat-icon>people</mat-icon>
+        Gestione Utenti
+      </h1>
+      <p>Amministra gli utenti registrati sulla piattaforma</p>
+    </div>
   </div>
 
-  <!-- Actions Bar -->
-  <div class="actions-bar">
-    <button class="btn-primary" (click)="toggleInviteForm()">
-      <mat-icon>add</mat-icon>
-      Invita Compagnia Aerea
-    </button>
-    <button class="btn-secondary" (click)="loadUsers()">
-      <mat-icon>refresh</mat-icon>
-      Aggiorna
-    </button>
-  </div>
-
-  <!-- Invite Airline Form -->
-  <mat-card class="invite-form" *ngIf="showInviteForm">
+  <!-- Filters -->
+  <mat-card class="filters-card">
     <mat-card-header>
-      <mat-card-title>Invita Nuova Compagnia Aerea</mat-card-title>
-      <mat-card-subtitle>La compagnia riceverà una password temporanea via email</mat-card-subtitle>
+      <mat-card-title>Filtri di Ricerca</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <form [formGroup]="inviteAirlineForm" (ngSubmit)="onInviteAirline()">
-        <div class="form-grid">
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Email</mat-label>
-              <input matInput formControlName="email" type="email" required>
-              <mat-icon matSuffix>email</mat-icon>
-              <mat-error *ngIf="inviteAirlineForm.get('email')?.hasError('required')">
-                Email richiesta
-              </mat-error>
-              <mat-error *ngIf="inviteAirlineForm.get('email')?.hasError('email')">
-                Email non valida
-              </mat-error>
-            </mat-form-field>
-          </div>
+      <div class="filters-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Cerca per email o nome</mat-label>
+          <input matInput [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+            placeholder="Inserisci termine di ricerca">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
 
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Nome</mat-label>
-              <input matInput formControlName="firstName" required>
-              <mat-icon matSuffix>person</mat-icon>
-              <mat-error *ngIf="inviteAirlineForm.get('firstName')?.hasError('required')">
-                Nome richiesto
-              </mat-error>
-            </mat-form-field>
-          </div>
+        <mat-form-field appearance="outline">
+          <mat-label>Filtra per ruolo</mat-label>
+          <mat-select [(value)]="selectedRole" (selectionChange)="onFilterChange()">
+            <mat-option value="">Tutti i ruoli</mat-option>
+            <mat-option value="admin">Amministratori</mat-option>
+            <mat-option value="passenger">Passeggeri</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Cognome</mat-label>
-              <input matInput formControlName="lastName" required>
-              <mat-icon matSuffix>person</mat-icon>
-              <mat-error *ngIf="inviteAirlineForm.get('lastName')?.hasError('required')">
-                Cognome richiesto
-              </mat-error>
-            </mat-form-field>
-          </div>
+        <mat-form-field appearance="outline">
+          <mat-label>Filtra per stato</mat-label>
+          <mat-select [(value)]="selectedStatus" (selectionChange)="onFilterChange()">
+            <mat-option value="">Tutti gli stati</mat-option>
+            <mat-option value="active">Attivi</mat-option>
+            <mat-option value="inactive">Inattivi</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Nome Compagnia</mat-label>
-              <input matInput formControlName="airlineName" required>
-              <mat-icon matSuffix>business</mat-icon>
-              <mat-error *ngIf="inviteAirlineForm.get('airlineName')?.hasError('required')">
-                Nome compagnia richiesto
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Codice Compagnia</mat-label>
-              <input matInput formControlName="airlineCode" required maxlength="3" style="text-transform: uppercase;">
-              <mat-icon matSuffix>code</mat-icon>
-              <mat-error *ngIf="inviteAirlineForm.get('airlineCode')?.hasError('required')">
-                Codice compagnia richiesto
-              </mat-error>
-              <mat-hint>Es: AZ, BA, LH (2-3 caratteri)</mat-hint>
-            </mat-form-field>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="toggleInviteForm()">
-            Annulla
-          </button>
-          <button type="submit" class="btn-primary" [disabled]="inviteAirlineForm.invalid || loading">
-            <mat-spinner diameter="20" class="btn-spinner" *ngIf="loading"></mat-spinner>
-            <span *ngIf="!loading">Invia Invito</span>
+        <div class="filter-actions">
+          <button class="btn-secondary" (click)="clearFilters()">
+            <mat-icon>clear</mat-icon>
+            Pulisci Filtri
           </button>
         </div>
-      </form>
+      </div>
     </mat-card-content>
   </mat-card>
 
@@ -105,12 +58,12 @@
   </div>
 
   <!-- Users Table -->
-  <mat-card class="users-table-card">
+  <mat-card class="users-table-card" *ngIf="!loading; else loadingTemplate">
     <mat-card-header>
       <mat-card-title>Utenti Sistema</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <div class="table-container">
+      <div class="table-container" *ngIf="users.length > 0; else emptyTemplate">
         <table mat-table [dataSource]="users" class="users-table">
           <!-- Email Column -->
           <ng-container matColumnDef="email">
@@ -150,6 +103,19 @@
             </td>
           </ng-container>
 
+          <!-- Wallet Balance Column -->
+          <ng-container matColumnDef="walletBalance">
+            <th mat-header-cell *matHeaderCellDef>Portafoglio</th>
+            <td mat-cell *matCellDef="let user">
+              <span class="wallet-balance" *ngIf="user.role === 'passenger'">
+                {{ user.walletBalance | currency:'EUR':'symbol':'1.2-2' }}
+              </span>
+              <span class="wallet-balance not-applicable" *ngIf="user.role !== 'passenger'">
+                N/A
+              </span>
+            </td>
+          </ng-container>
+
           <!-- Actions Column -->
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>Azioni</th>
@@ -170,13 +136,6 @@
         </table>
       </div>
 
-      <!-- Empty State -->
-      <div class="empty-state" *ngIf="users.length === 0 && !loading">
-        <mat-icon>people</mat-icon>
-        <h3>Nessun utente trovato</h3>
-        <p>Inizia invitando una compagnia aerea</p>
-      </div>
-
       <!-- Pagination -->
       <div class="pagination-container" *ngIf="totalPages > 1">
         <mat-paginator [length]="totalUsers" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 20, 50]"
@@ -185,4 +144,21 @@
       </div>
     </mat-card-content>
   </mat-card>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Caricamento utenti in corso...</p>
+    </div>
+  </ng-template>
+
+  <!-- Empty Template -->
+  <ng-template #emptyTemplate>
+    <div class="empty-state">
+      <mat-icon>people</mat-icon>
+      <h3>Nessun utente trovato</h3>
+      <p>Inizia invitando una compagnia aerea</p>
+    </div>
+  </ng-template>
 </div>

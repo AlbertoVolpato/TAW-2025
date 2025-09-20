@@ -29,14 +29,29 @@ export class AuthService {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
 
+    console.log('Loading user from storage:', { token: !!token, user: !!user });
+
     if (token && user) {
       try {
         const parsedUser = JSON.parse(user);
-        this.currentUserSubject.next(parsedUser);
+
+        // Validate token before setting user
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const isTokenValid = payload.exp > Date.now() / 1000;
+
+        if (isTokenValid) {
+          this.currentUserSubject.next(parsedUser);
+          console.log('User restored from storage:', parsedUser);
+        } else {
+          console.log('Token expired, clearing storage');
+          this.logout();
+        }
       } catch (error) {
         console.error('Error parsing user from storage:', error);
         this.logout();
       }
+    } else {
+      console.log('No valid user/token found in storage');
     }
   }
 
@@ -46,12 +61,18 @@ export class AuthService {
       .pipe(
         tap((response) => {
           console.log('Login response:', response);
-          if (response.success && response.token && response.user) {
-            localStorage.setItem('token', response.token);
-            localStorage.setItem('user', JSON.stringify(response.user));
-            this.currentUserSubject.next(response.user);
-            console.log('User logged in:', response.user);
-            console.log('Token saved:', response.token);
+          // Handle the actual API response structure: response.data.user and response.data.token
+          if (
+            response.success &&
+            response.data &&
+            response.data.token &&
+            response.data.user
+          ) {
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+            this.currentUserSubject.next(response.data.user);
+            console.log('User logged in:', response.data.user);
+            console.log('Token saved:', response.data.token);
           }
         })
       );
@@ -71,10 +92,24 @@ export class AuthService {
       .post<AuthResponse>(`${this.apiUrl}/auth/force-change-password`, data)
       .pipe(
         tap((response) => {
-          if (response.success && response.token && response.user) {
-            localStorage.setItem('token', response.token);
-            localStorage.setItem('user', JSON.stringify(response.user));
-            this.currentUserSubject.next(response.user);
+          // Handle both old and new response structures
+          if (response.success) {
+            let user: any = null;
+            let token: string = '';
+
+            if (response.data && response.data.token && response.data.user) {
+              user = response.data.user;
+              token = response.data.token;
+            } else if (response.token && response.user) {
+              user = response.user;
+              token = response.token;
+            }
+
+            if (user && token) {
+              localStorage.setItem('token', token);
+              localStorage.setItem('user', JSON.stringify(user));
+              this.currentUserSubject.next(user);
+            }
           }
         })
       );
@@ -115,7 +150,7 @@ export class AuthService {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.currentUserSubject.next(null);
-    this.router.navigate(['/login']);
+    // Don't auto-navigate, let components handle navigation
   }
 
   getToken(): string | null {
@@ -124,12 +159,23 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     const token = this.getToken();
-    if (!token) return false;
+    const user = this.getCurrentUser();
+
+    if (!token || !user) return false;
 
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.exp > Date.now() / 1000;
+      const isTokenValid = payload.exp > Date.now() / 1000;
+
+      // If token is expired, clear localStorage and update subject
+      if (!isTokenValid) {
+        this.logout();
+        return false;
+      }
+
+      return true;
     } catch {
+      this.logout();
       return false;
     }
   }
@@ -173,18 +219,39 @@ export class AuthService {
 
     switch (user.role) {
       case 'admin':
-        this.router.navigate(['/admin']);
+        this.router.navigate(['/admin/profile']);
         break;
       case 'airline':
         this.router.navigate(['/airline']);
         break;
       case 'passenger':
-        this.router.navigate(['/passenger']);
+        this.router.navigate(['/flights/search']);
         break;
       default:
         this.router.navigate(['/flights/search']);
         break;
     }
+  }
+
+  deleteAccount(): Observable<{ success: boolean; message: string }> {
+    return this.http
+      .delete<{ success: boolean; message: string }>(
+        `${this.apiUrl}/users/profile`,
+        {
+          headers: this.getAuthHeaders(),
+        }
+      )
+      .pipe(
+        tap((response) => {
+          if (response.success) {
+            // Clear all user data and logout
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            this.currentUserSubject.next(null);
+            this.router.navigate(['/login']);
+          }
+        })
+      );
   }
 
   private getAuthHeaders(): HttpHeaders {

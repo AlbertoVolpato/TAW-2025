@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { FlightService } from '../../services/flight.service';
+import { Flight } from '../../models/flight.model';
 
 interface PopularDestination {
   name: string;
@@ -14,66 +16,75 @@ interface PopularDestination {
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit {
   quickSearchForm: FormGroup;
+  cheapestFlights: Flight[] = [];
+  loadingCheapestFlights = false;
 
   popularDestinations: PopularDestination[] = [
     {
       name: 'Parigi',
       country: 'Francia',
       price: '€89',
-      image: 'https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=300&fit=crop',
-      code: 'CDG'
+      image:
+        'https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=300&fit=crop',
+      code: 'CDG',
     },
     {
       name: 'Londra',
       country: 'Regno Unito',
       price: '€125',
-      image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop',
-      code: 'LHR'
+      image:
+        'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop',
+      code: 'LHR',
     },
     {
       name: 'New York',
       country: 'Stati Uniti',
       price: '€459',
-      image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&h=300&fit=crop',
-      code: 'JFK'
+      image:
+        'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&h=300&fit=crop',
+      code: 'JFK',
     },
     {
       name: 'Tokyo',
       country: 'Giappone',
       price: '€689',
-      image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&h=300&fit=crop',
-      code: 'NRT'
+      image:
+        'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&h=300&fit=crop',
+      code: 'NRT',
     },
     {
       name: 'Dubai',
       country: 'Emirati Arabi',
       price: '€349',
-      image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400&h=300&fit=crop',
-      code: 'DXB'
+      image:
+        'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400&h=300&fit=crop',
+      code: 'DXB',
     },
     {
       name: 'Los Angeles',
       country: 'Stati Uniti',
       price: '€529',
-      image: 'https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=400&h=300&fit=crop',
-      code: 'LAX'
-    }
+      image:
+        'https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=400&h=300&fit=crop',
+      code: 'LAX',
+    },
   ];
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private flightService: FlightService
   ) {
     this.quickSearchForm = this.fb.group({
       from: ['', Validators.required],
       to: ['', Validators.required],
       departureDate: ['', Validators.required],
-      passengers: [1, [Validators.required, Validators.min(1)]]
+      passengers: [1, [Validators.required, Validators.min(1)]],
     });
   }
 
@@ -82,7 +93,26 @@ export class HomeComponent implements OnInit {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     this.quickSearchForm.patchValue({
-      departureDate: tomorrow.toISOString().split('T')[0]
+      departureDate: tomorrow.toISOString().split('T')[0],
+    });
+
+    // Load cheapest flights for homepage
+    this.loadCheapestFlights();
+  }
+
+  loadCheapestFlights(): void {
+    this.loadingCheapestFlights = true;
+    this.flightService.getCheapestFlights(5).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.cheapestFlights = response.data;
+        }
+        this.loadingCheapestFlights = false;
+      },
+      error: (error) => {
+        console.error('Error loading cheapest flights:', error);
+        this.loadingCheapestFlights = false;
+      },
     });
   }
 
@@ -100,29 +130,29 @@ export class HomeComponent implements OnInit {
   swapCities(): void {
     const fromValue = this.quickSearchForm.get('from')?.value;
     const toValue = this.quickSearchForm.get('to')?.value;
-    
+
     this.quickSearchForm.patchValue({
       from: toValue,
-      to: fromValue
+      to: fromValue,
     });
   }
 
   onQuickSearch(): void {
     if (this.quickSearchForm.valid) {
       const formData = this.quickSearchForm.value;
-      
+
       // Navigate to flight search with query parameters
       this.router.navigate(['/flights/search'], {
         queryParams: {
           from: formData.from,
           to: formData.to,
           departureDate: formData.departureDate,
-          passengers: formData.passengers
-        }
+          passengers: formData.passengers,
+        },
       });
     } else {
       // Mark all fields as touched to show validation errors
-      Object.keys(this.quickSearchForm.controls).forEach(key => {
+      Object.keys(this.quickSearchForm.controls).forEach((key) => {
         this.quickSearchForm.get(key)?.markAsTouched();
       });
     }
@@ -132,12 +162,36 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/flights/search'], {
       queryParams: {
         to: destination.code,
-        departureDate: this.quickSearchForm.get('departureDate')?.value
-      }
+        departureDate: this.quickSearchForm.get('departureDate')?.value,
+      },
     });
   }
 
   isAuthenticated(): boolean {
     return this.authService.isAuthenticated();
+  }
+
+  formatDuration(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
+  }
+
+  formatPrice(price: number): string {
+    return `€${price}`;
+  }
+
+  viewFlightDetails(flight: Flight): void {
+    // Navigate to flight search with the specific flight data
+    this.router.navigate(['/flights/search'], {
+      queryParams: {
+        flightId: flight._id,
+        from: flight.departureAirport.code,
+        to: flight.arrivalAirport.code,
+        departureDate: new Date(flight.departureTime)
+          .toISOString()
+          .split('T')[0],
+      },
+    });
   }
 }

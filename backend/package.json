@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "start": "node dist/bin/www.js",
-    "dev": "nodemon src/bin/www.ts",
+    "dev": "node src/bin/www.ts",
     "build": "tsc",
     "test": "jest",
     "seed": "ts-node src/utils/seedData.ts",
-    "initialize-data": "ts-node scripts/initialize-data.ts"
+    "initialize-data": "ts-node scripts/initialize-data.ts",
+    "create-test-users": "ts-node scripts/create-test-users.ts"
   },
   "dependencies": {
     "@types/bcryptjs": "^3.0.0",

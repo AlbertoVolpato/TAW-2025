@@ -20,13 +20,29 @@ export const getAllUsers = async (
       });
     }
 
-    const { role, active, page = 1, limit = 20, search } = req.query;
+    const {
+      role,
+      active,
+      page = 1,
+      limit = 20,
+      search,
+      excludeRole,
+    } = req.query;
 
     // Build query
     const query: any = {};
 
     if (role) {
       query.role = role;
+    }
+
+    // Exclude specific roles (e.g., airline users from user management)
+    if (excludeRole) {
+      if (Array.isArray(excludeRole)) {
+        query.role = { $nin: excludeRole };
+      } else {
+        query.role = { $ne: excludeRole };
+      }
     }
 
     if (active !== undefined) {
@@ -138,18 +154,9 @@ export const createAirlineByInvitation = async (
       name: airlineName,
       code: airlineCode.toUpperCase(),
       country,
+      contactEmail: email,
       userId: airlineUser._id,
       isActive: true,
-      headquarters: {
-        address: "",
-        city: "",
-        country: country,
-      },
-      contactInfo: {
-        email: email,
-        phone: "",
-        website: "",
-      },
     });
 
     await airline.save();
@@ -336,6 +343,45 @@ export const getUserById = async (
     res.status(200).json({
       success: true,
       data: { user },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete own account
+export const deleteProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+    }
+
+    // Delete user's bookings first
+    const Booking = require("../models/Booking").default;
+    await Booking.deleteMany({ userId: userId });
+
+    // Delete the user
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Account deleted successfully",
     });
   } catch (error) {
     next(error);

@@ -1,0 +1,261 @@
+<div class="admin-profile-container">
+    <!-- Header Section -->
+    <div class="profile-header">
+        <div class="header-background"></div>
+        <div class="header-content">
+            <div class="admin-avatar">
+                <mat-icon>admin_panel_settings</mat-icon>
+            </div>
+            <div class="admin-info">
+                <h1>Profilo Amministratore</h1>
+                <p class="admin-name">{{ adminUser?.firstName }} {{ adminUser?.lastName }}</p>
+                <p class="admin-email">{{ adminUser?.email }}</p>
+                <div class="admin-badges">
+                    <span class="badge super-admin">Super Admin</span>
+                    <span class="badge active">Attivo</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <!-- System Overview -->
+        <div class="overview-section">
+            <mat-card class="overview-card">
+                <mat-card-header>
+                    <mat-icon mat-card-avatar>dashboard</mat-icon>
+                    <mat-card-title>Panoramica Sistema</mat-card-title>
+                    <mat-card-subtitle>Stato generale del sistema di prenotazione voli</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <div class="metric-icon">
+                                <mat-icon>people</mat-icon>
+                            </div>
+                            <div class="metric-data">
+                                <span class="metric-value">{{ systemStats?.totalUsers || 0 }}</span>
+                                <span class="metric-label">Utenti Registrati</span>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-icon">
+                                <mat-icon>business</mat-icon>
+                            </div>
+                            <div class="metric-data">
+                                <span class="metric-value">{{ systemStats?.totalAirlines || 0 }}</span>
+                                <span class="metric-label">Compagnie Aeree</span>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-icon">
+                                <mat-icon>flight</mat-icon>
+                            </div>
+                            <div class="metric-data">
+                                <span class="metric-value">{{ systemStats?.totalFlights || 0 }}</span>
+                                <span class="metric-label">Voli Programmati</span>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-icon">
+                                <mat-icon>confirmation_number</mat-icon>
+                            </div>
+                            <div class="metric-data">
+                                <span class="metric-value">{{ systemStats?.totalBookings || 0 }}</span>
+                                <span class="metric-label">Prenotazioni</span>
+                            </div>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        </div>
+
+        <!-- Management Actions -->
+        <div class="management-section">
+            <h2>Gestione Sistema</h2>
+            <div class="management-grid">
+
+                <!-- User Management -->
+                <mat-card class="management-card" routerLink="/admin/users">
+                    <mat-card-content>
+                        <div class="card-header">
+                            <mat-icon class="card-icon">people</mat-icon>
+                            <h3>Gestione Utenti</h3>
+                        </div>
+                        <p>Gestisci tutti gli utenti del sistema, visualizza profili e statistiche</p>
+                        <div class="card-actions">
+                            <button mat-button color="primary">
+                                <mat-icon>arrow_forward</mat-icon>
+                                Gestisci Utenti
+                            </button>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <!-- Airline Invitations -->
+                <mat-card class="management-card" (click)="openAirlineInviteDialog()">
+                    <mat-card-content>
+                        <div class="card-header">
+                            <mat-icon class="card-icon">send</mat-icon>
+                            <h3>Invita Compagnie Aeree</h3>
+                        </div>
+                        <p>Invia inviti a nuove compagnie aeree per registrarsi nel sistema</p>
+                        <div class="card-actions">
+                            <button mat-button color="primary">
+                                <mat-icon>add_business</mat-icon>
+                                Invia Invito
+                            </button>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <!-- Route Management -->
+                <mat-card class="management-card" (click)="openRouteManagement()">
+                    <mat-card-content>
+                        <div class="card-header">
+                            <mat-icon class="card-icon">route</mat-icon>
+                            <h3>Gestione Rotte</h3>
+                        </div>
+                        <p>Crea e gestisci rotte aeree tra aeroporti del sistema</p>
+                        <div class="card-actions">
+                            <button mat-button color="primary">
+                                <mat-icon>map</mat-icon>
+                                Gestisci Rotte
+                            </button>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <!-- System Configuration -->
+                <mat-card class="management-card" (click)="openSystemConfig()">
+                    <mat-card-content>
+                        <div class="card-header">
+                            <mat-icon class="card-icon">settings</mat-icon>
+                            <h3>Configurazione Sistema</h3>
+                        </div>
+                        <p>Modifica impostazioni generali e parametri del sistema</p>
+                        <div class="card-actions">
+                            <button mat-button color="primary">
+                                <mat-icon>tune</mat-icon>
+                                Configura
+                            </button>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <!-- Reports & Analytics -->
+                <mat-card class="management-card" (click)="openReports()">
+                    <mat-card-content>
+                        <div class="card-header">
+                            <mat-icon class="card-icon">analytics</mat-icon>
+                            <h3>Report e Statistiche</h3>
+                        </div>
+                        <p>Visualizza report dettagliati e analisi del sistema</p>
+                        <div class="card-actions">
+                            <button mat-button color="primary">
+                                <mat-icon>assessment</mat-icon>
+                                Visualizza Report
+                            </button>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <!-- Audit Logs -->
+                <mat-card class="management-card" (click)="openAuditLogs()">
+                    <mat-card-content>
+                        <div class="card-header">
+                            <mat-icon class="card-icon">history</mat-icon>
+                            <h3>Log Attività</h3>
+                        </div>
+                        <p>Monitora tutte le attività e modifiche del sistema</p>
+                        <div class="card-actions">
+                            <button mat-button color="primary">
+                                <mat-icon>visibility</mat-icon>
+                                Visualizza Log
+                            </button>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="activities-section">
+            <mat-card class="activities-card">
+                <mat-card-header>
+                    <mat-icon mat-card-avatar>history</mat-icon>
+                    <mat-card-title>Attività Recenti</mat-card-title>
+                    <mat-card-subtitle>Ultimi eventi del sistema</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="activities-list" *ngIf="recentActivities?.length; else noActivities">
+                        <div class="activity-item" *ngFor="let activity of recentActivities">
+                            <div class="activity-icon">
+                                <mat-icon [ngClass]="getActivityIconClass(activity.type)">
+                                    {{ getActivityIcon(activity.type) }}
+                                </mat-icon>
+                            </div>
+                            <div class="activity-content">
+                                <p class="activity-description">{{ activity.description }}</p>
+                                <span class="activity-time">{{ formatActivityTime(activity.timestamp) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <ng-template #noActivities>
+                        <div class="no-activities">
+                            <mat-icon>info</mat-icon>
+                            <p>Nessuna attività recente</p>
+                        </div>
+                    </ng-template>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </div>
+</div>
+
+<!-- Airline Invitation Dialog -->
+<ng-template #airlineInviteDialog>
+    <h2 mat-dialog-title>Invita Compagnia Aerea</h2>
+    <mat-dialog-content class="invite-dialog-content">
+        <form [formGroup]="inviteForm" class="invite-form">
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nome Compagnia</mat-label>
+                <input matInput formControlName="companyName" placeholder="Es. Alitalia">
+                <mat-error *ngIf="inviteForm.get('companyName')?.hasError('required')">
+                    Il nome della compagnia è richiesto
+                </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Email Contatto</mat-label>
+                <input matInput formControlName="email" type="email" placeholder="admin@compagnia.com">
+                <mat-error *ngIf="inviteForm.get('email')?.hasError('required')">
+                    L'email è richiesta
+                </mat-error>
+                <mat-error *ngIf="inviteForm.get('email')?.hasError('email')">
+                    Inserisci un'email valida
+                </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Codice IATA (opzionale)</mat-label>
+                <input matInput formControlName="iataCode" placeholder="Es. AZ" maxlength="3">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Messaggio Personalizzato</mat-label>
+                <textarea matInput formControlName="message" rows="4"
+                    placeholder="Messaggio di benvenuto personalizzato..."></textarea>
+            </mat-form-field>
+        </form>
+    </mat-dialog-content>
+    <mat-dialog-actions class="dialog-actions">
+        <button mat-button mat-dialog-close>Annulla</button>
+        <button mat-raised-button color="primary" (click)="sendAirlineInvite()"
+            [disabled]="inviteForm.invalid || sendingInvite">
+            <mat-icon *ngIf="sendingInvite">hourglass_empty</mat-icon>
+            <mat-icon *ngIf="!sendingInvite">send</mat-icon>
+            {{ sendingInvite ? 'Invio...' : 'Invia Invito' }}
+        </button>
+    </mat-dialog-actions>
+</ng-template>

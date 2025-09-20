@@ -43,7 +43,13 @@ export interface Flight {
     business: number;
     first: number;
   };
-  status: 'scheduled' | 'boarding' | 'departed' | 'arrived' | 'cancelled' | 'delayed';
+  status:
+    | 'scheduled'
+    | 'boarding'
+    | 'departed'
+    | 'arrived'
+    | 'cancelled'
+    | 'delayed';
   gate?: string;
   terminal?: string;
   baggage: {
@@ -80,14 +86,41 @@ export interface FlightSearchRequest {
   class?: 'economy' | 'business' | 'first';
 }
 
+// Interface for connecting flights
+export interface ConnectingFlight {
+  type: 'connecting';
+  totalDuration: number;
+  totalPrice: {
+    economy: number;
+    business: number;
+    first: number;
+  };
+  layovers: number;
+  segments: Array<
+    | {
+        flight: Flight;
+        segmentType: 'departure' | 'arrival';
+      }
+    | {
+        layover: {
+          airport: Airport;
+          duration: number;
+        };
+      }
+  >;
+}
+
+// Union type to handle both direct and connecting flights
+export type FlightResult = Flight | ConnectingFlight;
+
 export interface FlightSearchResponse {
   success: boolean;
   message?: string;
   data?: {
-    flights: Flight[];
+    flights: FlightResult[];
     count?: number;
   };
-  flights?: Flight[]; // For backward compatibility
+  flights?: FlightResult[]; // For backward compatibility
   totalCount?: number;
 }
 

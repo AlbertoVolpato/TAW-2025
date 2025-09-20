@@ -7,7 +7,7 @@ import { FlightService } from '../../../../services/flight.service';
 @Component({
   selector: 'app-booking-list',
   templateUrl: './booking-list.component.html',
-  styleUrls: ['./booking-list.component.scss']
+  styleUrls: ['./booking-list.component.scss'],
 })
 export class BookingListComponent implements OnInit {
   bookings: Booking[] = [];
@@ -28,20 +28,45 @@ export class BookingListComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
+    console.log('Loading bookings...');
+
     this.bookingService.getUserBookings().subscribe({
       next: (response) => {
         this.loading = false;
+        console.log('Bookings response:', response);
         if (response.success) {
-          this.bookings = response.data.bookings || [];
+          this.bookings = response.data?.bookings || [];
+          console.log('Loaded bookings:', this.bookings);
         } else {
-          this.error = response.message || 'Errore nel caricamento delle prenotazioni';
+          this.error =
+            response.message || 'Errore nel caricamento delle prenotazioni';
         }
       },
       error: (error) => {
         this.loading = false;
         console.error('Error loading bookings:', error);
-        this.error = error.error?.message || 'Errore nel caricamento delle prenotazioni';
-      }
+
+        // Better error handling to avoid showing MongoDB/technical errors to users
+        let userFriendlyError = 'Errore nel caricamento delle prenotazioni';
+
+        if (error.status === 0) {
+          userFriendlyError = 'Impossibile connettersi al server';
+        } else if (error.status === 401) {
+          userFriendlyError = 'Sessione scaduta, effettua il login';
+        } else if (error.status === 404) {
+          userFriendlyError = 'Servizio non disponibile';
+        } else if (error.status >= 500) {
+          userFriendlyError = 'Errore interno del server, riprova più tardi';
+        } else if (
+          error.error?.message &&
+          !error.error.message.includes('StrictPopulateError') &&
+          !error.error.message.includes('Cannot populate')
+        ) {
+          userFriendlyError = error.error.message;
+        }
+
+        this.error = userFriendlyError;
+      },
     });
   }
 
@@ -66,7 +91,7 @@ export class BookingListComponent implements OnInit {
       error: (error) => {
         console.error('Check-in error:', error);
         this.error = error.error?.message || 'Errore durante il check-in';
-      }
+      },
     });
   }
 
@@ -75,19 +100,31 @@ export class BookingListComponent implements OnInit {
       return;
     }
 
-    if (confirm('Sei sicuro di voler cancellare questa prenotazione?')) {
+    const confirmMessage = `Sei sicuro di voler cancellare questa prenotazione?\n\nRiceverai un rimborso di €${booking.totalPrice} nel tuo portafoglio virtuale.`;
+
+    if (confirm(confirmMessage)) {
       this.bookingService.cancelBooking(booking._id).subscribe({
         next: (response) => {
           if (response.success) {
-            booking.status = 'cancelled';
+            // Remove the booking from the list completely
+            this.bookings = this.bookings.filter((b) => b._id !== booking._id);
+
+            // Show success message with refund info
+            const refundAmount =
+              response.data?.refundAmount || booking.totalPrice;
+
+            // Create a more professional modal-style notification
+            const successMessage = `✅ Prenotazione cancellata con successo!\n\n💰 Rimborso di €${refundAmount} aggiunto al tuo portafoglio virtuale.\n\n📧 Riceverai una conferma via email a breve.`;
+            alert(successMessage);
           } else {
             this.error = response.message || 'Errore durante la cancellazione';
           }
         },
         error: (error) => {
           console.error('Cancel booking error:', error);
-          this.error = error.error?.message || 'Errore durante la cancellazione';
-        }
+          this.error =
+            error.error?.message || 'Errore durante la cancellazione';
+        },
       });
     }
   }
@@ -121,7 +158,11 @@ export class BookingListComponent implements OnInit {
   }
 
   canCheckIn(booking: Booking): boolean {
-    if (booking.checkedIn || booking.status !== 'confirmed' || booking.paymentStatus !== 'paid') {
+    if (
+      booking.checkedIn ||
+      booking.status !== 'confirmed' ||
+      booking.paymentStatus !== 'paid'
+    ) {
       return false;
     }
 

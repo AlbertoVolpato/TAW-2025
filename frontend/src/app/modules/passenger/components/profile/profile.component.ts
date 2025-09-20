@@ -7,7 +7,7 @@ import { User } from '../../../../models/user.model';
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.scss']
+  styleUrls: ['./profile.component.scss'],
 })
 export class ProfileComponent implements OnInit {
   profileForm: FormGroup;
@@ -25,7 +25,7 @@ export class ProfileComponent implements OnInit {
     this.profileForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
-      email: [{value: '', disabled: true}]
+      email: [{ value: '', disabled: true }],
     });
   }
 
@@ -42,15 +42,16 @@ export class ProfileComponent implements OnInit {
           this.profileForm.patchValue({
             firstName: response.user.firstName,
             lastName: response.user.lastName,
-            email: response.user.email
+            email: response.user.email,
           });
         }
         this.loading = false;
       },
       error: (error) => {
-        this.error = error.error?.message || 'Errore nel caricamento del profilo';
+        this.error =
+          error.error?.message || 'Errore nel caricamento del profilo';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -76,7 +77,7 @@ export class ProfileComponent implements OnInit {
 
     const updateData = {
       firstName: this.profileForm.value.firstName,
-      lastName: this.profileForm.value.lastName
+      lastName: this.profileForm.value.lastName,
     };
 
     this.authService.updateProfile(updateData).subscribe({
@@ -86,14 +87,16 @@ export class ProfileComponent implements OnInit {
           this.isEditing = false;
           this.currentUser = response.user || this.currentUser;
         } else {
-          this.error = response.message || 'Errore nell\'aggiornamento del profilo';
+          this.error =
+            response.message || "Errore nell'aggiornamento del profilo";
         }
         this.loading = false;
       },
       error: (error) => {
-        this.error = error.error?.message || 'Errore nell\'aggiornamento del profilo';
+        this.error =
+          error.error?.message || "Errore nell'aggiornamento del profilo";
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -109,8 +112,45 @@ export class ProfileComponent implements OnInit {
     this.authService.logout();
   }
 
+  deleteAccount(): void {
+    const confirmMessage = `⚠️ ATTENZIONE! ⚠️\n\nStai per eliminare definitivamente il tuo account.\n\nQuesta azione:\n• Cancellerà tutti i tuoi dati personali\n• Rimuoverà tutte le prenotazioni attive\n• Non può essere annullata\n\nSei SICURO di voler procedere?`;
+
+    if (confirm(confirmMessage)) {
+      const doubleConfirm = prompt(
+        'Per confermare, scrivi "ELIMINA" (tutto maiuscolo):'
+      );
+
+      if (doubleConfirm === 'ELIMINA') {
+        this.loading = true;
+        this.authService.deleteAccount().subscribe({
+          next: (response) => {
+            if (response.success) {
+              alert(
+                '✅ Account eliminato con successo.\n\nGrazie per aver utilizzato i nostri servizi.'
+              );
+              this.authService.logout();
+            } else {
+              this.error =
+                response.message ||
+                "Errore durante l'eliminazione dell'account";
+            }
+            this.loading = false;
+          },
+          error: (error) => {
+            this.error =
+              error.error?.message ||
+              "Errore durante l'eliminazione dell'account";
+            this.loading = false;
+          },
+        });
+      } else if (doubleConfirm !== null) {
+        alert('❌ Testo non corretto. Operazione annullata per sicurezza.');
+      }
+    }
+  }
+
   private markFormGroupTouched(): void {
-    Object.keys(this.profileForm.controls).forEach(key => {
+    Object.keys(this.profileForm.controls).forEach((key) => {
       const control = this.profileForm.get(key);
       control?.markAsTouched();
     });

@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AdminService } from '../../../../services/admin.service';
 import { AuthService } from '../../../../services/auth.service';
 import { User } from '../../../../models/user.model';
+import { AirlineInvitationDialogComponent } from '../airline-invitation-dialog/airline-invitation-dialog.component';
 
 @Component({
   selector: 'app-user-management',
@@ -16,9 +16,11 @@ export class UserManagementComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
-  // Forms
-  inviteAirlineForm: FormGroup;
-  showInviteForm = false;
+  // Search and filtering
+  searchTerm = '';
+  selectedRole = '';
+  selectedStatus = '';
+  searchTimeout: any;
 
   // Table columns
   displayedColumns: string[] = [
@@ -27,6 +29,7 @@ export class UserManagementComponent implements OnInit {
     'lastName',
     'role',
     'isActive',
+    'walletBalance',
     'actions',
   ];
 
@@ -37,24 +40,11 @@ export class UserManagementComponent implements OnInit {
   totalPages = 0;
 
   constructor(
-    private fb: FormBuilder,
     private adminService: AdminService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog
-  ) {
-    this.inviteAirlineForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
-      airlineName: ['', [Validators.required, Validators.minLength(2)]],
-      airlineCode: [
-        '',
-        [Validators.required, Validators.minLength(2), Validators.maxLength(3)],
-      ],
-      country: ['Italy'],
-    });
-  }
+  ) {}
 
   ngOnInit(): void {
     if (this.authService.isAdmin()) {
@@ -68,78 +58,77 @@ export class UserManagementComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.adminService
-      .getAllUsers({
-        page: this.currentPage,
-        limit: this.pageSize,
-      })
-      .subscribe({
-        next: (response: any) => {
-          if (response.success && response.data) {
-            this.users = response.data.users;
-            this.totalUsers = response.data.pagination.total;
-            this.totalPages = response.data.pagination.pages;
-          }
-          this.loading = false;
-        },
-        error: (error: any) => {
-          this.error =
-            error.error?.message || 'Errore nel caricamento degli utenti';
-          this.loading = false;
-          console.error('Error loading users:', error);
-        },
-      });
-  }
-
-  toggleInviteForm(): void {
-    this.showInviteForm = !this.showInviteForm;
-    this.error = null;
-    if (!this.showInviteForm) {
-      this.inviteAirlineForm.reset();
-      this.inviteAirlineForm.patchValue({ country: 'Italy' });
-    }
-  }
-
-  onInviteAirline(): void {
-    if (this.inviteAirlineForm.invalid) {
-      this.markFormGroupTouched(this.inviteAirlineForm);
-      return;
-    }
-
-    this.loading = true;
-    this.error = null;
-
-    const formData = {
-      email: this.inviteAirlineForm.value.email,
-      firstName: this.inviteAirlineForm.value.firstName,
-      lastName: this.inviteAirlineForm.value.lastName,
-      airlineName: this.inviteAirlineForm.value.airlineName,
-      airlineCode: this.inviteAirlineForm.value.airlineCode,
-      country: this.inviteAirlineForm.value.country,
+    const params: any = {
+      page: this.currentPage,
+      limit: this.pageSize,
+      excludeRole: 'airline', // Exclude airline users from user management
     };
 
-    this.adminService.createAirlineByInvitation(formData).subscribe({
+    // Add filters if set
+    if (this.searchTerm) {
+      params.search = this.searchTerm;
+    }
+    if (this.selectedRole) {
+      params.role = this.selectedRole;
+    }
+    if (this.selectedStatus) {
+      params.active = this.selectedStatus === 'active';
+    }
+
+    this.adminService.getAllUsers(params).subscribe({
       next: (response: any) => {
-        if (response.success) {
-          this.snackBar.open(
-            `Compagnia aerea creata con successo! Password temporanea: ${response.data.temporaryPassword}`,
-            'Chiudi',
-            { duration: 10000 }
-          );
-          this.showInviteForm = false;
-          this.inviteAirlineForm.reset();
-          this.inviteAirlineForm.patchValue({ country: 'Italy' });
-          this.loadUsers(); // Reload users list
+        if (response.success && response.data) {
+          this.users = response.data.users;
+          this.totalUsers = response.data.pagination.total;
+          this.totalPages = response.data.pagination.pages;
         }
         this.loading = false;
       },
       error: (error: any) => {
         this.error =
-          error.error?.message ||
-          'Errore nella creazione della compagnia aerea';
+          error.error?.message || 'Errore nel caricamento degli utenti';
         this.loading = false;
-        console.error('Error creating airline:', error);
+        console.error('Error loading users:', error);
       },
+    });
+  }
+
+  onSearchChange(): void {
+    // Debounce search to avoid too many API calls
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      this.currentPage = 1; // Reset to first page
+      this.loadUsers();
+    }, 500);
+  }
+
+  onFilterChange(): void {
+    this.currentPage = 1; // Reset to first page
+    this.loadUsers();
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.selectedRole = '';
+    this.selectedStatus = '';
+    this.currentPage = 1;
+    this.loadUsers();
+  }
+
+  openInviteAirlineDialog(): void {
+    const dialogRef = this.dialog.open(AirlineInvitationDialogComponent, {
+      width: '700px',
+      maxWidth: '90vw',
+      disableClose: false,
+      autoFocus: true,
+      panelClass: 'airline-invitation-dialog-container',
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        // Dialog was closed with success, reload users list
+        this.loadUsers();
+      }
     });
   }
 
@@ -224,12 +213,5 @@ export class UserManagementComponent implements OnInit {
       passenger: 'primary',
     };
     return roleColors[role] || 'primary';
-  }
-
-  private markFormGroupTouched(formGroup: FormGroup): void {
-    Object.keys(formGroup.controls).forEach((key) => {
-      const control = formGroup.get(key);
-      control?.markAsTouched();
-    });
   }
 }

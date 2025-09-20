@@ -1,25 +1,24 @@
-import { Request, Response, NextFunction } from 'express';
-import { Booking, IBooking } from '../models/Booking';
-import { Flight } from '../models/Flight';
-import { User } from '../models/User';
-import mongoose from 'mongoose';
+import { Request, Response, NextFunction } from "express";
+import { Booking, IBooking } from "../models/Booking";
+import { Flight } from "../models/Flight";
+import { User } from "../models/User";
+import mongoose from "mongoose";
 
 // Create a new booking
-export const createBooking = async (req: Request, res: Response, next: NextFunction) => {
+export const createBooking = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.user?.userId;
-    const {
-      flightId,
-      passengers,
-      contactInfo,
-      baggage,
-      specialServices
-    } = req.body;
+    const { flightId, passengers, contactInfo, baggage, specialServices } =
+      req.body;
 
     if (!userId) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
     }
 
@@ -27,7 +26,7 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
     if (!flightId || !passengers || !contactInfo) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required booking information'
+        message: "Missing required booking information",
       });
     }
 
@@ -36,20 +35,22 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
     if (!flight) {
       return res.status(404).json({
         success: false,
-        message: 'Flight not found'
+        message: "Flight not found",
       });
     }
 
     // Check seat availability
     const requestedSeats = passengers.map((p: any) => p.seatNumber);
-    const unavailableSeats = flight.seats.filter(seat => 
-      requestedSeats.includes(seat.seatNumber) && !seat.isAvailable
+    const unavailableSeats = flight.seats.filter(
+      (seat) => requestedSeats.includes(seat.seatNumber) && !seat.isAvailable
     );
 
     if (unavailableSeats.length > 0) {
       return res.status(400).json({
         success: false,
-        message: `Seats ${unavailableSeats.map(s => s.seatNumber).join(', ')} are not available`
+        message: `Seats ${unavailableSeats
+          .map((s) => s.seatNumber)
+          .join(", ")} are not available`,
       });
     }
 
@@ -60,9 +61,9 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
 
     passengers.forEach((passenger: any) => {
       let seatPrice = basePrice;
-      if (passenger.seatClass === 'business') {
+      if (passenger.seatClass === "business") {
         seatPrice = flight.basePrice.business || basePrice * 2;
-      } else if (passenger.seatClass === 'first') {
+      } else if (passenger.seatClass === "first") {
         seatPrice = flight.basePrice.first || basePrice * 3;
       }
       totalBasePrice += seatPrice;
@@ -78,7 +79,7 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
     }
 
     if (baggageFees > 0) {
-      extras.push({ name: 'Extra Baggage', price: baggageFees });
+      extras.push({ name: "Extra Baggage", price: baggageFees });
     }
 
     // Add special services fees
@@ -88,25 +89,26 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
     }
     if (specialServices?.specialMeal) {
       servicesFees += 25; // €25 for special meal
-      extras.push({ name: 'Special Meal', price: 25 });
+      extras.push({ name: "Special Meal", price: 25 });
     }
     if (specialServices?.unaccompaniedMinor) {
       servicesFees += 100; // €100 for unaccompanied minor service
-      extras.push({ name: 'Unaccompanied Minor Service', price: 100 });
+      extras.push({ name: "Unaccompanied Minor Service", price: 100 });
     }
     if (specialServices?.petTransport) {
       servicesFees += 150; // €150 for pet transport
-      extras.push({ name: 'Pet Transport', price: 150 });
+      extras.push({ name: "Pet Transport", price: 150 });
     }
 
     const taxes = totalBasePrice * 0.15; // 15% taxes
     const fees = 25; // Fixed booking fee
-    const totalPrice = totalBasePrice + taxes + fees + baggageFees + servicesFees;
+    const totalPrice =
+      totalBasePrice + taxes + fees + baggageFees + servicesFees;
 
     // Generate unique booking reference
     const generateBookingReference = () => {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let result = '';
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let result = "";
       for (let i = 0; i < 6; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
       }
@@ -123,6 +125,28 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
       }
     }
 
+    // Check user's wallet balance
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (user.walletBalance < totalPrice) {
+      return res.status(400).json({
+        success: false,
+        message: `Saldo insufficiente. Saldo attuale: €${user.walletBalance.toFixed(
+          2
+        )}, Importo richiesto: €${totalPrice.toFixed(2)}`,
+      });
+    }
+
+    // Deduct from wallet
+    user.walletBalance -= totalPrice;
+    await user.save();
+
     // Create booking
     const booking = new Booking({
       bookingReference,
@@ -135,25 +159,29 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
         taxes,
         fees,
         extras,
-        totalPrice
+        totalPrice,
       },
       payment: {
-        method: 'credit_card', // Default, will be updated during payment
-        status: 'pending'
+        method: "wallet",
+        status: "completed",
+        paidAt: new Date(),
       },
+      status: "confirmed",
       baggage: baggage || { carryOn: 1, checked: 1, extraBags: 0 },
       specialServices: specialServices || {
         wheelchairAssistance: false,
         unaccompaniedMinor: false,
-        petTransport: false
-      }
+        petTransport: false,
+      },
     });
 
     await booking.save();
 
     // Temporarily reserve seats (they will be confirmed after payment)
     requestedSeats.forEach((seatNumber: string) => {
-      const seatIndex = flight.seats.findIndex(seat => seat.seatNumber === seatNumber);
+      const seatIndex = flight.seats.findIndex(
+        (seat) => seat.seatNumber === seatNumber
+      );
       if (seatIndex !== -1) {
         flight.seats[seatIndex].isAvailable = false;
       }
@@ -162,22 +190,26 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
 
     // Populate booking for response
     const populatedBooking = await Booking.findById(booking._id)
-      .populate('flight')
-      .populate('user', 'firstName lastName email');
+      .populate("flight")
+      .populate("user", "firstName lastName email");
 
     res.status(201).json({
       success: true,
-      message: 'Booking created successfully',
-      data: populatedBooking
+      message: "Booking created successfully",
+      data: populatedBooking,
     });
   } catch (error) {
-    console.error('Error creating booking:', error);
+    console.error("Error creating booking:", error);
     next(error);
   }
 };
 
 // Get user's bookings
-export const getUserBookings = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserBookings = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.user?.userId;
     const { page = 1, limit = 10, status } = req.query;
@@ -185,7 +217,7 @@ export const getUserBookings = async (req: Request, res: Response, next: NextFun
     if (!userId) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
     }
 
@@ -196,15 +228,12 @@ export const getUserBookings = async (req: Request, res: Response, next: NextFun
 
     const bookings = await Booking.find(filter)
       .populate({
-        path: 'flight',
-        populate: {
-          path: 'route',
-          populate: [
-            { path: 'origin', select: 'name city country iataCode' },
-            { path: 'destination', select: 'name city country iataCode' },
-            { path: 'airline', select: 'name iataCode' }
-          ]
-        }
+        path: "flight",
+        populate: [
+          { path: "departureAirport", select: "name city country iataCode" },
+          { path: "arrivalAirport", select: "name city country iataCode" },
+          { path: "airline", select: "name iataCode logo" },
+        ],
       })
       .sort({ createdAt: -1 })
       .limit(Number(limit))
@@ -220,18 +249,22 @@ export const getUserBookings = async (req: Request, res: Response, next: NextFun
           page: Number(page),
           limit: Number(limit),
           total,
-          pages: Math.ceil(total / Number(limit))
-        }
-      }
+          pages: Math.ceil(total / Number(limit)),
+        },
+      },
     });
   } catch (error) {
-    console.error('Error fetching user bookings:', error);
+    console.error("Error fetching user bookings:", error);
     next(error);
   }
 };
 
 // Get booking by ID
-export const getBookingById = async (req: Request, res: Response, next: NextFunction) => {
+export const getBookingById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.user?.userId;
     const { bookingId } = req.params;
@@ -239,51 +272,52 @@ export const getBookingById = async (req: Request, res: Response, next: NextFunc
     if (!userId) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
     }
 
     const booking = await Booking.findById(bookingId)
       .populate({
-        path: 'flight',
-        populate: {
-          path: 'route',
-          populate: [
-            { path: 'origin', select: 'name city country iataCode' },
-            { path: 'destination', select: 'name city country iataCode' },
-            { path: 'airline', select: 'name iataCode' }
-          ]
-        }
+        path: "flight",
+        populate: [
+          { path: "departureAirport", select: "name city country iataCode" },
+          { path: "arrivalAirport", select: "name city country iataCode" },
+          { path: "airline", select: "name iataCode logo" },
+        ],
       })
-      .populate('user', 'firstName lastName email');
+      .populate("user", "firstName lastName email");
 
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: 'Booking not found'
+        message: "Booking not found",
       });
     }
 
     // Check if user owns this booking or is admin
-    if (booking.user._id.toString() !== userId && req.user?.role !== 'admin') {
+    if (booking.user._id.toString() !== userId && req.user?.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: "Access denied",
       });
     }
 
     res.status(200).json({
       success: true,
-      data: booking
+      data: booking,
     });
   } catch (error) {
-    console.error('Error fetching booking:', error);
+    console.error("Error fetching booking:", error);
     next(error);
   }
 };
 
 // Update booking (limited fields)
-export const updateBooking = async (req: Request, res: Response, next: NextFunction) => {
+export const updateBooking = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.user?.userId;
     const { bookingId } = req.params;
@@ -292,7 +326,7 @@ export const updateBooking = async (req: Request, res: Response, next: NextFunct
     if (!userId) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
     }
 
@@ -300,7 +334,7 @@ export const updateBooking = async (req: Request, res: Response, next: NextFunct
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: 'Booking not found'
+        message: "Booking not found",
       });
     }
 
@@ -308,15 +342,15 @@ export const updateBooking = async (req: Request, res: Response, next: NextFunct
     if (booking.user.toString() !== userId) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: "Access denied",
       });
     }
 
     // Only allow updates if booking is still pending
-    if (booking.status !== 'pending') {
+    if (booking.status !== "pending") {
       return res.status(400).json({
         success: false,
-        message: 'Cannot update confirmed or cancelled booking'
+        message: "Cannot update confirmed or cancelled booking",
       });
     }
 
@@ -325,28 +359,35 @@ export const updateBooking = async (req: Request, res: Response, next: NextFunct
       booking.contactInfo = { ...booking.contactInfo, ...contactInfo };
     }
     if (specialServices) {
-      booking.specialServices = { ...booking.specialServices, ...specialServices };
+      booking.specialServices = {
+        ...booking.specialServices,
+        ...specialServices,
+      };
     }
 
     await booking.save();
 
     const updatedBooking = await Booking.findById(bookingId)
-      .populate('flight')
-      .populate('user', 'firstName lastName email');
+      .populate("flight")
+      .populate("user", "firstName lastName email");
 
     res.status(200).json({
       success: true,
-      message: 'Booking updated successfully',
-      data: updatedBooking
+      message: "Booking updated successfully",
+      data: updatedBooking,
     });
   } catch (error) {
-    console.error('Error updating booking:', error);
+    console.error("Error updating booking:", error);
     next(error);
   }
 };
 
 // Cancel booking
-export const cancelBooking = async (req: Request, res: Response, next: NextFunction) => {
+export const cancelBooking = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.user?.userId;
     const { bookingId } = req.params;
@@ -355,15 +396,15 @@ export const cancelBooking = async (req: Request, res: Response, next: NextFunct
     if (!userId) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
     }
 
-    const booking = await Booking.findById(bookingId).populate('flight');
+    const booking = await Booking.findById(bookingId).populate("flight");
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: 'Booking not found'
+        message: "Booking not found",
       });
     }
 
@@ -371,56 +412,80 @@ export const cancelBooking = async (req: Request, res: Response, next: NextFunct
     if (booking.user.toString() !== userId) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: "Access denied",
       });
     }
 
     // Check if booking can be cancelled
-    if (booking.status === 'cancelled') {
+    if (booking.status === "cancelled") {
       return res.status(400).json({
         success: false,
-        message: 'Booking is already cancelled'
+        message: "Booking is already cancelled",
       });
     }
 
-    if (booking.status === 'completed') {
+    if (booking.status === "completed") {
       return res.status(400).json({
         success: false,
-        message: 'Cannot cancel completed booking'
+        message: "Cannot cancel completed booking",
       });
     }
 
-    // Update booking status
-    booking.status = 'cancelled';
-    await booking.save();
+    // Process refund to user's wallet
+    const user = await User.findById(userId);
+    let refundAmount = 0;
+    if (user && booking.payment.status === "completed") {
+      refundAmount = booking.pricing.totalPrice;
+      user.walletBalance += refundAmount;
+      await user.save();
 
-    // Release seats back to flight
-    if (booking.flight && booking.passengers) {
-      const flight = await Flight.findById(booking.flight._id);
-      if (flight) {
-        booking.passengers.forEach(passenger => {
-          const seatIndex = flight.seats.findIndex(seat => seat.seatNumber === passenger.seatNumber);
-          if (seatIndex !== -1) {
-            flight.seats[seatIndex].isAvailable = true;
-          }
-        });
-        await flight.save();
-      }
+      console.log(
+        `Refunded €${refundAmount} to user ${userId} for cancelled booking ${bookingId}`
+      );
     }
+
+    // Free up reserved seats
+    if (booking.flight) {
+      const flight = booking.flight as any;
+      booking.passengers.forEach((passenger) => {
+        const seatIndex = flight.seats?.findIndex(
+          (seat: any) => seat.seatNumber === passenger.seatNumber
+        );
+        if (seatIndex !== -1 && flight.seats) {
+          flight.seats[seatIndex].isAvailable = true;
+        }
+      });
+      await flight.save();
+    }
+
+    // Delete the booking instead of marking as cancelled
+    await Booking.findByIdAndDelete(bookingId);
 
     res.status(200).json({
       success: true,
-      message: 'Booking cancelled successfully',
-      data: { bookingId, status: 'cancelled', reason }
+      message: "Prenotazione cancellata con successo",
+      data: {
+        refundAmount: refundAmount,
+        message:
+          refundAmount > 0
+            ? `Rimborso di €${refundAmount.toFixed(
+                2
+              )} accreditato nel portafoglio`
+            : "Prenotazione eliminata",
+      },
     });
   } catch (error) {
-    console.error('Error cancelling booking:', error);
+    console.error("Error cancelling booking:", error);
     next(error);
   }
 };
 
 // Check-in for booking
-export const checkInBooking = async (req: Request, res: Response, next: NextFunction) => {
+export const checkInBooking = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.user?.userId;
     const { bookingId } = req.params;
@@ -428,15 +493,15 @@ export const checkInBooking = async (req: Request, res: Response, next: NextFunc
     if (!userId) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
     }
 
-    const booking = await Booking.findById(bookingId).populate('flight');
+    const booking = await Booking.findById(bookingId).populate("flight");
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: 'Booking not found'
+        message: "Booking not found",
       });
     }
 
@@ -444,15 +509,15 @@ export const checkInBooking = async (req: Request, res: Response, next: NextFunc
     if (booking.user.toString() !== userId) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: "Access denied",
       });
     }
 
     // Check if booking is confirmed
-    if (booking.status !== 'confirmed') {
+    if (booking.status !== "confirmed") {
       return res.status(400).json({
         success: false,
-        message: 'Only confirmed bookings can be checked in'
+        message: "Only confirmed bookings can be checked in",
       });
     }
 
@@ -460,7 +525,7 @@ export const checkInBooking = async (req: Request, res: Response, next: NextFunc
     if (booking.checkedIn) {
       return res.status(400).json({
         success: false,
-        message: 'Booking is already checked in'
+        message: "Booking is already checked in",
       });
     }
 
@@ -474,14 +539,14 @@ export const checkInBooking = async (req: Request, res: Response, next: NextFunc
     if (hoursDiff > 24) {
       return res.status(400).json({
         success: false,
-        message: 'Check-in is available 24 hours before departure'
+        message: "Check-in is available 24 hours before departure",
       });
     }
 
     if (hoursDiff < 0) {
       return res.status(400).json({
         success: false,
-        message: 'Flight has already departed'
+        message: "Flight has already departed",
       });
     }
 
@@ -492,21 +557,25 @@ export const checkInBooking = async (req: Request, res: Response, next: NextFunc
 
     res.status(200).json({
       success: true,
-      message: 'Check-in successful',
+      message: "Check-in successful",
       data: {
         bookingId,
         checkedIn: true,
-        checkedInAt: booking.checkedInAt
-      }
+        checkedInAt: booking.checkedInAt,
+      },
     });
   } catch (error) {
-    console.error('Error checking in booking:', error);
+    console.error("Error checking in booking:", error);
     next(error);
   }
 };
 
 // Get booking by reference (public endpoint for booking lookup)
-export const getBookingByReference = async (req: Request, res: Response, next: NextFunction) => {
+export const getBookingByReference = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { reference } = req.params;
     const { email } = req.query;
@@ -514,39 +583,35 @@ export const getBookingByReference = async (req: Request, res: Response, next: N
     if (!reference || !email) {
       return res.status(400).json({
         success: false,
-        message: 'Booking reference and email are required'
+        message: "Booking reference and email are required",
       });
     }
 
-    const booking = await Booking.findOne({ 
+    const booking = await Booking.findOne({
       bookingReference: reference.toUpperCase(),
-      'contactInfo.email': email
-    })
-      .populate({
-        path: 'flight',
-        populate: {
-          path: 'route',
-          populate: [
-            { path: 'origin', select: 'name city country iataCode' },
-            { path: 'destination', select: 'name city country iataCode' },
-            { path: 'airline', select: 'name iataCode' }
-          ]
-        }
-      });
+      "contactInfo.email": email,
+    }).populate({
+      path: "flight",
+      populate: [
+        { path: "departureAirport", select: "name city country iataCode" },
+        { path: "arrivalAirport", select: "name city country iataCode" },
+        { path: "airline", select: "name iataCode logo" },
+      ],
+    });
 
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: 'Booking not found with provided reference and email'
+        message: "Booking not found with provided reference and email",
       });
     }
 
     res.status(200).json({
       success: true,
-      data: booking
+      data: booking,
     });
   } catch (error) {
-    console.error('Error fetching booking by reference:', error);
+    console.error("Error fetching booking by reference:", error);
     next(error);
   }
 };

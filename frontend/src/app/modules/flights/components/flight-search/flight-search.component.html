@@ -30,74 +30,64 @@
           </div>
 
           <!-- Airports Row -->
-           <div class="airports-row">
-             <!-- Departure Airport -->
-             <div class="form-group">
-               <label>Da</label>
-               <app-custom-autocomplete
-                 [options]="airports"
-                 placeholder="Città o aeroporto di partenza"
-                 icon="takeoff"
-                 formControlName="departureAirport"
-                 (optionSelected)="onDepartureAirportSelected($event)">
-               </app-custom-autocomplete>
-               <div class="error" *ngIf="searchForm.get('departureAirport')?.invalid && searchForm.get('departureAirport')?.touched">
-                 Seleziona un aeroporto di partenza
-               </div>
-             </div>
+          <div class="airports-row">
+            <!-- Departure Airport -->
+            <div class="form-group">
+              <label>Da</label>
+              <app-custom-autocomplete [options]="airports" placeholder="Città o aeroporto di partenza" icon="takeoff"
+                formControlName="departureAirport" (optionSelected)="onDepartureAirportSelected($event)">
+              </app-custom-autocomplete>
+              <div class="error"
+                *ngIf="searchForm.get('departureAirport')?.invalid && searchForm.get('departureAirport')?.touched">
+                Seleziona un aeroporto di partenza
+              </div>
+            </div>
 
-             <!-- Swap Button -->
-             <div class="swap-container">
-               <button type="button" class="swap-btn" (click)="swapAirports()">
-                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                 </svg>
-               </button>
-             </div>
+            <!-- Swap Button -->
+            <div class="swap-container">
+              <button type="button" class="swap-btn" (click)="swapAirports()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                </svg>
+              </button>
+            </div>
 
-             <!-- Arrival Airport -->
-             <div class="form-group">
-               <label>A</label>
-               <app-custom-autocomplete
-                 [options]="airports"
-                 placeholder="Città o aeroporto di destinazione"
-                 icon="landing"
-                 formControlName="arrivalAirport"
-                 (optionSelected)="onArrivalAirportSelected($event)">
-               </app-custom-autocomplete>
-               <div class="error" *ngIf="searchForm.get('arrivalAirport')?.invalid && searchForm.get('arrivalAirport')?.touched">
-                 Seleziona un aeroporto di destinazione
-               </div>
-             </div>
-           </div>
+            <!-- Arrival Airport -->
+            <div class="form-group">
+              <label>A</label>
+              <app-custom-autocomplete [options]="airports" placeholder="Città o aeroporto di destinazione"
+                icon="landing" formControlName="arrivalAirport" (optionSelected)="onArrivalAirportSelected($event)">
+              </app-custom-autocomplete>
+              <div class="error"
+                *ngIf="searchForm.get('arrivalAirport')?.invalid && searchForm.get('arrivalAirport')?.touched">
+                Seleziona un aeroporto di destinazione
+              </div>
+            </div>
+          </div>
 
           <!-- Dates Row -->
-           <div class="dates-row">
-             <div class="form-group">
-               <label>Data partenza</label>
-               <input type="date" 
-                      formControlName="departureDate"
-                      [min]="getMinDate()"
-                      [max]="getMaxDate()">
-               <div class="selected-date-info" *ngIf="searchForm.get('departureDate')?.value">
-                 <small class="text-primary-600">
-                   Data selezionata: {{ formatSelectedDate(searchForm.get('departureDate')?.value) }}
-                 </small>
-               </div>
-             </div>
-             <div class="form-group" *ngIf="searchForm.get('tripType')?.value === 'roundTrip'">
-               <label>Data ritorno</label>
-               <input type="date" 
-                      formControlName="returnDate"
-                      [min]="searchForm.get('departureDate')?.value || getMinDate()"
-                      [max]="getMaxDate()">
-               <div class="selected-date-info" *ngIf="searchForm.get('returnDate')?.value">
-                 <small class="text-primary-600">
-                   Data selezionata: {{ formatSelectedDate(searchForm.get('returnDate')?.value) }}
-                 </small>
-               </div>
-             </div>
-           </div>
+          <div class="dates-row">
+            <div class="form-group">
+              <label>Data partenza</label>
+              <input type="date" formControlName="departureDate" [min]="getMinDate()" [max]="getMaxDate()">
+              <div class="selected-date-info" *ngIf="searchForm.get('departureDate')?.value">
+                <small class="text-primary-600">
+                  Data selezionata: {{ formatSelectedDate(searchForm.get('departureDate')?.value) }}
+                </small>
+              </div>
+            </div>
+            <div class="form-group" *ngIf="searchForm.get('tripType')?.value === 'roundTrip'">
+              <label>Data ritorno</label>
+              <input type="date" formControlName="returnDate"
+                [min]="searchForm.get('departureDate')?.value || getMinDate()" [max]="getMaxDate()">
+              <div class="selected-date-info" *ngIf="searchForm.get('returnDate')?.value">
+                <small class="text-primary-600">
+                  Data selezionata: {{ formatSelectedDate(searchForm.get('returnDate')?.value) }}
+                </small>
+              </div>
+            </div>
+          </div>
 
           <!-- Options Row -->
           <div class="options-row">
@@ -121,12 +111,11 @@
 
           <!-- Search Button -->
           <div class="search-button-container">
-            <button type="submit" 
-                    class="btn btn-primary btn-lg search-btn"
-                    [disabled]="searchForm.invalid || loading">
+            <button type="submit" class="btn btn-primary btn-lg search-btn" [disabled]="searchForm.invalid || loading">
               <div class="spinner" *ngIf="loading"></div>
               <svg *ngIf="!loading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
               <span>{{ loading ? 'Ricerca in corso...' : 'Cerca Voli' }}</span>
             </button>
@@ -137,32 +126,32 @@
   </section>
 
   <!-- Filters Section -->
-   <section class="filters-section" *ngIf="flights.length > 0">
-     <div class="container">
-       <div class="filters-card">
-         <h3>Filtra e ordina risultati</h3>
-         <div class="filters-grid">
-           <div class="form-group">
-             <label>Ordina per</label>
-             <select [value]="sortBy" (change)="onSortChange($event)">
-               <option value="price">Prezzo più basso</option>
-               <option value="duration">Durata più breve</option>
-               <option value="departure">Orario partenza</option>
-             </select>
-           </div>
-           <div class="form-group">
-             <label>Classe</label>
-             <select [value]="classFilter" (change)="onClassFilterChange($event)">
-               <option value="all">Tutte le classi</option>
-               <option value="economy">Economy</option>
-               <option value="business">Business</option>
-               <option value="first">Prima classe</option>
-             </select>
-           </div>
-         </div>
-       </div>
-     </div>
-   </section>
+  <section class="filters-section" *ngIf="flights.length > 0">
+    <div class="container">
+      <div class="filters-card">
+        <h3>Filtra e ordina risultati</h3>
+        <div class="filters-grid">
+          <div class="form-group">
+            <label>Ordina per</label>
+            <select [value]="sortBy" (change)="onSortChange($event)">
+              <option value="price">Prezzo più basso</option>
+              <option value="duration">Durata più breve</option>
+              <option value="departure">Orario partenza</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Classe</label>
+            <select [value]="classFilter" (change)="onClassFilterChange($event)">
+              <option value="all">Tutte le classi</option>
+              <option value="economy">Economy</option>
+              <option value="business">Business</option>
+              <option value="first">Prima classe</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- Error Section -->
   <section class="error-section" *ngIf="error && !loading">
@@ -170,7 +159,9 @@
       <div class="error-card">
         <div class="error-content">
           <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z">
+            </path>
           </svg>
           <div>
             <h3>Nessun volo trovato</h3>
@@ -188,50 +179,54 @@
       <div class="flights-grid">
         <div *ngFor="let flight of flights" class="flight-card">
           <!-- Alternative date badge -->
-           <div *ngIf="flight.isAlternativeDate" class="alternative-date-badge">
-             <small>
-               <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-               </svg>
-               {{ flight.alternativeDate ? formatSelectedDate(flight.alternativeDate) : '' }}
-               <span class="days-diff" *ngIf="flight.daysDifference !== undefined">({{ flight.daysDifference > 0 ? '+' : '' }}{{ flight.daysDifference }} giorni)</span>
-             </small>
-           </div>
-          
+          <div *ngIf="flight.isAlternativeDate" class="alternative-date-badge">
+            <small>
+              <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              {{ flight.alternativeDate ? formatSelectedDate(flight.alternativeDate) : '' }}
+              <span class="days-diff" *ngIf="flight.daysDifference !== undefined">({{ flight.daysDifference > 0 ? '+' :
+                '' }}{{ flight.daysDifference }} giorni)</span>
+            </small>
+          </div>
+
           <!-- Flight info -->
           <div class="flight-info">
             <div class="flight-route">
               <div class="airport">
-                <span class="code">{{ flight.departureAirport?.code }}</span>
-                <span class="city">{{ flight.departureAirport?.city }}</span>
+                <span class="code">{{ getDepartureAirportCode(flight) }}</span>
+                <span class="city">{{ getDepartureAirportCity(flight) }}</span>
               </div>
               <div class="flight-path">
                 <svg class="plane-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                 </svg>
               </div>
               <div class="airport">
-                <span class="code">{{ flight.arrivalAirport?.code }}</span>
-                <span class="city">{{ flight.arrivalAirport?.city }}</span>
+                <span class="code">{{ getArrivalAirportCode(flight) }}</span>
+                <span class="city">{{ getArrivalAirportCity(flight) }}</span>
               </div>
             </div>
-            
+
             <div class="flight-details">
               <div class="time-info">
-                <span class="departure-time">{{ flight.departureTime | date:'HH:mm' }}</span>
-                <span class="duration">{{ formatDuration(flight.duration) }}</span>
-                <span class="arrival-time">{{ flight.arrivalTime | date:'HH:mm' }}</span>
+                <span class="departure-time">{{ getDepartureTime(flight) | date:'HH:mm' }}</span>
+                <span class="duration">{{ formatDuration(getFlightDuration(flight)) }}</span>
+                <span class="arrival-time">{{ getArrivalTime(flight) | date:'HH:mm' }}</span>
               </div>
-              
+
               <div class="flight-meta">
-                <span class="airline">{{ flight.airline?.name }}</span>
-                <span class="flight-number">{{ flight.flightNumber }}</span>
+                <span class="airline">{{ getAirlineName(flight) }}</span>
+                <span class="flight-number">{{ getFlightNumber(flight) }}</span>
+                <span *ngIf="isConnectingFlight(flight)" class="layovers">{{ getLayovers(flight) }} scalo/i</span>
               </div>
             </div>
-            
+
             <div class="price-info">
-              <span class="price">€{{ flight.basePrice?.economy }}</span>
-              <button class="select-btn">Seleziona</button>
+              <span class="price">€{{ getFlightPrice(flight) }}</span>
+              <button class="select-btn" (click)="navigateToBooking(flight)">Seleziona</button>
             </div>
           </div>
         </div>
@@ -245,11 +240,90 @@
       <div class="no-results">
         <div class="no-results-icon">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8">
+            </path>
           </svg>
         </div>
         <h3>Nessun volo trovato</h3>
         <p>Prova a modificare i criteri di ricerca o le date selezionate per trovare più opzioni.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cheapest Flights Recommendations Section -->
+  <section class="cheapest-flights-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Offerte Speciali</h2>
+        <p>I voli più economici disponibili</p>
+      </div>
+
+      <div *ngIf="loadingCheapestFlights" class="loading-state">
+        <div class="spinner"></div>
+        <p>Caricamento offerte...</p>
+      </div>
+
+      <div *ngIf="!loadingCheapestFlights && cheapestFlights.length > 0" class="cheapest-flights-grid">
+        <div class="cheapest-flight-card" *ngFor="let flight of cheapestFlights">
+          <div class="flight-header">
+            <div class="airline-info">
+              <img *ngIf="flight.airline.logo" [src]="flight.airline.logo" [alt]="flight.airline.name"
+                class="airline-logo">
+              <div class="airline-details">
+                <h4>{{ flight.airline.name }}</h4>
+                <span class="flight-number">{{ flight.flightNumber }}</span>
+              </div>
+            </div>
+            <div class="flight-price">
+              <span class="price">{{ formatPrice(flight.basePrice.economy) }}</span>
+              <span class="price-label">da</span>
+            </div>
+          </div>
+
+          <div class="flight-route">
+            <div class="departure">
+              <h5>{{ flight.departureAirport.code }}</h5>
+              <p>{{ flight.departureAirport.city }}</p>
+              <span class="time">{{ flight.departureTime | date:'HH:mm' }}</span>
+            </div>
+
+            <div class="flight-path">
+              <div class="duration">{{ formatDuration(flight.duration) }}</div>
+              <div class="path-line">
+                <div class="plane-icon">✈️</div>
+              </div>
+            </div>
+
+            <div class="arrival">
+              <h5>{{ flight.arrivalAirport.code }}</h5>
+              <p>{{ flight.arrivalAirport.city }}</p>
+              <span class="time">{{ flight.arrivalTime | date:'HH:mm' }}</span>
+            </div>
+          </div>
+
+          <div class="flight-footer">
+            <div class="flight-date">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <span>{{ flight.departureTime | date:'dd MMM yyyy' }}</span>
+            </div>
+            <button class="btn btn-primary btn-sm" (click)="selectCheapFlight(flight)">
+              Prenota
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!loadingCheapestFlights && cheapestFlights.length === 0" class="empty-state">
+        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+          </path>
+        </svg>
+        <h3>Nessuna offerta disponibile</h3>
+        <p>Al momento non ci sono voli economici disponibili. Riprova più tardi.</p>
       </div>
     </div>
   </section>

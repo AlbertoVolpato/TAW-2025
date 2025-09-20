@@ -18,6 +18,7 @@ import aircraftRouter from "./routes/aircraft";
 import flightsRouter from "./routes/flights";
 import paymentsRouter from "./routes/payments";
 import bookingsRouter from "./routes/bookings";
+import systemRouter from "./routes/system";
 
 // Load environment variables
 dotenv.config();
@@ -62,6 +63,7 @@ app.use("/api/aircraft", aircraftRouter);
 app.use("/api/flights", flightsRouter);
 app.use("/api/payments", paymentsRouter);
 app.use("/api/bookings", bookingsRouter);
+app.use("/api/admin/system", systemRouter);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

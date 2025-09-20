@@ -40,6 +40,10 @@ export interface IBooking extends Document {
   status: "pending" | "confirmed" | "cancelled" | "completed";
   checkedIn: boolean;
   checkedInAt?: Date;
+  cancellation?: {
+    reason: string;
+    cancelledAt: Date;
+  };
   baggage: {
     carryOn: number;
     checked: number;
@@ -226,6 +230,15 @@ const bookingSchema = new Schema<IBooking>(
     },
     checkedInAt: {
       type: Date,
+    },
+    cancellation: {
+      reason: {
+        type: String,
+        trim: true,
+      },
+      cancelledAt: {
+        type: Date,
+      },
     },
     baggage: {
       carryOn: {

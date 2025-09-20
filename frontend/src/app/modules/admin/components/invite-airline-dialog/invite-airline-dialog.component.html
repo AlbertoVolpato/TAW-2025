@@ -1,0 +1,147 @@
+<div class="invite-dialog">
+  <mat-dialog-header>
+    <div class="dialog-title">
+      <mat-icon class="dialog-icon">airplanemode_active</mat-icon>
+      <h2 mat-dialog-title>Invita Nuova Compagnia Aerea</h2>
+    </div>
+    <button
+      mat-icon-button
+      mat-dialog-close
+      class="close-button"
+      aria-label="Chiudi dialog"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-dialog-header>
+
+  <mat-dialog-content>
+    <div class="dialog-description">
+      <p>La compagnia aerea riceverà una password temporanea via email e potrà accedere immediatamente al sistema.</p>
+    </div>
+
+    <form [formGroup]="inviteForm" (ngSubmit)="onSubmit()">
+      <!-- Contact Information Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <mat-icon>person</mat-icon>
+          Informazioni Contatto
+        </h3>
+        <div class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" required>
+            <mat-icon matSuffix>email</mat-icon>
+            <mat-error *ngIf="inviteForm.get('email')?.hasError('required')">
+              Email richiesta
+            </mat-error>
+            <mat-error *ngIf="inviteForm.get('email')?.hasError('email')">
+              Email non valida
+            </mat-error>
+            <mat-hint>Verrà usata come username per il login</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Nome</mat-label>
+            <input matInput formControlName="firstName" required>
+            <mat-icon matSuffix>badge</mat-icon>
+            <mat-error *ngIf="inviteForm.get('firstName')?.hasError('required')">
+              Nome richiesto
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Cognome</mat-label>
+            <input matInput formControlName="lastName" required>
+            <mat-icon matSuffix>badge</mat-icon>
+            <mat-error *ngIf="inviteForm.get('lastName')?.hasError('required')">
+              Cognome richiesto
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Airline Information Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <mat-icon>business</mat-icon>
+          Informazioni Compagnia
+        </h3>
+        <div class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Nome Compagnia</mat-label>
+            <input matInput formControlName="airlineName" required>
+            <mat-icon matSuffix>flight_takeoff</mat-icon>
+            <mat-error *ngIf="inviteForm.get('airlineName')?.hasError('required')">
+              Nome compagnia richiesto
+            </mat-error>
+            <mat-hint>Es: Alitalia, Lufthansa, Air France</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Codice IATA</mat-label>
+            <input 
+              matInput 
+              formControlName="airlineCode" 
+              required 
+              maxlength="3" 
+              style="text-transform: uppercase;"
+              placeholder="ES: AZ"
+            >
+            <mat-icon matSuffix>confirmation_number</mat-icon>
+            <mat-error *ngIf="inviteForm.get('airlineCode')?.hasError('required')">
+              Codice richiesto
+            </mat-error>
+            <mat-error *ngIf="inviteForm.get('airlineCode')?.hasError('pattern')">
+              Formato non valido (2-3 lettere maiuscole)
+            </mat-error>
+            <mat-hint>Codice IATA univoco (2-3 lettere)</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Paese</mat-label>
+            <mat-select formControlName="country">
+              <mat-option value="Italy">Italia</mat-option>
+              <mat-option value="Germany">Germania</mat-option>
+              <mat-option value="France">Francia</mat-option>
+              <mat-option value="Spain">Spagna</mat-option>
+              <mat-option value="United Kingdom">Regno Unito</mat-option>
+              <mat-option value="Netherlands">Paesi Bassi</mat-option>
+              <mat-option value="Austria">Austria</mat-option>
+              <mat-option value="Switzerland">Svizzera</mat-option>
+              <mat-option value="Belgium">Belgio</mat-option>
+              <mat-option value="Portugal">Portogallo</mat-option>
+            </mat-select>
+            <mat-icon matSuffix>public</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <div class="dialog-actions">
+      <button
+        mat-button
+        type="button"
+        (click)="onCancel()"
+        class="cancel-button"
+        [disabled]="loading"
+      >
+        Annulla
+      </button>
+      <button
+        mat-raised-button
+        type="submit"
+        (click)="onSubmit()"
+        class="submit-button"
+        [disabled]="inviteForm.invalid || loading"
+        color="primary"
+      >
+        <mat-spinner diameter="20" class="btn-spinner" *ngIf="loading"></mat-spinner>
+        <mat-icon *ngIf="!loading">send</mat-icon>
+        <span *ngIf="!loading">Invia Invito</span>
+        <span *ngIf="loading">Invio in corso...</span>
+      </button>
+    </div>
+  </mat-dialog-actions>
+</div>

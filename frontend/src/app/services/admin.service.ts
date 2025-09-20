@@ -40,9 +40,18 @@ export class AdminService {
       if (params.limit)
         httpParams = httpParams.set('limit', params.limit.toString());
       if (params.search) httpParams = httpParams.set('search', params.search);
+      if (params.excludeRole) {
+        if (Array.isArray(params.excludeRole)) {
+          params.excludeRole.forEach((role) => {
+            httpParams = httpParams.append('excludeRole', role);
+          });
+        } else {
+          httpParams = httpParams.set('excludeRole', params.excludeRole);
+        }
+      }
     }
 
-    return this.http.get<UserListResponse>(`${this.apiUrl}/users`, {
+    return this.http.get<UserListResponse>(`${this.apiUrl}/users/admin/all`, {
       headers: this.getAuthHeaders(),
       params: httpParams,
     });
@@ -52,7 +61,7 @@ export class AdminService {
     userId: string
   ): Observable<{ success: boolean; data: { user: User } }> {
     return this.http.get<{ success: boolean; data: { user: User } }>(
-      `${this.apiUrl}/users/${userId}`,
+      `${this.apiUrl}/users/admin/${userId}`,
       {
         headers: this.getAuthHeaders(),
       }
@@ -60,14 +69,17 @@ export class AdminService {
   }
 
   deleteUser(userId: string): Observable<AuthResponse> {
-    return this.http.delete<AuthResponse>(`${this.apiUrl}/users/${userId}`, {
-      headers: this.getAuthHeaders(),
-    });
+    return this.http.delete<AuthResponse>(
+      `${this.apiUrl}/users/admin/${userId}`,
+      {
+        headers: this.getAuthHeaders(),
+      }
+    );
   }
 
   toggleUserStatus(userId: string): Observable<AuthResponse> {
     return this.http.patch<AuthResponse>(
-      `${this.apiUrl}/users/${userId}/toggle-status`,
+      `${this.apiUrl}/users/admin/${userId}/toggle-status`,
       {},
       {
         headers: this.getAuthHeaders(),
@@ -80,7 +92,7 @@ export class AdminService {
     data: CreateAirlineInvitation
   ): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
-      `${this.apiUrl}/users/create-airline-invitation`,
+      `${this.apiUrl}/users/admin/invite-airline`,
       data,
       {
         headers: this.getAuthHeaders(),
@@ -103,7 +115,7 @@ export class AdminService {
 
   getSystemStats(): Observable<{ success: boolean; data: SystemStats }> {
     return this.http.get<{ success: boolean; data: SystemStats }>(
-      `${this.apiUrl}/admin/system-stats`,
+      `${this.apiUrl}/admin/system/stats`,
       {
         headers: this.getAuthHeaders(),
       }
@@ -152,9 +164,7 @@ export class AdminService {
     );
   }
 
-  bulkDeleteUsers(
-    userIds: string[]
-  ): Observable<{
+  bulkDeleteUsers(userIds: string[]): Observable<{
     success: boolean;
     message: string;
     data: { deletedCount: number };
@@ -188,5 +198,31 @@ export class AdminService {
       headers: this.getAuthHeaders(),
       responseType: 'blob',
     });
+  }
+
+  // Recent Activities
+  getRecentActivities(): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/admin/system/activities/recent`,
+      {
+        headers: this.getAuthHeaders(),
+      }
+    );
+  }
+
+  // Airline Invitations
+  sendAirlineInvite(inviteData: {
+    companyName: string;
+    email: string;
+    iataCode?: string;
+    message?: string;
+  }): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/admin/invite/airline`,
+      inviteData,
+      {
+        headers: this.getAuthHeaders(),
+      }
+    );
   }
 }

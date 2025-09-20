@@ -2,17 +2,17 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { 
-  Flight, 
-  FlightSearchRequest, 
-  FlightSearchResponse, 
-  Airport, 
+import {
+  Flight,
+  FlightSearchRequest,
+  FlightSearchResponse,
+  Airport,
   Airline,
-  AirportSearchResponse
+  AirportSearchResponse,
 } from '../models/flight.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FlightService {
   private apiUrl = environment.apiUrl;
@@ -20,7 +20,9 @@ export class FlightService {
   constructor(private http: HttpClient) {}
 
   // Flight search (public endpoint)
-  searchFlights(searchParams: FlightSearchRequest): Observable<FlightSearchResponse> {
+  searchFlights(
+    searchParams: FlightSearchRequest
+  ): Observable<FlightSearchResponse> {
     let params = new HttpParams()
       .set('origin', searchParams.departureAirport)
       .set('destination', searchParams.arrivalAirport)
@@ -35,7 +37,10 @@ export class FlightService {
       params = params.set('class', searchParams.class);
     }
 
-    return this.http.get<FlightSearchResponse>(`${this.apiUrl}/flights/search`, { params });
+    return this.http.get<FlightSearchResponse>(
+      `${this.apiUrl}/flights/search`,
+      { params }
+    );
   }
 
   // Get all flights (public endpoint)
@@ -44,8 +49,18 @@ export class FlightService {
   }
 
   // Get flight by ID (public endpoint)
-  getFlightById(id: string): Observable<{ success: boolean; data: { flight: Flight }; message?: string }> {
-    return this.http.get<{ success: boolean; data: { flight: Flight }; message?: string }>(`${this.apiUrl}/flights/${id}`);
+  getFlightById(
+    id: string
+  ): Observable<{
+    success: boolean;
+    data: { flight: Flight };
+    message?: string;
+  }> {
+    return this.http.get<{
+      success: boolean;
+      data: { flight: Flight };
+      message?: string;
+    }>(`${this.apiUrl}/flights/${id}`);
   }
 
   // Get airports (public endpoint)
@@ -54,29 +69,87 @@ export class FlightService {
   }
 
   // Get airlines (public endpoint)
-  getAirlines(): Observable<{ success: boolean; data: { airlines: Airline[] }; message?: string }> {
-    return this.http.get<{ success: boolean; data: { airlines: Airline[] }; message?: string }>(`${this.apiUrl}/airlines`);
+  getAirlines(): Observable<{
+    success: boolean;
+    data: { airlines: Airline[] };
+    message?: string;
+  }> {
+    return this.http.get<{
+      success: boolean;
+      data: { airlines: Airline[] };
+      message?: string;
+    }>(`${this.apiUrl}/airlines`);
   }
 
   // Search airports by query
   searchAirports(query: string): Observable<AirportSearchResponse> {
     const params = new HttpParams().set('query', query);
-    return this.http.get<AirportSearchResponse>(`${this.apiUrl}/airports/search`, { params });
+    return this.http.get<AirportSearchResponse>(
+      `${this.apiUrl}/airports/search`,
+      { params }
+    );
   }
 
   // Get available dates for a specific month
-  getAvailableDates(year: number, month: number, origin: string, destination: string, passengers: number = 1, seatClass: string = 'economy'): Observable<{ success: boolean; data: { year: number; month: number; availableDates: string[]; count: number }; message?: string }> {
+  getAvailableDates(
+    year: number,
+    month: number,
+    origin: string,
+    destination: string,
+    passengers: number = 1,
+    seatClass: string = 'economy'
+  ): Observable<{
+    success: boolean;
+    data: {
+      year: number;
+      month: number;
+      availableDates: string[];
+      count: number;
+    };
+    message?: string;
+  }> {
     const params = new HttpParams()
       .set('origin', origin)
       .set('destination', destination)
       .set('passengers', passengers.toString())
       .set('seatClass', seatClass);
-    
-    return this.http.get<{ success: boolean; data: { year: number; month: number; availableDates: string[]; count: number }; message?: string }>(`${this.apiUrl}/flights/available-dates/${year}/${month}`, { params });
+
+    return this.http.get<{
+      success: boolean;
+      data: {
+        year: number;
+        month: number;
+        availableDates: string[];
+        count: number;
+      };
+      message?: string;
+    }>(`${this.apiUrl}/flights/available-dates/${year}/${month}`, { params });
   }
 
   // Suggest alternative dates
-  suggestAlternativeDates(origin: string, destination: string, targetDate: string, passengers: number = 1, seatClass: string = 'economy', daysBefore: number = 7, daysAfter: number = 7): Observable<{ success: boolean; data: { targetDate: string; suggestions: Array<{ date: string; daysDifference: number; flightCount: number; minPrice: number; reason: string }>; count: number }; message?: string }> {
+  suggestAlternativeDates(
+    origin: string,
+    destination: string,
+    targetDate: string,
+    passengers: number = 1,
+    seatClass: string = 'economy',
+    daysBefore: number = 7,
+    daysAfter: number = 7
+  ): Observable<{
+    success: boolean;
+    data: {
+      targetDate: string;
+      suggestions: Array<{
+        date: string;
+        daysDifference: number;
+        flightCount: number;
+        minPrice: number;
+        reason: string;
+      }>;
+      count: number;
+    };
+    message?: string;
+  }> {
     const params = new HttpParams()
       .set('origin', origin)
       .set('destination', destination)
@@ -85,20 +158,70 @@ export class FlightService {
       .set('seatClass', seatClass)
       .set('daysBefore', daysBefore.toString())
       .set('daysAfter', daysAfter.toString());
-    
-    return this.http.get<{ success: boolean; data: { targetDate: string; suggestions: Array<{ date: string; daysDifference: number; flightCount: number; minPrice: number; reason: string }>; count: number }; message?: string }>(`${this.apiUrl}/flights/suggest-dates`, { params });
+
+    return this.http.get<{
+      success: boolean;
+      data: {
+        targetDate: string;
+        suggestions: Array<{
+          date: string;
+          daysDifference: number;
+          flightCount: number;
+          minPrice: number;
+          reason: string;
+        }>;
+        count: number;
+      };
+      message?: string;
+    }>(`${this.apiUrl}/flights/suggest-dates`, { params });
   }
 
   // Check availability for a specific date
-  checkDateAvailability(origin: string, destination: string, date: string, passengers: number = 1, seatClass: string = 'economy'): Observable<{ success: boolean; data: { date: string; available: boolean; flightCount: number; minPrice?: number }; message?: string }> {
+  checkDateAvailability(
+    origin: string,
+    destination: string,
+    date: string,
+    passengers: number = 1,
+    seatClass: string = 'economy'
+  ): Observable<{
+    success: boolean;
+    data: {
+      date: string;
+      available: boolean;
+      flightCount: number;
+      minPrice?: number;
+    };
+    message?: string;
+  }> {
     const params = new HttpParams()
       .set('origin', origin)
       .set('destination', destination)
       .set('date', date)
       .set('passengers', passengers.toString())
       .set('seatClass', seatClass);
-    
-    return this.http.get<{ success: boolean; data: { date: string; available: boolean; flightCount: number; minPrice?: number }; message?: string }>(`${this.apiUrl}/flights/check-date`, { params });
+
+    return this.http.get<{
+      success: boolean;
+      data: {
+        date: string;
+        available: boolean;
+        flightCount: number;
+        minPrice?: number;
+      };
+      message?: string;
+    }>(`${this.apiUrl}/flights/check-date`, { params });
+  }
+
+  // Get cheapest flights for homepage
+  getCheapestFlights(
+    limit: number = 5
+  ): Observable<{ success: boolean; data: Flight[]; message?: string }> {
+    const params = new HttpParams().set('limit', limit.toString());
+    return this.http.get<{
+      success: boolean;
+      data: Flight[];
+      message?: string;
+    }>(`${this.apiUrl}/flights/cheapest`, { params });
   }
 
   // Utility methods
@@ -111,7 +234,7 @@ export class FlightService {
   formatPrice(price: number): string {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'EUR'
+      currency: 'EUR',
     }).format(price);
   }
 

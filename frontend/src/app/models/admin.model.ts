@@ -86,23 +86,29 @@ export interface AdminDashboardStats {
 }
 
 export interface SystemStats {
-  databaseSize: string;
-  lastBackup: string;
-  averageResponseTime: number;
-  systemUptime: string;
-  errorsToday: number;
-  successRate: number;
-  collections: {
+  totalUsers: number;
+  totalAirlines: number;
+  totalFlights: number;
+  totalBookings: number;
+  activeUsers: number;
+  pendingInvites: number;
+  databaseSize?: string;
+  lastBackup?: string;
+  averageResponseTime?: number;
+  systemUptime?: string;
+  errorsToday?: number;
+  successRate?: number;
+  collections?: {
     name: string;
     count: number;
     size: number;
   }[];
-  performance: {
+  performance?: {
     averageResponseTime: number;
     requestsPerMinute: number;
     errorRate: number;
   };
-  systemHealth: {
+  systemHealth?: {
     memoryUsage: number;
     cpuUsage: number;
     uptime: number;

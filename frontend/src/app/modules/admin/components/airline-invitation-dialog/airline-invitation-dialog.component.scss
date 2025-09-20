@@ -1,0 +1,275 @@
+.airline-invitation-dialog {
+  min-width: 600px;
+  max-width: 800px;
+
+  .dialog-header {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin: -24px -24px 24px -24px;
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .header-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+    }
+
+    .dialog-subtitle {
+      margin: 8px 0 0 40px;
+      opacity: 0.9;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+  }
+
+  .dialog-content {
+    padding: 0 !important;
+    max-height: 70vh;
+    overflow-y: auto;
+
+    form {
+      padding: 0;
+    }
+  }
+
+  .form-section {
+    margin-bottom: 32px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 20px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+
+      mat-icon {
+        color: #667eea;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-field {
+      flex: 1;
+
+      &.full-width {
+        width: 100%;
+      }
+    }
+  }
+
+  // Material Form Field Styling
+  .mat-mdc-form-field {
+    width: 100%;
+
+    &.mat-form-field-appearance-outline {
+      .mat-mdc-form-field-outline {
+        color: #d1d5db;
+
+        &-thick {
+          color: #667eea;
+        }
+      }
+
+      &.mat-focused .mat-mdc-form-field-outline-thick {
+        color: #667eea;
+      }
+
+      &.mat-form-field-invalid .mat-mdc-form-field-outline-thick {
+        color: #dc2626;
+      }
+    }
+
+    .mat-mdc-form-field-label {
+      color: #6b7280;
+    }
+
+    &.mat-focused .mat-mdc-form-field-label {
+      color: #667eea;
+    }
+
+    .mat-mdc-form-field-hint,
+    .mat-mdc-form-field-error {
+      font-size: 12px;
+    }
+  }
+
+  // Input Styling
+  .mat-mdc-input-element {
+    color: #374151;
+    font-size: 14px;
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+  }
+
+  // Select Styling
+  .mat-mdc-select-value-text {
+    color: #374151;
+    font-size: 14px;
+  }
+
+  .mat-mdc-select-placeholder {
+    color: #9ca3af;
+  }
+
+  // Icon Styling
+  .mat-icon {
+    color: #6b7280;
+
+    &.mat-mdc-form-field-icon-suffix {
+      color: #9ca3af;
+    }
+  }
+
+  .info-notice {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: #e1f5fe;
+    border: 1px solid #b3e5fc;
+    border-radius: 8px;
+    margin-top: 20px;
+
+    mat-icon {
+      color: #0277bd;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+    }
+
+    .notice-content {
+      flex: 1;
+
+      p {
+        margin: 0 0 8px 0;
+        font-weight: 500;
+        color: #0277bd;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 16px;
+        color: #01579b;
+
+        li {
+          margin-bottom: 4px;
+          font-size: 14px;
+          line-height: 1.4;
+        }
+      }
+    }
+  }
+
+  .dialog-actions {
+    padding: 20px 24px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    margin: 24px -24px -24px -24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    .cancel-button {
+      color: #6b7280;
+      border: 1px solid #d1d5db;
+
+      &:hover {
+        background-color: #f3f4f6;
+      }
+    }
+
+    .submit-button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 600;
+
+      &:disabled {
+        background: #d1d5db;
+        color: #9ca3af;
+      }
+
+      mat-spinner {
+        margin-right: 8px;
+      }
+
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+// Dark theme support
+@media (prefers-color-scheme: dark) {
+  .airline-invitation-dialog {
+    .form-section {
+      background: #1f2937;
+      border-left-color: #667eea;
+    }
+
+    .info-notice {
+      background: #1e3a8a;
+      border-color: #3b82f6;
+    }
+
+    .dialog-actions {
+      background: #111827;
+      border-top-color: #374151;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .airline-invitation-dialog {
+    min-width: 0;
+    width: 95vw;
+    max-width: 95vw;
+
+    .form-row {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .dialog-header {
+      h2 {
+        font-size: 20px;
+      }
+    }
+
+    .form-section {
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+  }
+}

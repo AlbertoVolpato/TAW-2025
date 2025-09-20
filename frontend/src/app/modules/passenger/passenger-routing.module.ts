@@ -7,27 +7,31 @@ import { BookingDetailComponent } from './components/booking-detail/booking-deta
 import { AuthGuard } from '../../guards/auth.guard';
 
 const routes: Routes = [
-  { 
-    path: '', 
-    redirectTo: 'bookings', 
-    pathMatch: 'full' 
+  {
+    path: '',
+    redirectTo: 'bookings',
+    pathMatch: 'full',
   },
-  { 
-    path: 'bookings', 
+  {
+    path: 'bookings',
     component: BookingListComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
   },
-  { 
-    path: 'booking/:flightId', 
+  {
+    path: 'bookings/new/:flightId',
     component: BookingComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'booking/:id',
+    component: BookingDetailComponent,
+    canActivate: [AuthGuard],
   },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
-  { path: 'booking/:id', component: BookingDetailComponent, canActivate: [AuthGuard] }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class PassengerRoutingModule { }
+export class PassengerRoutingModule {}
