@@ -36,7 +36,7 @@ export interface Airport {
   name: string;
   city: string;
   country: string;
-  iataCode: string;
+  code: string;
 }
 
 @Injectable({
@@ -70,9 +70,9 @@ export class RouteService {
     });
   }
 
-  // Get all routes (for admin view) - use flights API as proxy
+  // Get all routes (for admin view) - use admin API
   getAllRoutes(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/flights`, {
+    return this.http.get(`${this.apiUrl}/admin/routes`, {
       headers: this.getAuthHeaders(),
       params: new HttpParams().set('limit', '100'),
     });
@@ -85,23 +85,44 @@ export class RouteService {
     });
   }
 
-  // Create a new route (only available for airline users)
-  createRoute(routeData: Partial<RouteData>): Observable<any> {
+  // Create a new route (airline version)
+  createAirlineRoute(routeData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/routes`, routeData, {
       headers: this.getAuthHeaders(),
     });
   }
 
-  // Update an existing route
-  updateRoute(routeId: string, routeData: Partial<RouteData>): Observable<any> {
+  // Update an existing route (airline version)
+  updateAirlineRoute(routeId: string, routeData: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/routes/${routeId}`, routeData, {
       headers: this.getAuthHeaders(),
     });
   }
 
-  // Delete a route
-  deleteRoute(routeId: string): Observable<any> {
+  // Delete a route (airline version)
+  deleteAirlineRoute(routeId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/routes/${routeId}`, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  // Create a new route (admin version)
+  createRoute(routeData: Partial<RouteData>): Observable<any> {
+    return this.http.post(`${this.apiUrl}/admin/routes`, routeData, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  // Update an existing route (admin version)
+  updateRoute(routeId: string, routeData: Partial<RouteData>): Observable<any> {
+    return this.http.put(`${this.apiUrl}/admin/routes/${routeId}`, routeData, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  // Delete a route (admin version)
+  deleteRoute(routeId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/admin/routes/${routeId}`, {
       headers: this.getAuthHeaders(),
     });
   }

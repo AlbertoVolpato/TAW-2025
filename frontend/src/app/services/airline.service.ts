@@ -89,16 +89,14 @@ export class AirlineService {
       success: boolean;
       data: { flights: Flight[] };
       message?: string;
-    }>(`${this.apiUrl}/flights/airline`, {
+    }>(`${this.apiUrl}/flights/airline/my`, {
       headers: this.getAuthHeaders(),
       params: httpParams,
     });
   }
 
   // Create new flight
-  createFlight(
-    flightData: CreateFlightRequest
-  ): Observable<{
+  createFlight(flightData: CreateFlightRequest): Observable<{
     success: boolean;
     data: { flight: Flight };
     message?: string;
@@ -152,15 +150,13 @@ export class AirlineService {
       success: boolean;
       data: { aircraft: any[] };
       message?: string;
-    }>(`${this.apiUrl}/aircraft/airline`, {
+    }>(`${this.apiUrl}/aircraft`, {
       headers: this.getAuthHeaders(),
     });
   }
 
   // Create new aircraft
-  createAircraft(
-    aircraftData: CreateAircraftRequest
-  ): Observable<{
+  createAircraft(aircraftData: CreateAircraftRequest): Observable<{
     success: boolean;
     data: { aircraft: any };
     message?: string;

@@ -273,16 +273,8 @@ Questo progetto è rilasciato sotto licenza MIT. Vedi il file `LICENSE` per i de
 
 ## 👨‍💻 Autore
 
-**Il Tuo Nome**
-- GitHub: [@your-username](https://github.com/your-username)
-- Email: your.email@example.com
-
-## 🙏 Ringraziamenti
-
-- Angular Team per il fantastico framework
-- MongoDB per il database flessibile
-- Express.js per il framework web minimalista
-- Tutti i contributori open source delle librerie utilizzate
+- GitHub: [@AlbertoVolpato](https://github.com/albertovolpato)
+- Email: albertovolpato22@gmail.com
 
 ---
 

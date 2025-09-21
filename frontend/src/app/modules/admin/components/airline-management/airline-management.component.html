@@ -23,7 +23,7 @@
     </div>
 
     <div class="airlines-list" *ngIf="!loading">
-        <div class="airline-card" *ngFor="let airline of airlines; let i = index">
+        <div class="airline-card" *ngFor="let airline of displayedAirlines; let i = index">
             <div class="airline-icon">
                 <mat-icon>flight</mat-icon>
             </div>
@@ -41,18 +41,14 @@
                 {{ airline.createdAt | date:'MMM d, y' }}
             </div>
             <div class="airline-actions">
-                <button mat-icon-button color="primary" (click)="viewAirlineDetails(airline)"
-                    matTooltip="Visualizza dettagli">
-                    <mat-icon>visibility</mat-icon>
-                </button>
                 <button mat-icon-button [color]="airline.isActive ? 'warn' : 'primary'"
-                    (click)="toggleAirlineStatus(airline)" [matTooltip]="airline.isActive ? 'Disattiva' : 'Attiva'">
+                    (click)="toggleAirlineStatus(airline)" [matTooltip]="airline.isActive ? 'Sospendi' : 'Attiva'">
                     <mat-icon>{{ airline.isActive ? 'block' : 'check_circle' }}</mat-icon>
                 </button>
             </div>
         </div>
 
-        <div class="no-results" *ngIf="airlines.length === 0">
+        <div class="no-results" *ngIf="displayedAirlines.length === 0">
             <mat-icon>flight_off</mat-icon>
             <p>No airlines found</p>
         </div>

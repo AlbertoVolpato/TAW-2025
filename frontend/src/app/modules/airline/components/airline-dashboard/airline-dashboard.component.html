@@ -1,162 +1,1003 @@
 <div class="airline-dashboard">
-  <div class="dashboard-header">
-    <h1>Dashboard Compagnia Aerea</h1>
-    <p>Gestisci i tuoi voli e operazioni</p>
+  <div class="airline-dashboard">
+
+    <!-- Header -->
+    <div class="airline-dashboard">
+
+      <div class="header">
+
+        <h1>Dashboard Compagnia Aerea</h1> <!-- Header --> <!-- Header -->
+
+        <p>{{ totalFlights }} voli totali • {{ activeFlights }} attivi • {{ todayFlights }} oggi</p>
+
+      </div>
+      <div class="header">
+
+        <div class="header">
+
+          <!-- Loading State -->
+
+          <div class="loading" *ngIf="loading">
+            <h1>Dashboard Compagnia Aerea</h1>
+
+            <div class="spinner-large"></div>
+            <h1>Dashboard Compagnia Aerea</h1>
+
+            <p>Caricamento dashboard...</p>
+
+          </div>
+          <p>{{ totalFlights }} voli totali • {{ activeFlights }} attivi • {{ todayFlights }} oggi</p>
+
+          <p>{{ totalFlights }} voli totali • {{ activeFlights }} attivi • {{ todayFlights }} oggi</p>
+
+          <!-- Error State -->
+
+          <div class="status-message error" *ngIf="error && !loading"> </div>
+
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        </div>
+
+        <path
+          d="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+          fill="currentColor" />
+
+        </svg>
+
+        <span>{{ error }}</span>
+
+        <button class="btn-primary" (click)="refreshData()">Riprova</button> <!-- Loading State -->
+        <!-- Loading State -->
+
+      </div>
+
+      <div class="loading" *ngIf="loading">
+
+        <!-- Main Content -->
+        <div class="loading" *ngIf="loading">
+
+          <div class="main-content" *ngIf="!loading && !error">
+
+            <div class="spinner-large"></div>
+
+            <!-- Quick Actions -->
+            <div class="spinner-large"></div>
+
+            <div class="actions-section">
+
+              <h2>Azioni Rapide</h2>
+              <p>Caricamento dashboard...</p>
+
+              <div class="actions-grid">
+                <p>Caricamento dashboard...</p>
+
+
+
+                <!-- Create Flight Action -->
+              </div>
+
+              <div class="action-card" (click)="createFlight()"> </div>
+
+              <div class="action-icon">
+
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+                  <path
+                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"
+                    fill="currentColor" />
+
+                </svg> <!-- Error State --> <!-- Error State -->
+
+              </div>
+
+              <div class="action-info">
+                <div class="status-message error" *ngIf="error && !loading">
+
+                  <h3>Crea Nuovo Volo</h3>
+                  <div class="status-message error" *ngIf="error && !loading">
+
+                    <p>Crea nuovi voli specifici con orari</p>
+
+                  </div> <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <svg
+                      viewBox="0 0 24 24" fill="none" </div> xmlns="http://www.w3.org/2000/svg">
+
+
+
+                      <!-- Manage Routes Action -->
+                      <path <div class="action-card" (click)="manageRoutes()"> d="M11
+                        15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22
+                        12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+
+                        <div class="action-icon"> fill="currentColor" />
+
+                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path <path
+                              d="M9.78 11.16L10.2 8.95l2.93.32c.58.06.98.6.92 1.18-.06.58-.6.98-1.18.92l-2.87-.31-.32 2.1z"
+                              fill="currentColor" /> d="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10
+                            9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58
+                            8 8-3.58 8-8 8z"
+
+                          </svg> fill="currentColor" />
+
+                        </div>
+
+                        <div class="action-info">
+                    </svg> </svg>
+
+                  <h3>Gestisci Rotte</h3>
+
+                  <p>Crea template di percorso riutilizzabili</p> <span>{{ error }}</span> <span>{{ error }}</span>
+
+                </div>
+
+              </div> <button class="btn-primary" (click)="refreshData()">Riprova</button>
+
+
+
+            </div>
+          </div> <button class="btn-primary" (click)="refreshData()">Riprova</button>
+
+        </div>
+
+        </svg>
+
+        <!-- Flights Section -->
+
+        <div class="flights-section"> <!-- Main Content -->
+
+          <div class="section-header">
+
+            <h2>I Tuoi Voli</h2>
+            <div class="main-content" *ngIf="!loading && !error"> </div> <span>{{ error }}</span>
+
+            <button class="btn-secondary" (click)="refreshData()">
+
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+                <path
+                  d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                  fill="currentColor" />
+
+              </svg> <!-- Quick Actions --> <button class="btn-primary" (click)="refreshData()">Riprova</button>
+
+              Aggiorna
+
+            </button>
+            <div class="actions-section">
+
+            </div>
+
+            <h2>Azioni Rapide</h2> <!-- Dashboard Content -->
+
+            <!-- No results state -->
+
+            <div class="no-results" *ngIf="flights.length === 0">
+              <div class="actions-grid"> </div>
+
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+                <path
+                  d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"
+                  fill="currentColor" />
+
+              </svg>
+
+              <p>Nessun volo trovato</p> <!-- Create Flight Action -->
+
+            </div>
+            <div class="dashboard-content" *ngIf="!loading && !error">
+
+
+
+              <!-- Flights List -->
+              <div class="action-card" (click)="createFlight()">
+
+                <div class="flights-list" *ngIf="flights.length > 0">
+
+                  <div class="flight-card" *ngFor="let flight of paginatedFlights">
+                    <div class="action-icon"> <!-- Quick Actions --> <!-- Dashboard Content -->
+
+                      <div class="flight-icon">
+
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <svg
+                            viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+                            <path
+                              d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"
+                              fill="currentColor" />
+
+                          </svg>
+                          <path </div> d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9
+                            2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"
+
+                            fill="currentColor" />
+
+                            <div class="flight-info">
+                              <div class="actions-section">
+
+                                <div class="flight-header">
+
+                                  <h3>{{ flight.flightNumber }}</h3>
+                        </svg>
+
+                        <span class="status" [class]="flight.status">{{ flight.status }}</span>
+                        <div class="dashboard-content" *ngIf="!loading && !error">
+
+                        </div>
+
+                      </div>
+
+                      <div class="flight-route">
+
+                        <span class="airport">{{ flight.departureAirport?.code }}</span>
+                        <div class="action-info">
+
+                          <span class="arrow">→</span>
+                          <div class="actions-grid"> <!-- Quick Actions -->
+
+                            <span class="airport">{{ flight.arrivalAirport?.code }}</span>
+
+                          </div>
+                          <h3>Crea Nuovo Volo</h3>
+
+
+
+                          <div class="flight-time">
+                            <p>Crea nuovi voli specifici con orari</p>
+
+                            <div class="departure-time">{{ flight.departureTime | date:'dd/MM/yyyy HH:mm' }}</div>
+                            <div class="action-card" routerLink="/airline/flights">
+
+                              <div class="arrival-time">{{ flight.arrivalTime | date:'dd/MM/yyyy HH:mm' }}</div>
+
+                            </div>
+                          </div>
+
+                        </div>
+                        <div class="actions-section">
+
+
+
+                          <div class="flight-actions"> </div>
+
+                          <button class="edit-button" (click)="editFlight(flight)" title="Modifica volo">
+
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <div class="action-icon">
+
+                                <path
+                                  d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                                  fill="currentColor" />
+
+                            </svg> <!-- Manage Routes Action -->
+
+                          </button>
+                          <div class="actions-grid">
+
+
+
+                            <button class="delete-button" (click)="deleteFlight(flight)" title="Elimina volo">
+                              <div class="action-card" (click)="manageRoutes()">
+
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+                                  <path
+                                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                                    fill="currentColor" />
+                                  <div class="action-icon"> <svg viewBox="0 0 24 24" fill="none" </svg>
+                                      xmlns="http://www.w3.org/2000/svg">
+
+                            </button>
+
+                          </div> <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+                            <div class="action-card" routerLink="/airline/flights">
+
+                              <div class="flight-status">
+
+                                <div class="seats-info">
+                                  <path <span>{{ flight.availableSeats }}/{{ flight.totalSeats }} posti</span> d="M9.78
+                                    11.16L10.2 8.95l2.93.32c.58.06.98.6.92 1.18-.06.58-.6.98-1.18.92l-2.87-.31-.32 2.1z"
+
+                                </div> fill="currentColor" />
+
+                                <div class="price-info">
+
+                                  <span>€{{ flight.basePrice }}</span>
+                          </svg>
+
+                        </div>
+                        <path </div> d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9
+
+                      </div> 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"
+
+                    </div>
+
+                  </div>
+                  <div class="action-info"> fill="currentColor" />
+
+
+
+                    <!-- Pagination -->
+                    <h3>Gestisci Rotte</h3>
+
+                    <div class="pagination-container" *ngIf="totalPages > 1">
+                      <div class="action-icon">
+
+                        <div class="pagination-controls">
+
+                          <button class="pagination-btn" [disabled]="currentPage === 1" (click)="goToPage(1)"
+                            [class.disabled]="currentPage === 1">
+                            <p>Crea template di percorso riutilizzabili</p>
+
+                            <span>First</span>
+
+                          </button>
+                        </div>
+
+                        </svg> <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+                          <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()"
+                            [class.disabled]="currentPage === 1">
+
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      </div>
+
+                      <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" fill="currentColor" />
+
+                      </svg>
+                    </div>
+
+                    </button>
+
+                  </div>
+
+                  <span class="pagination-info">{{ currentPage }} / {{ totalPages }}</span>
+                  <path <div class="action-info"> d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9
+
+
+
+                    <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()"
+                      [class.disabled]="currentPage === totalPages">
+                </div> 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"
+
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+                  <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" />
+
+                </svg>
+
+                </button> <!-- Flights Section -->
+
+                <h3>Gestisci Voli</h3> fill="currentColor" />
+
+                <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)"
+                  [class.disabled]="currentPage === totalPages">
+
+                  <span>Last</span>
+                  <div class="flights-section">
+
+                </button>
+
+              </div>
+              <div class="section-header">
+
+                <p>Crea nuovi voli specifici con orari</p> </svg>
+
+                <div class="pagination-details">
+
+                  <span>Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }}-{{ Math.min(currentPage * itemsPerPage,
+                    flights.length) }} di {{ flights.length }} voli</span>
+                  <h2>I Tuoi Voli</h2>
+
+                </div>
+
+              </div> <button class="btn-secondary" (click)="refreshData()">
+
+            </div>
+          </div>
+
+        </div>
+
+      </div> <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    </div>
+
+    <path
+      d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+      fill="currentColor" />
+
+    </svg>
+  </div>
+
+  Aggiorna <div class="action-info">
+
+    </button>
+
+  </div>
+  <h3>Gestisci Voli</h3>
+
+
+
+  <!-- No results state -->
+  <div class="action-card" routerLink="/airline/routes">
+
+    <div class="no-results" *ngIf="flights.length === 0">
+      <p>Crea nuovi voli specifici con orari</p>
+
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+        <path
+          d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"
+          fill="currentColor" />
+        <div class="action-icon"> </div>
+
+      </svg>
+
+      <p>Nessun volo trovato</p> <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+    </div>
+  </div>
+
+
+
+  <!-- Flights List -->
+  <path d="M9.78 11.16L10.2 8.95l2.93.32c.58.06.98.6.92 1.18-.06.58-.6.98-1.18.92l-2.87-.31-.32 2.1z" <div
+    class="flights-list" *ngIf="flights.length > 0"> fill="currentColor" />
+
+    <div class="flight-card" *ngFor="let flight of paginatedFlights">
+
+      <div class="flight-icon"> </svg>
+
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <div class="action-card" routerLink="/airline/routes">
+
+            <path
+              d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"
+              fill="currentColor" />
+
+        </svg>
+      </div>
+
+    </div>
+    <div class="action-icon">
+
+
+
+      <div class="flight-info">
+        <div class="action-info"> <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+            <div class="flight-header">
+
+              <h3>{{ flight.flightNumber }}</h3>
+              <h3>Gestisci Rotte</h3>
+
+              <span class="status" [class]="flight.status">{{ flight.status }}</span>
+              <path d="M9.78 11.16L10.2 8.95l2.93.32c.58.06.98.6.92 1.18-.06.58-.6.98-1.18.92l-2.87-.31-.32 2.1z" </div>
+                <p>Crea template di percorso riutilizzabili</p> fill="currentColor" />
+
+
+
+                <div class="flight-route"> </div>
+          </svg>
+
+          <span class="airport">{{ flight.departureAirport?.code }}</span>
+
+          <span class="arrow">→</span>
+        </div>
+
+        <span class="airport">{{ flight.arrivalAirport?.code }}</span>
+      </div>
+
+    </div>
+
+</div>
+
+<div class="flight-time">
+  <div class="action-info">
+
+    <div class="departure-time">{{ flight.departureTime | date:'dd/MM/yyyy HH:mm' }}</div>
+
+    <div class="arrival-time">{{ flight.arrivalTime | date:'dd/MM/yyyy HH:mm' }}</div>
+  </div>
+
+</div>
+<h3>Gestisci Rotte</h3>
+
+</div>
+
+<p>Crea template di percorso riutilizzabili</p>
+
+<div class="flight-actions">
+
+  <button class="edit-button" (click)="editFlight(flight)" title="Modifica volo"> <!-- Flights List -->
+
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+</div>
+
+<path
+  d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+  fill="currentColor" />
+
+</svg>
+<div class="flights-section"> </div>
+
+</button>
+
+<div class="section-header"> </div>
+
+<button class="delete-button" (click)="deleteFlight(flight)" title="Elimina volo">
+
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <h2>I Tuoi Voli</h2>
+
+    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor" />
+    </div>
+
+  </svg>
+
+</button> <button class="btn-secondary" (click)="refreshData()">
+
+  </div>
+
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <!-- Flights List -->
+
+    <div class="flight-status">
+
+      <div class="seats-info">
+        <path <span>{{ flight.availableSeats }}/{{ flight.totalSeats }} posti</span> d="M17.65 6.35C16.2 4.9 14.21
+          4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31
+          0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+
+      </div> fill="currentColor" />
+
+      <div class="price-info">
+        <div class="flights-section">
+
+          <span>€{{ flight.basePrice }}</span>
+
+        </div>
+  </svg>
+
+  </div>
+  <div class="section-header">
+
+  </div>
+
+  </div> Aggiorna <h2>I Tuoi Voli</h2>
+
+
+
+  <!-- Pagination -->
+</button> <button class="btn-secondary" (click)="refreshData()">
+
+  <div class="pagination-container" *ngIf="totalPages > 1">
+
+    <div class="pagination-controls"> </div> <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+      <button class="pagination-btn" [disabled]="currentPage === 1" (click)="goToPage(1)"
+        [class.disabled]="currentPage === 1">
+
+        <span>First</span>
+        <path <!-- No results state --> d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99
+          8c3.73 0
+
+      </button> 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22
+      1.78L13
+
+      11h7V4l-2.35 2.35z"
+
+      <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()"
+        [class.disabled]="currentPage === 1">
+
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <div class="no-results" *ngIf="flights.length === 0 && !loading"> fill="currentColor" />
+
+            <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" fill="currentColor" />
+
+        </svg> <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> </svg>
+
+      </button>
+
+      <path <span class="pagination-info">{{ currentPage }} / {{ totalPages }}</span> d="M21
+        16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13
+        19v-5.5l8 2.5z"
+
+        fill="currentColor" /> Aggiorna
+
+        <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()"
+          [class.disabled]="currentPage === totalPages">
+
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> </svg> </button>
+
+        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" />
+
+    </svg>
+    <p>Nessun volo trovato</p>
+
+</button>
+</div>
+
+
+
+<button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)"
+  [class.disabled]="currentPage === totalPages">
+  </div>
+
+  <span>Last</span>
+
+</button><!-- No results state -->
+
+</div>
+
+<!-- Flights list -->
+
+<div class="pagination-details">
+  <div class="no-results" *ngIf="flights.length === 0 && !loading">
+
+    <span>Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }}-{{ Math.min(currentPage * itemsPerPage, flights.length)
+      }} di {{ flights.length }} voli</span>
+
+  </div>
+  <div class="flights-list" *ngIf="flights.length > 0"> <svg viewBox="0 0 24 24" fill="none" </div>
+      xmlns="http://www.w3.org/2000/svg">
+
+  </div>
+
+</div>
+<div class="flight-card" *ngFor="let flight of paginatedFlights">
+
+</div>
+<path <div class="flight-icon"> d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2
+  1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"
+
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> fill="currentColor" />
+
+    <path
+      d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"
+      fill="currentColor" />
+  </svg>
+
+  </svg>
+  <p>Nessun volo trovato</p>
+
+  </div>
+  </div>
+
+
+
+  <div class="flight-info"> <!-- Flights list -->
+
+    <div class="flight-number">{{ flight.flightNumber }}</div>
+    <div class="flights-list" *ngIf="flights.length > 0">
+
+      <div class="flight-route">
+        <div class="flight-card" *ngFor="let flight of paginatedFlights">
+
+          {{ flight.departureAirport?.code || 'N/A' }} → {{ flight.arrivalAirport?.code || 'N/A' }} <div
+            class="flight-icon">
+
+          </div> <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+        </div>
+        <path
+          d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"
+          <div class="flight-time"> fill="currentColor" />
+
+          <div class="departure-time">{{ flight.departureTime | date:'dd/MM/yyyy HH:mm' }}</div> </svg>
+
+      </div>
+    </div>
+
+
+
+    <div class="flight-status">
+      <div class="flight-info">
+
+        <div class="status-badge" [ngClass]="flight.status">
+          <div class="flight-number">{{ flight.flightNumber }}</div>
+
+          {{ getFlightStatusText(flight.status) }} <div class="flight-route">
+
+          </div> {{ flight.departureAirport?.code || 'N/A' }} → {{ flight.arrivalAirport?.code || 'N/A' }}
+
+        </div>
+      </div>
+
+    </div>
+
+    <div class="flight-actions">
+
+      <button class="delete-button" (click)="deleteFlight(flight)" title="Elimina volo">
+        <div class="flight-time">
+
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div class="departure-time">{{ flight.departureTime | date:'dd/MM/yyyy HH:mm' }}</div>
+
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+              fill="currentColor" />
+        </div>
+
+        </svg>
+
+      </button>
+      <div class="flight-status">
+
+      </div>
+      <div class="status-badge" [ngClass]="flight.status">
+
+      </div> {{ getFlightStatusText(flight.status) }}
+
+    </div>
+
+    <!-- Pagination -->
+  </div>
+
+  <div class="pagination-container" *ngIf="totalPages > 1">
+
+    <div class="pagination">
+      <div class="flight-actions">
+
+        <button class="pagination-btn" [disabled]="currentPage === 1" (click)="goToPage(1)" <button
+          class="delete-button" (click)="deleteFlight(flight)" title="Elimina volo">
+
+          [class.disabled]="currentPage === 1"> <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+            <span>First</span>
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" </button>
+              fill="currentColor" />
+
+          </svg>
+
+          <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()" </button>
+
+            [class.disabled]="currentPage === 1">
+      </div>
+
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    </div>
+
+    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor" />
+
+    </svg> <!-- Pagination -->
+
+    </button>
+    <div class="pagination-container" *ngIf="totalPages > 1">
+
+      <div class="pagination">
+
+        <span class="pagination-info">{{ currentPage }} / {{ totalPages }}</span> <button class="pagination-btn"
+          [disabled]="currentPage === 1" (click)="goToPage(1)" [class.disabled]="currentPage === 1">
+
+          <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()" <span>First</span>
+
+            [class.disabled]="currentPage === totalPages"> </button>
+
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" /> <button
+              class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()" </svg>
+              [class.disabled]="currentPage === 1">
+
+            </button> <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor" />
+
+              <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)"
+                </svg>
+
+                [class.disabled]="currentPage === totalPages"> </button>
+
+              <span>Last</span>
+
+        </button> <span class="pagination-info">{{ currentPage }} / {{ totalPages }}</span>
+
+      </div>
+
+      <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()" <div
+        class="pagination-details"> [class.disabled]="currentPage === totalPages">
+
+        Mostrando {{ ((currentPage - 1) * pageSize) + 1 }} - <svg viewBox="0 0 24 24" fill="none"
+          xmlns="http://www.w3.org/2000/svg">
+
+          {{ Math.min(currentPage * pageSize, flights.length) }} di {{ flights.length }} voli
+          <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" />
+
+    </div> </svg>
+
+  </div> </button>
+
+  </div>
+
+  </div> <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)" </div>
+    [class.disabled]="currentPage === totalPages">
+
+    </div> <span>Last</span>
+  </button>
+  </div>
+
+  <div class="pagination-details">
+    Mostrando {{ ((currentPage - 1) * pageSize) + 1 }} -
+    {{ Math.min(currentPage * pageSize, flights.length) }} di {{ flights.length }} voli
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
   </div>
 
   <!-- Loading State -->
-  <div class="loading-container" *ngIf="loading">
-    <mat-spinner diameter="40"></mat-spinner>
+  <div class="loading" *ngIf="loading">
+    <div class="spinner-large"></div>
     <p>Caricamento dashboard...</p>
   </div>
 
   <!-- Error State -->
   <div class="status-message error" *ngIf="error && !loading">
-    <mat-icon>error</mat-icon>
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+        fill="currentColor" />
+    </svg>
     <span>{{ error }}</span>
-    <button class="btn-primary" (click)="loadAirlineData()">Riprova</button>
+    <button class="btn-primary" (click)="refreshData()">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+          fill="currentColor" />
+      </svg>
+      Riprova
+    </button>
   </div>
 
   <!-- Dashboard Content -->
   <div class="dashboard-content" *ngIf="!loading && !error">
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-      <mat-card class="stat-card">
-        <mat-card-content>
-          <div class="stat-icon">
-            <mat-icon>flight</mat-icon>
-          </div>
-          <div class="stat-info">
-            <h3>{{ totalFlights }}</h3>
-            <p>Voli Totali</p>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="stat-card">
-        <mat-card-content>
-          <div class="stat-icon">
-            <mat-icon>flight_takeoff</mat-icon>
-          </div>
-          <div class="stat-info">
-            <h3>{{ activeFlights }}</h3>
-            <p>Voli Attivi</p>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="stat-card">
-        <mat-card-content>
-          <div class="stat-icon">
-            <mat-icon>today</mat-icon>
-          </div>
-          <div class="stat-info">
-            <h3>{{ todayFlights }}</h3>
-            <p>Voli Oggi</p>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-
     <!-- Quick Actions -->
     <div class="actions-section">
-      <h2>Azioni Rapide</h2>
       <div class="actions-grid">
-        <mat-card class="action-card">
-          <mat-card-content>
-            <mat-icon>add_circle</mat-icon>
-            <h3>Nuovo Volo</h3>
-            <p>Aggiungi un nuovo volo al sistema</p>
-            <button class="btn-primary">Crea Volo</button>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card class="action-card" routerLink="/airline/flights">
-          <mat-card-content>
-            <mat-icon>edit</mat-icon>
+        <div class="action-card" routerLink="/airline/flights">
+          <div class="action-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"
+                fill="currentColor" />
+            </svg>
+          </div>
+          <div class="action-info">
             <h3>Gestisci Voli</h3>
             <p>Crea nuovi voli e gestisci le rotte</p>
-            <button class="btn-primary">Gestisci</button>
-          </mat-card-content>
-        </mat-card>
+          </div>
+          <div class="action-arrow">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" fill="currentColor" />
+            </svg>
+          </div>
+        </div>
 
-        <mat-card class="action-card">
-          <mat-card-content>
-            <mat-icon>analytics</mat-icon>
-            <h3>Statistiche</h3>
-            <p>Visualizza report e analisi</p>
-            <button class="btn-secondary">Visualizza</button>
-          </mat-card-content>
-        </mat-card>
+        <div class="action-card" routerLink="/airline/routes">
+          <div class="action-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M9.78 11.16L10.2 8.95l2.93.32c.58.06.98.6.92 1.18-.06.58-.6.98-1.18.92l-2.87-.31-.32 2.1zm1.94-8.64l6.03.66c1.44.16 2.45 1.52 2.29 2.96l-.51 4.73c-.16 1.44-1.52 2.45-2.96 2.29l-6.03-.66c-1.44-.16-2.45-1.52-2.29-2.96l.51-4.73c.16-1.44 1.52-2.45 2.96-2.29z"
+                fill="currentColor" />
+            </svg>
+          </div>
+          <div class="action-info">
+            <h3>Gestisci Rotte</h3>
+            <p>Crea e gestisci le rotte della tua compagnia</p>
+          </div>
+          <div class="action-arrow">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" fill="currentColor" />
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Recent Flights -->
-    <mat-card class="data-card">
-      <mat-card-header>
-        <mat-card-title>I Tuoi Voli</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="table-container">
-          <table mat-table [dataSource]="flights.slice(0, 10)" class="flights-table">
-            <!-- Flight Number Column -->
-            <ng-container matColumnDef="flightNumber">
-              <th mat-header-cell *matHeaderCellDef>Volo</th>
-              <td mat-cell *matCellDef="let flight">{{ flight.flightNumber }}</td>
-            </ng-container>
-
-            <!-- Route Column -->
-            <ng-container matColumnDef="route">
-              <th mat-header-cell *matHeaderCellDef>Rotta</th>
-              <td mat-cell *matCellDef="let flight">
-                {{ flight.departureAirport?.code }} → {{ flight.arrivalAirport?.code }}
-              </td>
-            </ng-container>
-
-            <!-- Departure Column -->
-            <ng-container matColumnDef="departure">
-              <th mat-header-cell *matHeaderCellDef>Partenza</th>
-              <td mat-cell *matCellDef="let flight">
-                {{ flight.departureTime | date:'dd/MM/yyyy HH:mm' }}
-              </td>
-            </ng-container>
-
-            <!-- Arrival Column -->
-            <ng-container matColumnDef="arrival">
-              <th mat-header-cell *matHeaderCellDef>Arrivo</th>
-              <td mat-cell *matCellDef="let flight">
-                {{ flight.arrivalTime | date:'dd/MM/yyyy HH:mm' }}
-              </td>
-            </ng-container>
-
-            <!-- Status Column -->
-            <ng-container matColumnDef="status">
-              <th mat-header-cell *matHeaderCellDef>Stato</th>
-              <td mat-cell *matCellDef="let flight">
-                <mat-chip [color]="getFlightStatusColor(flight.status)" selected>
-                  {{ getFlightStatusText(flight.status) }}
-                </mat-chip>
-              </td>
-            </ng-container>
-
-            <!-- Actions Column -->
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>Azioni</th>
-              <td mat-cell *matCellDef="let flight">
-                <button mat-icon-button class="btn-secondary">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button mat-icon-button class="btn-danger">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="['flightNumber', 'route', 'departure', 'arrival', 'status', 'actions']"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['flightNumber', 'route', 'departure', 'arrival', 'status', 'actions'];"></tr>
-          </table>
+    <!-- Flights List -->
+    <div class="flights-section">
+      <div class="section-header">
+        <h2>I Tuoi Voli</h2>
+        <div class="section-actions">
+          <button class="btn-secondary" (click)="refreshData()">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                fill="currentColor" />
+            </svg>
+            Aggiorna
+          </button>
         </div>
-      </mat-card-content>
-    </mat-card>
+      </div>
+
+      <div class="flights-card">
+        <!-- No results state -->
+        <div class="no-results" *ngIf="flights.length === 0 && !loading">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"
+              fill="currentColor" />
+          </svg>
+          <h3>Nessun volo trovato</h3>
+          <p>Non hai ancora creato alcun volo</p>
+          <button class="btn-primary" routerLink="/airline/flights">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+            </svg>
+            Crea il tuo primo volo
+          </button>
+        </div>
+
+        <!-- Flights list -->
+        <div class="flights-list" *ngIf="flights.length > 0">
+          <div class="flight-card" *ngFor="let flight of paginatedFlights">
+            <div class="flight-icon">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"
+                  fill="currentColor" />
+              </svg>
+            </div>
+
+            <div class="flight-info">
+              <div class="flight-number">{{ flight.flightNumber }}</div>
+              <div class="flight-route">
+                {{ flight.departureAirport?.code || 'N/A' }} → {{ flight.arrivalAirport?.code || 'N/A' }}
+              </div>
+              <div class="flight-aircraft">{{ flight.aircraft?.model || 'N/A' }}</div>
+            </div>
+
+            <div class="flight-time">
+              <div class="departure-time">{{ flight.departureTime | date:'dd/MM/yyyy HH:mm' }}</div>
+              <div class="duration">{{ flight.arrivalTime | date:'HH:mm' }}</div>
+            </div>
+
+            <div class="flight-status">
+              <div class="status-badge" [ngClass]="flight.status">
+                {{ getFlightStatusText(flight.status) }}
+              </div>
+            </div>
+
+            <div class="flight-actions">
+              <button class="action-btn delete" (click)="deleteFlight(flight)" title="Elimina volo">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                    fill="currentColor" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination" *ngIf="totalPages > 1">
+            <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor" />
+              </svg>
+            </button>
+
+            <div class="page-numbers">
+              <button class="page-btn" *ngFor="let page of [].constructor(totalPages); let i = index"
+                [class.active]="currentPage === i + 1" (click)="goToPage(i + 1)">
+                {{ i + 1 }}
+              </button>
+            </div>
+
+            <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Pagination info -->
+          <div class="pagination-info" *ngIf="flights.length > 0">
+            Mostrando {{ ((currentPage - 1) * pageSize) + 1 }} -
+            {{ Math.min(currentPage * pageSize, flights.length) }} di {{ flights.length }} voli
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
+  </div>

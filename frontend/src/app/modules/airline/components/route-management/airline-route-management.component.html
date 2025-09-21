@@ -1,0 +1,155 @@
+<div class="route-management">
+    <!-- Header -->
+    <div class="header">
+        <h1>Gestione Rotte</h1>
+        <button class="btn-primary" (click)="createRoute()">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+            </svg>
+            Crea Nuova Rotta
+        </button>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid" *ngIf="!isLoading && routes">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9.78 11.16L10.2 8.95l2.93.32c.58.06.98.6.92 1.18-.06.58-.6.98-1.18.92l-2.87-.31-.32 2.1z"
+                        fill="currentColor" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-number">{{ routes.length }}</div>
+                <div class="stat-label">Rotte Totali</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon active">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                        fill="currentColor" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-number">{{ getActiveRoutesCount() }}</div>
+                <div class="stat-label">Rotte Attive</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon inactive">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                        fill="currentColor" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-number">{{ getInactiveRoutesCount() }}</div>
+                <div class="stat-label">Rotte Inattive</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading" *ngIf="isLoading">
+        <div class="spinner-large"></div>
+        <p>Caricamento rotte...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-message" *ngIf="errorMessage && !isLoading">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                fill="currentColor" />
+        </svg>
+        <span>{{ errorMessage }}</span>
+    </div>
+
+    <!-- Main Content -->
+    <div class="routes-content" *ngIf="!isLoading && !errorMessage">
+        <!-- No Routes State -->
+        <div class="no-routes" *ngIf="routes.length === 0">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9.78 11.16L10.2 8.95l2.93.32c.58.06.98.6.92 1.18-.06.58-.6.98-1.18.92l-2.87-.31-.32 2.1z"
+                    fill="currentColor" />
+            </svg>
+            <h3>Nessuna rotta trovata</h3>
+            <p>Non hai ancora creato nessuna rotta</p>
+            <button class="btn-primary" (click)="createRoute()">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+                </svg>
+                Crea la tua prima rotta
+            </button>
+        </div>
+
+        <!-- Routes Grid -->
+        <div class="routes-grid" *ngIf="routes.length > 0">
+            <div class="route-card" *ngFor="let route of routes" [class.inactive]="!route.isActive">
+                <div class="route-header">
+                    <div class="route-title">
+                        <h3>{{ route.departureAirport?.name }} → {{ route.arrivalAirport?.name }}</h3>
+                        <span class="route-code">{{ route.departureAirport?.code }} - {{ route.arrivalAirport?.code
+                            }}</span>
+                    </div>
+                    <div class="route-status">
+                        <span class="status-badge" [class.active]="route.isActive" [class.inactive]="!route.isActive">
+                            {{ route.isActive ? 'Attiva' : 'Inattiva' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="route-details">
+                    <div class="detail-item">
+                        <span class="label">Distanza:</span>
+                        <span class="value">{{ route.distance }} km</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Durata stimata:</span>
+                        <span class="value">{{ formatDuration(route.estimatedDuration) }}</span>
+                    </div>
+                </div>
+
+                <div class="route-actions">
+                    <button class="btn-secondary" (click)="editRoute(route)" title="Modifica rotta">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                                fill="currentColor" />
+                        </svg>
+                        Modifica
+                    </button>
+
+                    <button class="btn-toggle" [class.activate]="!route.isActive" [class.deactivate]="route.isActive"
+                        (click)="toggleRouteStatus(route)"
+                        [title]="route.isActive ? 'Disattiva rotta' : 'Attiva rotta'">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" *ngIf="route.isActive">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                fill="currentColor" />
+                        </svg>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" *ngIf="!route.isActive">
+                            <path
+                                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                                fill="currentColor" />
+                        </svg>
+                        {{ route.isActive ? 'Disattiva' : 'Attiva' }}
+                    </button>
+
+                    <button class="btn-danger" (click)="deleteRoute(route)" title="Elimina rotta">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                                fill="currentColor" />
+                        </svg>
+                        Elimina
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

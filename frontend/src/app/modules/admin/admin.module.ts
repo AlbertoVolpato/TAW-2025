@@ -25,8 +25,6 @@ import { UserManagementComponent } from './components/user-management/user-manag
 import { AdminProfileComponent } from './components/admin-profile/admin-profile.component';
 import { AirlineInvitationDialogComponent } from './components/airline-invitation-dialog/airline-invitation-dialog.component';
 import { AirlineManagementComponent } from './components/airline-management/airline-management.component';
-import { RouteManagementComponent } from './components/route-management/route-management.component';
-import { RouteDialogComponent } from './components/route-dialog/route-dialog.component';
 
 @NgModule({
   declarations: [
@@ -34,8 +32,6 @@ import { RouteDialogComponent } from './components/route-dialog/route-dialog.com
     AdminProfileComponent,
     AirlineInvitationDialogComponent,
     AirlineManagementComponent,
-    RouteManagementComponent,
-    RouteDialogComponent,
   ],
   imports: [
     CommonModule,

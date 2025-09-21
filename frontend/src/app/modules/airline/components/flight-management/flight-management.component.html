@@ -1,310 +1,266 @@
 <div class="flight-management">
-  <div class="page-header">
-    <h1>Gestione Voli</h1>
-    <p>Crea e gestisci i tuoi voli, rotte e aeromobili</p>
+  <!-- Header -->
+  <div class="header">
+    <h1>Flight Management</h1>
+    <p>{{ flights.length }} flights in your schedule</p>
   </div>
 
-  <!-- Actions Bar -->
-  <div class="actions-bar">
-    <button class="btn-primary" (click)="toggleFlightForm()">
-      <mat-icon>add</mat-icon>
-      Nuovo Volo
+  <!-- Actions Section -->
+  <div class="actions-section">
+    <button class="action-button primary" (click)="toggleFlightForm()" type="button">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+      </svg>
+      Add New Flight
     </button>
-    <button class="btn-secondary" (click)="toggleAircraftForm()">
-      <mat-icon>flight</mat-icon>
-      Nuovo Aeromobile
-    </button>
-    <button class="btn-secondary" (click)="loadFlights()">
-      <mat-icon>refresh</mat-icon>
-      Aggiorna
+    <button class="action-button secondary" (click)="toggleAircraftForm()" type="button">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      Register Aircraft
     </button>
   </div>
-
-  <!-- Create Flight Form -->
-  <mat-card class="form-card" *ngIf="showFlightForm">
-    <mat-card-header>
-      <mat-card-title>Crea Nuovo Volo</mat-card-title>
-      <mat-card-subtitle>Inserisci i dettagli del volo</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <form [formGroup]="flightForm" (ngSubmit)="onCreateFlight()">
-        <div class="form-grid">
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Numero Volo</mat-label>
-              <input matInput formControlName="flightNumber" placeholder="es: AZ123" style="text-transform: uppercase;">
-              <mat-icon matSuffix>confirmation_number</mat-icon>
-              <mat-error *ngIf="flightForm.get('flightNumber')?.hasError('required')">
-                Numero volo richiesto
-              </mat-error>
-              <mat-error *ngIf="flightForm.get('flightNumber')?.hasError('pattern')">
-                Formato: 2 lettere + 3-4 numeri (es: AZ123)
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Aeroporto Partenza</mat-label>
-              <mat-select formControlName="departureAirport">
-                <mat-option *ngFor="let airport of airports" [value]="airport._id">
-                  {{ airport.name }} ({{ airport.code }})
-                </mat-option>
-              </mat-select>
-              <mat-icon matSuffix>flight_takeoff</mat-icon>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Aeroporto Arrivo</mat-label>
-              <mat-select formControlName="arrivalAirport">
-                <mat-option *ngFor="let airport of airports" [value]="airport._id">
-                  {{ airport.name }} ({{ airport.code }})
-                </mat-option>
-              </mat-select>
-              <mat-icon matSuffix>flight_land</mat-icon>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Orario Partenza</mat-label>
-              <input matInput type="datetime-local" formControlName="departureTime">
-              <mat-icon matSuffix>schedule</mat-icon>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Orario Arrivo</mat-label>
-              <input matInput type="datetime-local" formControlName="arrivalTime">
-              <mat-icon matSuffix>schedule</mat-icon>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Aeromobile</mat-label>
-              <mat-select formControlName="aircraft">
-                <mat-option *ngFor="let aircraft of aircraftTypes" [value]="aircraft.model">
-                  {{ aircraft.model }} ({{ aircraft.capacity }} posti)
-                </mat-option>
-              </mat-select>
-              <mat-icon matSuffix>airplanemode_active</mat-icon>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Prezzo Economy (€)</mat-label>
-              <input matInput type="number" formControlName="economyPrice" min="0">
-              <mat-icon matSuffix>euro</mat-icon>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Prezzo Business (€)</mat-label>
-              <input matInput type="number" formControlName="businessPrice" min="0">
-              <mat-icon matSuffix>euro</mat-icon>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Prezzo First Class (€)</mat-label>
-              <input matInput type="number" formControlName="firstPrice" min="0">
-              <mat-icon matSuffix>euro</mat-icon>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Gate (opzionale)</mat-label>
-              <input matInput formControlName="gate" placeholder="es: A12">
-              <mat-icon matSuffix>door_front</mat-icon>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Terminal (opzionale)</mat-label>
-              <input matInput formControlName="terminal" placeholder="es: T1">
-              <mat-icon matSuffix>business</mat-icon>
-            </mat-form-field>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="toggleFlightForm()">
-            Annulla
-          </button>
-          <button type="submit" class="btn-primary" [disabled]="flightForm.invalid || loading">
-            <mat-spinner diameter="20" class="btn-spinner" *ngIf="loading"></mat-spinner>
-            <span *ngIf="!loading">Crea Volo</span>
-          </button>
-        </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
-
-  <!-- Create Aircraft Form -->
-  <mat-card class="form-card" *ngIf="showAircraftForm">
-    <mat-card-header>
-      <mat-card-title>Registra Nuovo Aeromobile</mat-card-title>
-      <mat-card-subtitle>Aggiungi un aeromobile alla tua flotta</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <form [formGroup]="aircraftForm" (ngSubmit)="onCreateAircraft()">
-        <div class="form-grid">
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Modello</mat-label>
-              <mat-select formControlName="model">
-                <mat-option *ngFor="let aircraft of aircraftTypes" [value]="aircraft.model">
-                  {{ aircraft.model }}
-                </mat-option>
-              </mat-select>
-              <mat-icon matSuffix>flight</mat-icon>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Numero di Registrazione</mat-label>
-              <input matInput formControlName="registrationNumber" placeholder="es: I-ABCD" style="text-transform: uppercase;">
-              <mat-icon matSuffix>tag</mat-icon>
-              <mat-error *ngIf="aircraftForm.get('registrationNumber')?.hasError('pattern')">
-                Formato: 1-2 lettere, trattino, 3-6 caratteri alfanumerici
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Capacità Passeggeri</mat-label>
-              <input matInput type="number" formControlName="capacity" min="50">
-              <mat-icon matSuffix>airline_seat_recline_normal</mat-icon>
-            </mat-form-field>
-          </div>
-
-          <div class="form-field">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Tipo</mat-label>
-              <mat-select formControlName="type">
-                <mat-option value="narrow-body">Narrow-body</mat-option>
-                <mat-option value="wide-body">Wide-body</mat-option>
-                <mat-option value="regional">Regional</mat-option>
-              </mat-select>
-              <mat-icon matSuffix>category</mat-icon>
-            </mat-form-field>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="toggleAircraftForm()">
-            Annulla
-          </button>
-          <button type="submit" class="btn-primary" [disabled]="aircraftForm.invalid || loading">
-            <mat-spinner diameter="20" class="btn-spinner" *ngIf="loading"></mat-spinner>
-            <span *ngIf="!loading">Registra Aeromobile</span>
-          </button>
-        </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
 
   <!-- Success Message -->
   <div class="status-message success" *ngIf="success && !loading">
-    <mat-icon>check_circle</mat-icon>
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
     <span>{{ success }}</span>
   </div>
 
   <!-- Error Message -->
   <div class="status-message error" *ngIf="error && !loading">
-    <mat-icon>error</mat-icon>
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
     <span>{{ error }}</span>
   </div>
 
-  <!-- Flights Table -->
-  <mat-card class="flights-table-card">
-    <mat-card-header>
-      <mat-card-title>I Tuoi Voli</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="table-container">
-        <table mat-table [dataSource]="flights" class="flights-table">
-          <!-- Flight Number Column -->
-          <ng-container matColumnDef="flightNumber">
-            <th mat-header-cell *matHeaderCellDef>Volo</th>
-            <td mat-cell *matCellDef="let flight">{{ flight.flightNumber }}</td>
-          </ng-container>
+  <!-- Create Flight Form -->
+  <div class="form-card" *ngIf="showFlightForm">
+    <div class="form-header">
+      <h2>Create New Flight</h2>
+      <p>Enter flight details and schedule</p>
+    </div>
+    <form [formGroup]="flightForm" (ngSubmit)="onCreateFlight()">
+      <div class="form-grid">
+        <!-- Flight Number -->
+        <div class="form-field">
+          <label class="form-label">Flight Number</label>
+          <input type="text" class="form-input" formControlName="flightNumber" placeholder="e.g. AZ123"
+            (input)="onFlightNumberInput($event)">
+          <div class="form-error"
+            *ngIf="flightForm.get('flightNumber')?.hasError('required') && flightForm.get('flightNumber')?.touched">
+            Flight number is required
+          </div>
+          <div class="form-error"
+            *ngIf="flightForm.get('flightNumber')?.hasError('pattern') && flightForm.get('flightNumber')?.touched">
+            Format: 2 letters + 3-4 numbers (e.g. AZ123)
+          </div>
+        </div>
 
-          <!-- Route Column -->
-          <ng-container matColumnDef="route">
-            <th mat-header-cell *matHeaderCellDef>Rotta</th>
-            <td mat-cell *matCellDef="let flight">
-              {{ flight.departureAirport?.code }} → {{ flight.arrivalAirport?.code }}
-            </td>
-          </ng-container>
+        <!-- Departure Airport -->
+        <div class="form-field">
+          <label class="form-label">Departure Airport</label>
+          <select class="form-input" formControlName="departureAirport">
+            <option value="">Select departure airport</option>
+            <option *ngFor="let airport of airports" [value]="airport._id">
+              {{ airport.name }} ({{ airport.code }})
+            </option>
+          </select>
+        </div>
 
-          <!-- Departure Column -->
-          <ng-container matColumnDef="departure">
-            <th mat-header-cell *matHeaderCellDef>Partenza</th>
-            <td mat-cell *matCellDef="let flight">
-              {{ flight.departureTime | date:'dd/MM/yyyy HH:mm' }}
-            </td>
-          </ng-container>
+        <!-- Arrival Airport -->
+        <div class="form-field">
+          <label class="form-label">Arrival Airport</label>
+          <select class="form-input" formControlName="arrivalAirport">
+            <option value="">Select arrival airport</option>
+            <option *ngFor="let airport of airports" [value]="airport._id">
+              {{ airport.name }} ({{ airport.code }})
+            </option>
+          </select>
+        </div>
 
-          <!-- Aircraft Column -->
-          <ng-container matColumnDef="aircraft">
-            <th mat-header-cell *matHeaderCellDef>Aeromobile</th>
-            <td mat-cell *matCellDef="let flight">
-              {{ flight.aircraft?.model || 'N/A' }}
-            </td>
-          </ng-container>
+        <!-- Departure Time -->
+        <div class="form-field">
+          <label class="form-label">Departure Time</label>
+          <input type="datetime-local" class="form-input" formControlName="departureTime">
+        </div>
 
-          <!-- Status Column -->
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef>Stato</th>
-            <td mat-cell *matCellDef="let flight">
-              <mat-chip [color]="getFlightStatusColor(flight.status)" selected>
-                {{ getFlightStatusText(flight.status) }}
-              </mat-chip>
-            </td>
-          </ng-container>
+        <!-- Arrival Time -->
+        <div class="form-field">
+          <label class="form-label">Arrival Time</label>
+          <input type="datetime-local" class="form-input" formControlName="arrivalTime">
+        </div>
 
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Azioni</th>
-            <td mat-cell *matCellDef="let flight">
-              <button mat-icon-button class="btn-secondary" matTooltip="Modifica volo">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button class="btn-danger" (click)="deleteFlight(flight)" matTooltip="Elimina volo">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td>
-          </ng-container>
+        <!-- Aircraft -->
+        <div class="form-field">
+          <label class="form-label">Aircraft</label>
+          <select class="form-input" formControlName="aircraft">
+            <option value="">Select aircraft type</option>
+            <option *ngFor="let aircraft of aircraftTypes" [value]="aircraft.model">
+              {{ aircraft.model }} ({{ aircraft.capacity }} seats)
+            </option>
+          </select>
+        </div>
 
-          <tr mat-header-row *matHeaderRowDef="['flightNumber', 'route', 'departure', 'aircraft', 'status', 'actions']"></tr>
-          <tr mat-row *matRowDef="let row; columns: ['flightNumber', 'route', 'departure', 'aircraft', 'status', 'actions'];"></tr>
-        </table>
+        <!-- Economy Price -->
+        <div class="form-field">
+          <label class="form-label">Economy Price (€)</label>
+          <input type="number" class="form-input" formControlName="economyPrice" min="0" placeholder="150">
+        </div>
+
+        <!-- Business Price -->
+        <div class="form-field">
+          <label class="form-label">Business Price (€)</label>
+          <input type="number" class="form-input" formControlName="businessPrice" min="0" placeholder="500">
+        </div>
+
+        <!-- First Price -->
+        <div class="form-field">
+          <label class="form-label">First Class Price (€)</label>
+          <input type="number" class="form-input" formControlName="firstPrice" min="0" placeholder="1200">
+        </div>
+
+        <!-- Gate -->
+        <div class="form-field">
+          <label class="form-label">Gate (optional)</label>
+          <input type="text" class="form-input" formControlName="gate" placeholder="A12">
+        </div>
+
+        <!-- Terminal -->
+        <div class="form-field">
+          <label class="form-label">Terminal (optional)</label>
+          <input type="text" class="form-input" formControlName="terminal" placeholder="T1">
+        </div>
       </div>
 
-      <!-- Empty State -->
-      <div class="empty-state" *ngIf="flights.length === 0 && !loading">
-        <mat-icon>flight_takeoff</mat-icon>
-        <h3>Nessun volo trovato</h3>
-        <p>Inizia creando il tuo primo volo</p>
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="toggleFlightForm()">Cancel</button>
+        <button type="submit" class="btn-submit" [disabled]="flightForm.invalid || loading">
+          <span class="spinner" *ngIf="loading"></span>
+          <span *ngIf="!loading">Create Flight</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Create Aircraft Form -->
+  <div class="form-card" *ngIf="showAircraftForm">
+    <div class="form-header">
+      <h2>Register New Aircraft</h2>
+      <p>Add an aircraft to your fleet</p>
+    </div>
+    <form [formGroup]="aircraftForm" (ngSubmit)="onCreateAircraft()">
+      <div class="form-grid">
+        <!-- Model -->
+        <div class="form-field">
+          <label class="form-label">Aircraft Model</label>
+          <select class="form-input" formControlName="model">
+            <option value="">Select model</option>
+            <option *ngFor="let aircraft of aircraftTypes" [value]="aircraft.model">
+              {{ aircraft.model }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Registration Number -->
+        <div class="form-field">
+          <label class="form-label">Registration Number</label>
+          <input type="text" class="form-input" formControlName="registrationNumber" placeholder="I-ABCD"
+            (input)="onRegistrationNumberInput($event)">
+          <div class="form-error"
+            *ngIf="aircraftForm.get('registrationNumber')?.hasError('required') && aircraftForm.get('registrationNumber')?.touched">
+            Registration number is required
+          </div>
+          <div class="form-error"
+            *ngIf="aircraftForm.get('registrationNumber')?.hasError('pattern') && aircraftForm.get('registrationNumber')?.touched">
+            Format: 1-2 letters, hyphen, 3-6 alphanumeric characters
+          </div>
+        </div>
+
+        <!-- Capacity -->
+        <div class="form-field">
+          <label class="form-label">Passenger Capacity</label>
+          <input type="number" class="form-input" formControlName="capacity" min="50" placeholder="189">
+        </div>
+
+        <!-- Type -->
+        <div class="form-field">
+          <label class="form-label">Aircraft Type</label>
+          <select class="form-input" formControlName="type">
+            <option value="">Select type</option>
+            <option value="narrow-body">Narrow-body</option>
+            <option value="wide-body">Wide-body</option>
+            <option value="regional">Regional</option>
+          </select>
+        </div>
       </div>
 
-      <!-- Loading State -->
-      <div class="loading-container" *ngIf="loading">
-        <mat-spinner diameter="40"></mat-spinner>
-        <p>Caricamento voli...</p>
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="toggleAircraftForm()">Cancel</button>
+        <button type="submit" class="btn-submit" [disabled]="aircraftForm.invalid || loading">
+          <span class="spinner" *ngIf="loading"></span>
+          <span *ngIf="!loading">Register Aircraft</span>
+        </button>
       </div>
-    </mat-card-content>
-  </mat-card>
+    </form>
+  </div>
+
+  <!-- Flights List -->
+  <div class="flights-list" *ngIf="!loading">
+    <div class="flight-card" *ngFor="let flight of flights; let i = index">
+      <div class="flight-icon">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8">
+          </path>
+        </svg>
+      </div>
+      <div class="flight-info">
+        <div class="flight-number">{{ flight.flightNumber }}</div>
+        <div class="flight-route">{{ flight.departureAirport?.code }} → {{ flight.arrivalAirport?.code }}</div>
+        <div class="flight-aircraft">{{ flight.aircraft?.model }}</div>
+      </div>
+      <div class="flight-time">
+        <div class="departure-time">{{ flight.departureTime | date:'MMM d, HH:mm' }}</div>
+        <div class="duration">{{ flight.duration }}min</div>
+      </div>
+      <div class="flight-price">
+        <div class="price-label">From</div>
+        <div class="price-value">€{{ flight.basePrice?.economy }}</div>
+      </div>
+      <div class="flight-status">
+        <span class="status-badge" [ngClass]="flight.status">
+          {{ getStatusText(flight.status) }}
+        </span>
+      </div>
+      <div class="flight-actions">
+        <button class="action-btn delete" (click)="deleteFlight(flight)" title="Delete flight">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+            </path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- No Results -->
+    <div class="no-results" *ngIf="flights.length === 0">
+      <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8">
+        </path>
+      </svg>
+      <p>No flights scheduled yet</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner-large"></div>
+    <p>Loading flights...</p>
+  </div>
 </div>

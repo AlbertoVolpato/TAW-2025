@@ -1,16 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AdminService } from '../../../../services/admin.service';
+import { FlightService } from '../../../../services/flight.service';
+import { Airline as BaseAirline } from '../../../../models/flight.model';
 
-export interface Airline {
-  _id: string;
-  name: string;
-  code: string;
-  country: string;
+export interface AirlineDetails extends BaseAirline {
   website?: string;
   contactEmail: string;
   contactPhone?: string;
-  isActive: boolean;
   userId: {
     _id: string;
     email: string;
@@ -27,7 +24,9 @@ export interface Airline {
   styleUrls: ['./airline-management.component.scss'],
 })
 export class AirlineManagementComponent implements OnInit {
-  airlines: Airline[] = [];
+  airlines: AirlineDetails[] = [];
+  filteredAirlines: AirlineDetails[] = [];
+  displayedAirlines: AirlineDetails[] = [];
   loading = false;
   error: string | null = null;
   showInviteDialog = false;
@@ -60,6 +59,7 @@ export class AirlineManagementComponent implements OnInit {
 
   constructor(
     private adminService: AdminService,
+    private flightService: FlightService,
     private snackBar: MatSnackBar
   ) {}
 
@@ -71,58 +71,74 @@ export class AirlineManagementComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    // Build query parameters for pagination and search
-    const params: any = {
-      page: this.currentPage,
-      limit: this.pageSize,
-      role: 'airline',
-    };
-
-    if (this.searchTerm) {
-      params.search = this.searchTerm;
-    }
-
-    this.adminService.getAllUsers(params).subscribe({
-      next: (response: any) => {
+    this.flightService.getAirlines().subscribe({
+      next: (response) => {
         if (response.success && response.data) {
-          // Transform users to show airline information
-          this.airlines = response.data.users
-            .filter((user: any) => user.airline)
-            .map((user: any) => ({
-              _id: user.airline._id,
-              name: user.airline.name,
-              code: user.airline.code,
-              country: user.airline.country || 'N/A',
-              contactEmail: user.email,
-              isActive: user.isActive,
-              userId: {
-                _id: user._id,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-              },
-              createdAt: user.createdAt,
-              updatedAt: user.updatedAt,
-            }));
-
-          // Update pagination info
-          if (response.data.pagination) {
-            this.totalAirlines = response.data.pagination.total;
-            this.totalPages = response.data.pagination.pages;
-          } else {
-            this.totalAirlines = this.airlines.length;
-            this.totalPages = 1;
-          }
+          // The API response actually contains all required fields
+          this.airlines = response.data.airlines as AirlineDetails[];
+          this.applyFiltersAndPagination();
         }
         this.loading = false;
       },
       error: (error: any) => {
         this.error =
-          error.error?.message || 'Errore nel caricamento delle compagnie';
+          error.error?.message ||
+          'Errore nel caricamento delle compagnie aeree';
         this.loading = false;
         console.error('Error loading airlines:', error);
       },
     });
+  }
+
+  applyFiltersAndPagination(): void {
+    // Start with all airlines
+    this.filteredAirlines = [...this.airlines];
+
+    // Apply search filter
+    if (this.searchTerm) {
+      this.filteredAirlines = this.filteredAirlines.filter(
+        (airline) =>
+          airline.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+          airline.code.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+          airline.country
+            .toLowerCase()
+            .includes(this.searchTerm.toLowerCase()) ||
+          airline.contactEmail
+            .toLowerCase()
+            .includes(this.searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (this.selectedStatus) {
+      const isActive = this.selectedStatus === 'active';
+      this.filteredAirlines = this.filteredAirlines.filter(
+        (airline) => airline.isActive === isActive
+      );
+    }
+
+    // Apply country filter
+    if (this.selectedCountry) {
+      this.filteredAirlines = this.filteredAirlines.filter((airline) =>
+        airline.country
+          .toLowerCase()
+          .includes(this.selectedCountry.toLowerCase())
+      );
+    }
+
+    // Update totals based on filtered results
+    this.totalAirlines = this.filteredAirlines.length;
+    this.totalPages = Math.ceil(this.totalAirlines / this.pageSize);
+
+    // Reset to page 1 if current page is beyond available pages
+    if (this.currentPage > this.totalPages && this.totalPages > 0) {
+      this.currentPage = 1;
+    }
+
+    // Apply pagination
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.displayedAirlines = this.filteredAirlines.slice(startIndex, endIndex);
   }
 
   openInviteDialog(): void {
@@ -132,7 +148,7 @@ export class AirlineManagementComponent implements OnInit {
   onInviteDialogClosed(success: boolean): void {
     this.showInviteDialog = false;
     if (success) {
-      this.loadAirlines();
+      this.loadAirlines(); // Reload all data when new airline is added
     }
   }
 
@@ -141,19 +157,20 @@ export class AirlineManagementComponent implements OnInit {
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
       this.searchTerm = searchTerm;
-      this.currentPage = 1; // Reset to first page
-      this.loadAirlines();
+      this.currentPage = 1; // Reset to first page when searching
+      this.applyFiltersAndPagination();
     }, 300);
   }
 
   onPageChange(page: number): void {
     this.currentPage = page;
-    this.loadAirlines();
+    this.applyFiltersAndPagination();
   }
 
   changePage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
-      this.onPageChange(page);
+      this.currentPage = page;
+      this.applyFiltersAndPagination();
     }
   }
 
@@ -176,17 +193,19 @@ export class AirlineManagementComponent implements OnInit {
   }
 
   onFilterChange(): void {
-    this.loadAirlines();
+    this.currentPage = 1; // Reset to first page
+    this.applyFiltersAndPagination();
   }
 
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedCountry = '';
     this.selectedStatus = '';
-    this.loadAirlines();
+    this.currentPage = 1;
+    this.applyFiltersAndPagination();
   }
 
-  toggleAirlineStatus(airline: Airline): void {
+  toggleAirlineStatus(airline: AirlineDetails): void {
     this.adminService.toggleUserStatus(airline.userId._id).subscribe({
       next: (response: any) => {
         if (response.success) {
@@ -213,24 +232,6 @@ export class AirlineManagementComponent implements OnInit {
           { duration: 3000 }
         );
       },
-    });
-  }
-
-  viewAirlineDetails(airline: Airline): void {
-    // Per ora mostriamo i dettagli in una snackbar,
-    // in futuro si può implementare un dialog con più dettagli
-    const details = [
-      `Nome: ${airline.name}`,
-      `Codice: ${airline.code}`,
-      `Paese: ${airline.country}`,
-      `Email: ${airline.contactEmail}`,
-      `Status: ${airline.isActive ? 'Attiva' : 'Inattiva'}`,
-      `Registrata: ${new Date(airline.createdAt).toLocaleDateString()}`,
-    ].join('\n');
-
-    this.snackBar.open(details, 'Chiudi', {
-      duration: 8000,
-      panelClass: ['multiline-snackbar'],
     });
   }
 

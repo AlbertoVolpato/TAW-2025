@@ -20,17 +20,19 @@ import { AirlineRoutingModule } from './airline-routing.module';
 // Components
 import { AirlineDashboardComponent } from './components/airline-dashboard/airline-dashboard.component';
 import { FlightManagementComponent } from './components/flight-management/flight-management.component';
+import { AirlineRouteManagementComponent } from './components/route-management/airline-route-management.component';
 
 @NgModule({
   declarations: [
     AirlineDashboardComponent,
-    FlightManagementComponent
+    FlightManagementComponent,
+    AirlineRouteManagementComponent,
   ],
   imports: [
     CommonModule,
     ReactiveFormsModule,
     AirlineRoutingModule,
-    
+
     // Angular Material
     MatCardModule,
     MatButtonModule,
@@ -41,7 +43,7 @@ import { FlightManagementComponent } from './components/flight-management/flight
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatTooltipModule
-  ]
+    MatTooltipModule,
+  ],
 })
-export class AirlineModule { }
+export class AirlineModule {}

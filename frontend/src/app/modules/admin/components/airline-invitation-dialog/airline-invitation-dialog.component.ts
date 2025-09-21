@@ -18,8 +18,6 @@ export class AirlineInvitationDialogComponent {
   constructor(private fb: FormBuilder, private adminService: AdminService) {
     this.inviteForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
       airlineName: ['', [Validators.required, Validators.minLength(2)]],
       airlineCode: [
         '',
@@ -48,8 +46,8 @@ export class AirlineInvitationDialogComponent {
 
     const formData = {
       email: this.inviteForm.value.email,
-      firstName: this.inviteForm.value.firstName,
-      lastName: this.inviteForm.value.lastName,
+      firstName: this.inviteForm.value.airlineName, // Use airline name as firstName
+      lastName: 'Company', // Default value for company
       airlineName: this.inviteForm.value.airlineName,
       airlineCode: this.inviteForm.value.airlineCode.toUpperCase(),
       country: this.inviteForm.value.country,
@@ -82,6 +80,11 @@ export class AirlineInvitationDialogComponent {
     this.inviteForm.reset();
     this.showError = '';
     this.dialogClosed.emit(false);
+  }
+
+  onAirlineCodeInput(event: any): void {
+    const value = event.target.value.toUpperCase();
+    this.inviteForm.get('airlineCode')?.setValue(value);
   }
 
   private markFormGroupTouched(): void {
