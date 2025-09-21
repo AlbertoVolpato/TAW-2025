@@ -21,19 +21,21 @@ import { MatSelectModule } from '@angular/material/select';
 import { AdminRoutingModule } from './admin-routing.module';
 
 // Components
-import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
 import { UserManagementComponent } from './components/user-management/user-management.component';
 import { AdminProfileComponent } from './components/admin-profile/admin-profile.component';
 import { AirlineInvitationDialogComponent } from './components/airline-invitation-dialog/airline-invitation-dialog.component';
 import { AirlineManagementComponent } from './components/airline-management/airline-management.component';
+import { RouteManagementComponent } from './components/route-management/route-management.component';
+import { RouteDialogComponent } from './components/route-dialog/route-dialog.component';
 
 @NgModule({
   declarations: [
-    AdminDashboardComponent,
     UserManagementComponent,
     AdminProfileComponent,
     AirlineInvitationDialogComponent,
     AirlineManagementComponent,
+    RouteManagementComponent,
+    RouteDialogComponent,
   ],
   imports: [
     CommonModule,

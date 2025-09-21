@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node dist/bin/www.js",
-    "dev": "node src/bin/www.ts",
+    "dev": "ts-node src/bin/www.ts",
     "build": "tsc",
     "test": "jest",
     "seed": "ts-node src/utils/seedData.ts",

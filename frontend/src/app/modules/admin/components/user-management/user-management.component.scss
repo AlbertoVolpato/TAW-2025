@@ -1,127 +1,321 @@
 .user-management {
-  padding: 24px;
-  max-width: 1400px;
+  padding: 2rem;
+  max-width: 1200px;
   margin: 0 auto;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  min-height: calc(100vh - 64px);
-}
+  background: #f8fafc;
+  min-height: 100vh;
 
-.page-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 32px;
-  border-radius: 16px;
-  margin: -24px -24px 32px -24px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
 
-  .header-content {
     h1 {
-      color: white;
-      margin: 0 0 8px 0;
-      font-size: 32px;
+      font-size: 2.5rem;
       font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      mat-icon {
-        font-size: 32px;
-      }
+      color: #1a202c;
+      margin-bottom: 0.5rem;
     }
 
     p {
-      color: rgba(255, 255, 255, 0.9);
-      margin: 0;
-      font-size: 16px;
-      font-weight: 300;
+      font-size: 1.1rem;
+      color: #64748b;
+    }
+  }
+
+  .search-section {
+    max-width: 500px;
+    margin: 0 auto 3rem auto;
+
+    .search-container {
+      .search-label {
+        display: block;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+      }
+
+      .search-input-styled {
+        width: 100%;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        background: white;
+
+        &:focus {
+          outline: none;
+          border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        &::placeholder {
+          color: #94a3b8;
+        }
+      }
+    }
+  }
+
+  .users-list {
+    display: grid;
+    gap: 1rem;
+    max-width: 800px;
+    margin: 0 auto;
+
+    .user-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      display: grid;
+      grid-template-columns: auto 1fr auto auto auto;
+      gap: 1rem;
+      align-items: center;
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      }
+
+      .user-avatar {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+
+        mat-icon {
+          font-size: 24px;
+        }
+      }
+
+      .user-info {
+        .user-name {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: #1a202c;
+          margin-bottom: 0.25rem;
+        }
+
+        .user-email {
+          font-size: 0.9rem;
+          color: #64748b;
+        }
+      }
+
+      .user-role {
+        .role-badge {
+          padding: 0.5rem 1rem;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+
+          &.admin {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+          }
+
+          &.passenger {
+            background: #e2e8f0;
+            color: #475569;
+          }
+
+          &.airline {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            color: white;
+          }
+        }
+      }
+
+      .user-date {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        white-space: nowrap;
+      }
+
+      .user-actions {
+        display: flex;
+        justify-content: center;
+
+        .delete-button {
+          background: #ef4444;
+          border: none;
+          border-radius: 8px;
+          color: white;
+          padding: 8px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+          }
+
+          svg {
+            width: 16px;
+            height: 16px;
+          }
+        }
+      }
+    }
+
+    .no-results,
+    .loading {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #64748b;
+
+      mat-icon {
+        font-size: 4rem;
+        width: 4rem;
+        height: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      p {
+        font-size: 1.1rem;
+      }
     }
   }
 }
 
-.filters-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  margin-bottom: 24px;
-  border: none;
+// Pagination Styles
+.pagination-container {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 
-  .filters-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr auto;
-    gap: 16px;
-    align-items: start;
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-
-    .filter-actions {
+    .pagination-btn {
+      padding: 0.75rem 1rem;
+      border: 2px solid #e2e8f0;
+      background: white;
+      border-radius: 8px;
+      color: #64748b;
+      font-weight: 500;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 44px;
       display: flex;
       align-items: center;
-      height: 56px;
+      justify-content: center;
+
+      &:hover:not(.disabled) {
+        border-color: #667eea;
+        color: #667eea;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+      }
+
+      &.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+
+      &.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+
+      &.page-number {
+        min-width: 44px;
+        padding: 0.75rem;
+      }
+    }
+
+    .pagination-pages {
+      display: flex;
+      gap: 0.25rem;
     }
   }
-}
 
-.users-table-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border: none;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-  }
-}
-
-.btn-secondary {
-  background: white;
-  border: 2px solid #e2e8f0;
-  color: #374151;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: #f8fafc;
-    border-color: #667eea;
-    transform: translateY(-1px);
+  .pagination-info {
+    font-size: 0.875rem;
+    color: #64748b;
+    text-align: center;
   }
 }
 
 @media (max-width: 768px) {
   .user-management {
-    padding: 16px;
+    padding: 1rem;
+
+    .header h1 {
+      font-size: 2rem;
+    }
+
+    .users-list .user-card {
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 0.75rem;
+
+      .user-avatar {
+        grid-row: 1 / 4;
+      }
+
+      .user-info {
+        grid-column: 2;
+      }
+
+      .user-role,
+      .user-date,
+      .user-actions {
+        grid-column: 2;
+        justify-self: start;
+        margin-top: 0.5rem;
+      }
+    }
   }
 
-  .page-header {
-    margin: -16px -16px 24px -16px;
-    padding: 24px 16px;
+  .pagination-container {
+    .pagination {
+      flex-wrap: wrap;
+      justify-content: center;
 
-    h1 {
-      font-size: 2rem;
+      .pagination-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+        min-width: 36px;
+      }
+
+      .pagination-pages {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+
+    .pagination-info {
+      font-size: 0.8rem;
     }
   }
 }

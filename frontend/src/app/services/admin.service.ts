@@ -115,7 +115,7 @@ export class AdminService {
 
   getSystemStats(): Observable<{ success: boolean; data: SystemStats }> {
     return this.http.get<{ success: boolean; data: SystemStats }>(
-      `${this.apiUrl}/admin/system/stats`,
+      `${this.apiUrl}/admin/dashboard-stats`,
       {
         headers: this.getAuthHeaders(),
       }

@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AdminService } from '../../../../services/admin.service';
-import { AirlineInvitationDialogComponent } from '../airline-invitation-dialog/airline-invitation-dialog.component';
 
 export interface Airline {
   _id: string;
@@ -32,6 +30,7 @@ export class AirlineManagementComponent implements OnInit {
   airlines: Airline[] = [];
   loading = false;
   error: string | null = null;
+  showInviteDialog = false;
 
   // Search and filtering
   searchTerm = '';
@@ -54,11 +53,14 @@ export class AirlineManagementComponent implements OnInit {
   currentPage = 1;
   pageSize = 10;
   totalAirlines = 0;
+  totalPages = 0;
+
+  // Expose Math for template
+  Math = Math;
 
   constructor(
     private adminService: AdminService,
-    private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -69,9 +71,18 @@ export class AirlineManagementComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    // For now, we'll use a placeholder. In a real implementation,
-    // you'd have a dedicated airline management API
-    this.adminService.getAllUsers({ role: 'airline' }).subscribe({
+    // Build query parameters for pagination and search
+    const params: any = {
+      page: this.currentPage,
+      limit: this.pageSize,
+      role: 'airline',
+    };
+
+    if (this.searchTerm) {
+      params.search = this.searchTerm;
+    }
+
+    this.adminService.getAllUsers(params).subscribe({
       next: (response: any) => {
         if (response.success && response.data) {
           // Transform users to show airline information
@@ -93,7 +104,15 @@ export class AirlineManagementComponent implements OnInit {
               createdAt: user.createdAt,
               updatedAt: user.updatedAt,
             }));
-          this.totalAirlines = this.airlines.length;
+
+          // Update pagination info
+          if (response.data.pagination) {
+            this.totalAirlines = response.data.pagination.total;
+            this.totalPages = response.data.pagination.pages;
+          } else {
+            this.totalAirlines = this.airlines.length;
+            this.totalPages = 1;
+          }
         }
         this.loading = false;
       },
@@ -107,19 +126,14 @@ export class AirlineManagementComponent implements OnInit {
   }
 
   openInviteDialog(): void {
-    const dialogRef = this.dialog.open(AirlineInvitationDialogComponent, {
-      width: '700px',
-      maxWidth: '90vw',
-      disableClose: false,
-      autoFocus: true,
-      panelClass: 'airline-invitation-dialog-container',
-    });
+    this.showInviteDialog = true;
+  }
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.loadAirlines();
-      }
-    });
+  onInviteDialogClosed(success: boolean): void {
+    this.showInviteDialog = false;
+    if (success) {
+      this.loadAirlines();
+    }
   }
 
   onSearch(event: any): void {
@@ -127,8 +141,38 @@ export class AirlineManagementComponent implements OnInit {
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
       this.searchTerm = searchTerm;
+      this.currentPage = 1; // Reset to first page
       this.loadAirlines();
     }, 300);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadAirlines();
+  }
+
+  changePage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.onPageChange(page);
+    }
+  }
+
+  getVisiblePages(): number[] {
+    const visiblePages: number[] = [];
+    const maxVisible = 5; // Show max 5 page numbers
+    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(this.totalPages, start + maxVisible - 1);
+
+    // Adjust start if we're near the end
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      visiblePages.push(i);
+    }
+
+    return visiblePages;
   }
 
   onFilterChange(): void {
@@ -143,20 +187,51 @@ export class AirlineManagementComponent implements OnInit {
   }
 
   toggleAirlineStatus(airline: Airline): void {
-    // This would call an airline-specific toggle endpoint
-    this.snackBar.open(
-      `Funzionalità in sviluppo: Toggle status per ${airline.name}`,
-      'Chiudi',
-      { duration: 3000 }
-    );
+    this.adminService.toggleUserStatus(airline.userId._id).subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          airline.isActive = !airline.isActive;
+          this.snackBar.open(
+            `${airline.name} ${
+              airline.isActive ? 'attivata' : 'disattivata'
+            } con successo`,
+            'Chiudi',
+            { duration: 3000 }
+          );
+        } else {
+          this.snackBar.open(
+            response.message || 'Errore nel cambio di stato',
+            'Chiudi',
+            { duration: 3000 }
+          );
+        }
+      },
+      error: (error: any) => {
+        this.snackBar.open(
+          error.error?.message || 'Errore nel cambio di stato',
+          'Chiudi',
+          { duration: 3000 }
+        );
+      },
+    });
   }
 
   viewAirlineDetails(airline: Airline): void {
-    this.snackBar.open(
-      `Funzionalità in sviluppo: Dettagli per ${airline.name}`,
-      'Chiudi',
-      { duration: 3000 }
-    );
+    // Per ora mostriamo i dettagli in una snackbar,
+    // in futuro si può implementare un dialog con più dettagli
+    const details = [
+      `Nome: ${airline.name}`,
+      `Codice: ${airline.code}`,
+      `Paese: ${airline.country}`,
+      `Email: ${airline.contactEmail}`,
+      `Status: ${airline.isActive ? 'Attiva' : 'Inattiva'}`,
+      `Registrata: ${new Date(airline.createdAt).toLocaleDateString()}`,
+    ].join('\n');
+
+    this.snackBar.open(details, 'Chiudi', {
+      duration: 8000,
+      panelClass: ['multiline-snackbar'],
+    });
   }
 
   getStatusColor(isActive: boolean): string {

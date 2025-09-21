@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authenticate, authorize } from "../middleware/auth";
 import {
+  getDashboardStats,
   getSystemStats,
   getRecentActivities,
   sendAirlineInvite,
@@ -10,6 +11,9 @@ const router = Router();
 
 // Middleware per verificare che l'utente sia admin
 router.use(authenticate, authorize("admin"));
+
+// Rotte per statistiche dashboard
+router.get("/dashboard-stats", getDashboardStats);
 
 // Rotte per statistiche sistema
 router.get("/stats", getSystemStats);

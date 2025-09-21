@@ -25,11 +25,10 @@ export class UserManagementComponent implements OnInit {
   // Table columns
   displayedColumns: string[] = [
     'email',
-    'firstName',
-    'lastName',
     'role',
     'isActive',
     'walletBalance',
+    'createdAt',
     'actions',
   ];
 
@@ -38,6 +37,9 @@ export class UserManagementComponent implements OnInit {
   pageSize = 10;
   totalUsers = 0;
   totalPages = 0;
+
+  // Expose Math for template
+  Math = Math;
 
   constructor(
     private adminService: AdminService,
@@ -195,6 +197,37 @@ export class UserManagementComponent implements OnInit {
   onPageChange(page: number): void {
     this.currentPage = page;
     this.loadUsers();
+  }
+
+  changePage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.onPageChange(page);
+    }
+  }
+
+  getVisiblePages(): number[] {
+    const visiblePages: number[] = [];
+    const maxVisible = 5; // Show max 5 page numbers
+    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(this.totalPages, start + maxVisible - 1);
+
+    // Adjust start if we're near the end
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      visiblePages.push(i);
+    }
+
+    return visiblePages;
+  }
+
+  editUser(user: User): void {
+    // TODO: Implementare dialog per editing utente
+    this.snackBar.open('Funzionalità di editing in sviluppo', 'Chiudi', {
+      duration: 3000,
+    });
   }
 
   getRoleText(role: string): string {

@@ -272,6 +272,7 @@ export const getAllFlights = async (req: Request, res: Response) => {
 
 // Get flight by ID
 export const getFlightById = async (req: Request, res: Response) => {
+  console.log("getFlightById called with id:", req.params.id);
   try {
     const { id } = req.params;
 
@@ -677,6 +678,7 @@ export const getAirlineFlights = async (req: Request, res: Response) => {
 
 // Get cheapest flights for homepage
 export const getCheapestFlights = async (req: Request, res: Response) => {
+  console.log("getCheapestFlights called with query:", req.query);
   try {
     const limit = parseInt(req.query.limit as string) || 5;
 

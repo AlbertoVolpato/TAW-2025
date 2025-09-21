@@ -1,5 +1,6 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AdminService } from '../../../../services/admin.service';
@@ -39,6 +40,7 @@ export class AdminProfileComponent implements OnInit {
   constructor(
     private adminService: AdminService,
     private authService: AuthService,
+    private router: Router,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private fb: FormBuilder
@@ -143,10 +145,28 @@ export class AdminProfileComponent implements OnInit {
   }
 
   openRouteManagement(): void {
-    this.snackBar.open('Funzionalità gestione rotte in sviluppo', 'Chiudi', {
-      duration: 3000,
+    this.router.navigate(['/admin/routes']);
+  }
+
+  exportUsers(): void {
+    this.adminService.exportUsers('csv').subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `users-export-${
+          new Date().toISOString().split('T')[0]
+        }.csv`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error('Error exporting users:', error);
+        this.snackBar.open("Errore durante l'esportazione", 'Chiudi', {
+          duration: 3000,
+        });
+      },
     });
-    // TODO: Implementare navigazione a gestione rotte
   }
 
   openSystemConfig(): void {

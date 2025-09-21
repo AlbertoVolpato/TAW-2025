@@ -90,14 +90,13 @@ export interface SystemStats {
   totalAirlines: number;
   totalFlights: number;
   totalBookings: number;
-  activeUsers: number;
-  pendingInvites: number;
-  databaseSize?: string;
-  lastBackup?: string;
-  averageResponseTime?: number;
-  systemUptime?: string;
-  errorsToday?: number;
-  successRate?: number;
+  usersByRole: {
+    _id: string;
+    count: number;
+  }[];
+  recentBookings: number;
+  newUsers: number;
+  growthRate: string;
   collections?: {
     name: string;
     count: number;

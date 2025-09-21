@@ -1,7 +1,5 @@
-import { Component, Inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { AdminService } from '../../../../services/admin.service';
 
 @Component({
@@ -10,16 +8,14 @@ import { AdminService } from '../../../../services/admin.service';
   styleUrls: ['./airline-invitation-dialog.component.scss'],
 })
 export class AirlineInvitationDialogComponent {
-  inviteForm: FormGroup;
-  loading = false;
+  @Input() isVisible = false;
+  @Output() dialogClosed = new EventEmitter<boolean>();
 
-  constructor(
-    private fb: FormBuilder,
-    private dialogRef: MatDialogRef<AirlineInvitationDialogComponent>,
-    private adminService: AdminService,
-    private snackBar: MatSnackBar,
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
+  inviteForm: FormGroup;
+  isSubmitting = false;
+  showError = '';
+
+  constructor(private fb: FormBuilder, private adminService: AdminService) {
     this.inviteForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       firstName: ['', [Validators.required, Validators.minLength(2)]],
@@ -34,8 +30,10 @@ export class AirlineInvitationDialogComponent {
           Validators.pattern(/^[A-Z]{2,3}$/),
         ],
       ],
-      country: ['Italy', [Validators.required]],
+      country: ['Italy', [Validators.required]], // Default value set to Italy
       contactEmail: ['', [Validators.email]],
+      website: [''],
+      message: [''],
     });
   }
 
@@ -45,50 +43,45 @@ export class AirlineInvitationDialogComponent {
       return;
     }
 
-    this.loading = true;
+    this.isSubmitting = true;
+    this.showError = '';
 
     const formData = {
       email: this.inviteForm.value.email,
       firstName: this.inviteForm.value.firstName,
       lastName: this.inviteForm.value.lastName,
       airlineName: this.inviteForm.value.airlineName,
-      airlineCode: this.inviteForm.value.airlineCode,
+      airlineCode: this.inviteForm.value.airlineCode.toUpperCase(),
       country: this.inviteForm.value.country,
       contactEmail:
         this.inviteForm.value.contactEmail || this.inviteForm.value.email,
+      website: this.inviteForm.value.website,
+      message: this.inviteForm.value.message,
     };
 
     this.adminService.createAirlineByInvitation(formData).subscribe({
       next: (response: any) => {
-        this.loading = false;
+        this.isSubmitting = false;
         if (response.success) {
-          this.snackBar.open(
-            `Compagnia aerea ${formData.airlineName} creata con successo!`,
-            'Chiudi',
-            {
-              duration: 5000,
-              panelClass: ['success-snackbar'],
-            }
-          );
-          this.dialogRef.close(true);
+          // Reset form
+          this.inviteForm.reset();
+          this.dialogClosed.emit(true);
         }
       },
       error: (error: any) => {
-        this.loading = false;
-        const errorMessage =
+        this.isSubmitting = false;
+        this.showError =
           error.error?.message ||
           'Errore nella creazione della compagnia aerea';
-        this.snackBar.open(errorMessage, 'Chiudi', {
-          duration: 5000,
-          panelClass: ['error-snackbar'],
-        });
         console.error('Error creating airline:', error);
       },
     });
   }
 
   onCancel(): void {
-    this.dialogRef.close(false);
+    this.inviteForm.reset();
+    this.showError = '';
+    this.dialogClosed.emit(false);
   }
 
   private markFormGroupTouched(): void {

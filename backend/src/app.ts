@@ -19,6 +19,7 @@ import flightsRouter from "./routes/flights";
 import paymentsRouter from "./routes/payments";
 import bookingsRouter from "./routes/bookings";
 import systemRouter from "./routes/system";
+import adminRouter from "./routes/admin";
 
 // Load environment variables
 dotenv.config();
@@ -63,6 +64,7 @@ app.use("/api/aircraft", aircraftRouter);
 app.use("/api/flights", flightsRouter);
 app.use("/api/payments", paymentsRouter);
 app.use("/api/bookings", bookingsRouter);
+app.use("/api/admin", adminRouter);
 app.use("/api/admin/system", systemRouter);
 
 // Health check endpoint
