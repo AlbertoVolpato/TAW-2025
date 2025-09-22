@@ -50,6 +50,7 @@ export interface ChangePasswordRequest {
 
 export interface ForceChangePasswordRequest {
   email: string;
+  temporaryPassword: string;
   newPassword: string;
 }
 

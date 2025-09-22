@@ -1,11 +1,12 @@
 <div class="airline-dashboard">
-  <!-- Hero Header with gradient like hero-section -->
+  <!-- Hero Header with gradient like admin -->
   <div class="hero-header">
     <div class="hero-content">
       <h1>Airline Dashboard</h1>
       <p>Monitor your airline operations and performance</p>
     </div>
   </div>
+
   <!-- Management Cards -->
   <div class="management-grid">
     <div class="management-card flights-card">
@@ -38,6 +39,94 @@
           Manage Routes
         </button>
       </div>
+    </div>
+
+    <div class="management-card stats-card">
+      <div class="card-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      </div>
+      <div class="card-content">
+        <h3>Statistics</h3>
+        <p>View performance metrics and analytics</p>
+        <button class="management-btn" (click)="loadStatistics()" [disabled]="isLoading">
+          {{ isLoading ? 'Loading...' : 'View Statistics' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Section -->
+  <div class="statistics-section" *ngIf="stats && !isLoading">
+    <h2>Performance Statistics</h2>
+
+    <!-- Overview Cards -->
+    <div class="stats-overview">
+      <div class="stat-card passengers">
+        <div class="stat-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>{{ stats.summary.totalPassengers | number }}</h3>
+          <p>Total Passengers</p>
+          <span class="stat-detail">{{ stats.summary.averagePassengersPerFlight | number:'1.1-1' }} avg per
+            flight</span>
+        </div>
+      </div>
+
+      <div class="stat-card revenue">
+        <div class="stat-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>€{{ stats.summary.totalRevenue | number:'1.0-0' }}</h3>
+          <p>Total Revenue</p>
+          <span class="stat-detail">€{{ stats.summary.averageRevenuePerFlight | number:'1.0-0' }} avg per flight</span>
+        </div>
+      </div>
+
+      <div class="stat-card flights">
+        <div class="stat-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>{{ stats.summary.totalFlights | number }}</h3>
+          <p>Total Flights</p>
+          <span class="stat-detail">{{ stats.summary.totalBookings | number }} bookings</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Routes Analysis -->
+    <div class="routes-analysis" *ngIf="stats.mostDemandedRoutes.length > 0">
+      <h3>Most Demanded Routes</h3>
+      <div class="routes-list">
+        <div class="route-item" *ngFor="let route of stats.mostDemandedRoutes.slice(0, 5)">
+          <div class="route-info">
+            <span class="route-name">{{ route.route || 'N/A' }}</span>
+            <span class="route-stats">{{ route.passengers || 0 }} passengers • €{{ route.revenue || 0 | number:'1.0-0'
+              }}</span>
+          </div>
+          <div class="route-bar">
+            <div class="route-fill" [style.width.%]="(route.passengers / getMaxRoutePassengers()) * 100"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-routes" *ngIf="stats.mostDemandedRoutes.length === 0">
+      <p>No route data available yet. Routes will appear here once flights have passengers.</p>
     </div>
   </div>
 

@@ -108,6 +108,11 @@ export class ProfileComponent implements OnInit {
     this.router.navigate(['/passenger/bookings']);
   }
 
+  addFunds(): void {
+    // Per ora mostra un messaggio, in futuro implementerà la ricarica del portafoglio
+    alert('Funzionalità di ricarica del portafoglio non ancora disponibile');
+  }
+
   logout(): void {
     this.authService.logout();
   }

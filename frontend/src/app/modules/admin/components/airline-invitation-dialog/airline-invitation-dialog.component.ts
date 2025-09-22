@@ -14,6 +14,9 @@ export class AirlineInvitationDialogComponent {
   inviteForm: FormGroup;
   isSubmitting = false;
   showError = '';
+  showSuccess = false;
+  temporaryPassword = '';
+  createdAirline: any = null;
 
   constructor(private fb: FormBuilder, private adminService: AdminService) {
     this.inviteForm = this.fb.group({
@@ -61,9 +64,14 @@ export class AirlineInvitationDialogComponent {
       next: (response: any) => {
         this.isSubmitting = false;
         if (response.success) {
+          // Show success message with temporary password
+          this.showSuccess = true;
+          this.temporaryPassword = response.data.temporaryPassword;
+          this.createdAirline = response.data.airline;
+
           // Reset form
           this.inviteForm.reset();
-          this.dialogClosed.emit(true);
+          this.inviteForm.patchValue({ country: 'Italy' }); // Reset default country
         }
       },
       error: (error: any) => {
@@ -78,8 +86,29 @@ export class AirlineInvitationDialogComponent {
 
   onCancel(): void {
     this.inviteForm.reset();
+    this.inviteForm.patchValue({ country: 'Italy' });
     this.showError = '';
+    this.showSuccess = false;
+    this.temporaryPassword = '';
+    this.createdAirline = null;
     this.dialogClosed.emit(false);
+  }
+
+  onClose(): void {
+    this.inviteForm.reset();
+    this.inviteForm.patchValue({ country: 'Italy' });
+    this.showError = '';
+    this.showSuccess = false;
+    this.temporaryPassword = '';
+    this.createdAirline = null;
+    this.dialogClosed.emit(true);
+  }
+
+  copyToClipboard(text: string): void {
+    navigator.clipboard.writeText(text).then(() => {
+      // You could show a toast notification here
+      console.log('Password copied to clipboard');
+    });
   }
 
   onAirlineCodeInput(event: any): void {

@@ -6,7 +6,7 @@ import { AuthService } from '../../../services/auth.service';
 @Component({
   selector: 'app-change-password',
   templateUrl: './change-password.component.html',
-  styleUrls: ['./change-password.component.scss']
+  styleUrls: ['./change-password.component.scss'],
 })
 export class ChangePasswordComponent implements OnInit {
   changePasswordForm: FormGroup;
@@ -21,40 +21,57 @@ export class ChangePasswordComponent implements OnInit {
     private authService: AuthService,
     private router: Router
   ) {
-    this.changePasswordForm = this.formBuilder.group({
-      currentPassword: ['', [Validators.required]],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
+    this.changePasswordForm = this.formBuilder.group(
+      {
+        currentPassword: ['', [Validators.required]],
+        newPassword: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', [Validators.required]],
+      },
+      { validators: this.passwordMatchValidator }
+    );
 
-    this.forceChangeForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
-      temporaryPassword: ['', [Validators.required]],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
+    this.forceChangeForm = this.formBuilder.group(
+      {
+        email: ['', [Validators.required, Validators.email]],
+        temporaryPassword: ['', [Validators.required]],
+        newPassword: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', [Validators.required]],
+      },
+      { validators: this.passwordMatchValidator }
+    );
   }
 
   ngOnInit(): void {
     // Check if user must change password
     const user = this.authService.getCurrentUser();
-    this.isForceChange = user?.mustChangePassword || false;
-    
+    this.isForceChange =
+      user?.mustChangePassword ||
+      this.authService.requiresPasswordChange() ||
+      false;
+
     if (this.isForceChange && user) {
       this.forceChangeForm.patchValue({
-        email: user.email
+        email: user.email,
       });
     }
   }
 
-  get f() { return this.changePasswordForm.controls; }
-  get ff() { return this.forceChangeForm.controls; }
+  get f() {
+    return this.changePasswordForm.controls;
+  }
+  get ff() {
+    return this.forceChangeForm.controls;
+  }
 
   passwordMatchValidator(form: FormGroup) {
     const newPassword = form.get('newPassword');
     const confirmPassword = form.get('confirmPassword');
-    
-    if (newPassword && confirmPassword && newPassword.value !== confirmPassword.value) {
+
+    if (
+      newPassword &&
+      confirmPassword &&
+      newPassword.value !== confirmPassword.value
+    ) {
       confirmPassword.setErrors({ passwordMismatch: true });
     } else if (confirmPassword?.errors?.['passwordMismatch']) {
       delete confirmPassword.errors['passwordMismatch'];
@@ -90,9 +107,10 @@ export class ChangePasswordComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        this.error = error.error?.message || 'An error occurred while changing password';
+        this.error =
+          error.error?.message || 'An error occurred while changing password';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -111,7 +129,8 @@ export class ChangePasswordComponent implements OnInit {
     this.authService.forceChangePassword(passwordData).subscribe({
       next: (response) => {
         if (response.success) {
-          this.success = 'Password changed successfully! You are now logged in.';
+          this.success =
+            'Password changed successfully! You are now logged in.';
           setTimeout(() => {
             this.router.navigate(['/']);
           }, 2000);
@@ -121,14 +140,15 @@ export class ChangePasswordComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        this.error = error.error?.message || 'An error occurred while changing password';
+        this.error =
+          error.error?.message || 'An error occurred while changing password';
         this.loading = false;
-      }
+      },
     });
   }
 
   private markFormGroupTouched(form: FormGroup): void {
-    Object.keys(form.controls).forEach(key => {
+    Object.keys(form.controls).forEach((key) => {
       const control = form.get(key);
       control?.markAsTouched();
     });

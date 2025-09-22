@@ -202,3 +202,88 @@ textarea.form-input {
 .dialog-container {
   animation: fadeIn 0.3s ease-out;
 }
+
+// Success section styles
+.success-section {
+  text-align: center;
+
+  .success-header {
+    margin-bottom: 24px;
+
+    h3 {
+      color: #22c55e;
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    p {
+      color: #666;
+      font-size: 16px;
+      margin: 0;
+    }
+  }
+
+  .password-section {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+
+    h4 {
+      color: #1e293b;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+
+    p {
+      color: #64748b;
+      font-size: 14px;
+      margin: 0 0 12px;
+    }
+
+    .password-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+
+      code {
+        font-family: "Courier New", monospace;
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e293b;
+        letter-spacing: 1px;
+        background: none;
+        padding: 0;
+      }
+
+      .btn-copy {
+        background: #3b82f6;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+
+        &:hover {
+          background: #2563eb;
+        }
+      }
+    }
+
+    .password-note {
+      font-size: 12px;
+      color: #f59e0b;
+      font-weight: 500;
+    }
+  }
+}

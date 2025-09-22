@@ -129,16 +129,17 @@ export const createAirlineByInvitation = async (
       });
     }
 
-    // Generate temporary password
-    const tempPassword =
-      Math.random().toString(36).slice(-8) +
-      Math.random().toString(36).slice(-8);
-    const hashedPassword = await bcrypt.hash(tempPassword, 12);
+    // Generate simple temporary password (easier to read and type)
+    const tempPassword = `temp${Date.now().toString().slice(-6)}${Math.floor(
+      Math.random() * 100
+    )
+      .toString()
+      .padStart(2, "0")}`;
 
-    // Create airline user
+    // Create airline user (password will be hashed by middleware)
     const airlineUser = new User({
       email,
-      password: hashedPassword,
+      password: tempPassword, // Simple password, let middleware handle hashing
       firstName,
       lastName,
       role: "airline",

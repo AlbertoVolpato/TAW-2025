@@ -5,6 +5,8 @@ import { RegisterComponent } from './components/auth/register/register.component
 import { ChangePasswordComponent } from './components/auth/change-password/change-password.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { AuthGuard } from './guards/auth.guard';
+import { PasswordChangeGuard } from './guards/password-change.guard';
+import { ChangePasswordAccessGuard } from './guards/change-password-access.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: '/flights/search', pathMatch: 'full' },
@@ -13,7 +15,7 @@ const routes: Routes = [
   {
     path: 'change-password',
     component: ChangePasswordComponent,
-    canActivate: [AuthGuard],
+    canActivate: [ChangePasswordAccessGuard],
   },
   {
     path: 'flights',
@@ -26,24 +28,24 @@ const routes: Routes = [
       import('./modules/passenger/passenger.module').then(
         (m) => m.PassengerModule
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PasswordChangeGuard],
   },
   {
     path: 'admin',
     loadChildren: () =>
       import('./modules/admin/admin.module').then((m) => m.AdminModule),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PasswordChangeGuard],
   },
   {
     path: 'airline',
     loadChildren: () =>
       import('./modules/airline/airline.module').then((m) => m.AirlineModule),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PasswordChangeGuard],
   },
   {
     path: 'profile',
     component: ProfileComponent,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PasswordChangeGuard],
   },
   { path: 'unauthorized', redirectTo: '/login' },
   { path: '**', redirectTo: '/flights/search' },

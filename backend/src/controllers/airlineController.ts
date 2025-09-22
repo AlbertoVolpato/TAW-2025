@@ -164,14 +164,24 @@ export const createAirlineByInvitation = async (
 
     await airlineUser.save();
 
+    console.log("Creating airline with data:", {
+      name,
+      code: code.toUpperCase(),
+      country,
+      website,
+      contactEmail: userEmail.toLowerCase(),
+      contactPhone: contactInfo?.phone,
+      userId: airlineUser._id,
+    });
+
     // Create airline associated with the new user
     const airline = new Airline({
       name,
       code: code.toUpperCase(),
       country,
-      headquarters,
       website,
-      contactInfo,
+      contactEmail: userEmail.toLowerCase(),
+      contactPhone: contactInfo?.phone,
       userId: airlineUser._id,
     });
 

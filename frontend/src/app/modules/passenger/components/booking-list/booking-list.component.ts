@@ -100,7 +100,8 @@ export class BookingListComponent implements OnInit {
       return;
     }
 
-    const confirmMessage = `Sei sicuro di voler cancellare questa prenotazione?\n\nRiceverai un rimborso di €${booking.totalPrice} nel tuo portafoglio virtuale.`;
+    const totalPrice = booking.pricing?.totalPrice || booking.totalPrice || 0;
+    const confirmMessage = `Sei sicuro di voler cancellare questa prenotazione?\n\nRiceverai un rimborso di €${totalPrice} nel tuo portafoglio virtuale.`;
 
     if (confirm(confirmMessage)) {
       this.bookingService.cancelBooking(booking._id).subscribe({
@@ -110,8 +111,7 @@ export class BookingListComponent implements OnInit {
             this.bookings = this.bookings.filter((b) => b._id !== booking._id);
 
             // Show success message with refund info
-            const refundAmount =
-              response.data?.refundAmount || booking.totalPrice;
+            const refundAmount = response.data?.refundAmount || totalPrice;
 
             // Create a more professional modal-style notification
             const successMessage = `✅ Prenotazione cancellata con successo!\n\n💰 Rimborso di €${refundAmount} aggiunto al tuo portafoglio virtuale.\n\n📧 Riceverai una conferma via email a breve.`;
@@ -161,7 +161,8 @@ export class BookingListComponent implements OnInit {
     if (
       booking.checkedIn ||
       booking.status !== 'confirmed' ||
-      booking.paymentStatus !== 'paid'
+      (booking.payment?.status !== 'completed' &&
+        booking.paymentStatus !== 'paid')
     ) {
       return false;
     }

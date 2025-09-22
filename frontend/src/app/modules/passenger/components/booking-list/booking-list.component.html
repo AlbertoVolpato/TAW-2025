@@ -37,11 +37,8 @@
 
   <!-- Bookings List -->
   <div *ngIf="!loading && !error && bookings.length > 0" class="bookings-grid">
-    <mat-card 
-      *ngFor="let booking of bookings; trackBy: trackByBookingId" 
-      class="booking-card"
-      [class.cancelled]="booking.status === 'cancelled'"
-    >
+    <mat-card *ngFor="let booking of bookings; trackBy: trackByBookingId" class="booking-card"
+      [class.cancelled]="booking.status === 'cancelled'">
       <mat-card-header>
         <div class="booking-header">
           <div class="booking-reference">
@@ -109,13 +106,13 @@
         <div class="payment-info">
           <div class="payment-status">
             <span class="label">Pagamento:</span>
-            <mat-chip [color]="getPaymentStatusColor(booking.paymentStatus)" selected>
-              {{ getPaymentStatusText(booking.paymentStatus) }}
+            <mat-chip [color]="getPaymentStatusColor(booking.payment?.status)" selected>
+              {{ getPaymentStatusText(booking.payment?.status) }}
             </mat-chip>
           </div>
           <div class="total-price">
             <span class="label">Totale:</span>
-            <span class="price">{{ formatPrice(booking.totalPrice) }}</span>
+            <span class="price">{{ formatPrice(booking.pricing?.totalPrice || booking.totalPrice || 0) }}</span>
           </div>
         </div>
 
@@ -127,37 +124,22 @@
       </mat-card-content>
 
       <mat-card-actions>
-        <button 
-          class="btn-secondary" 
-          (click)="onViewBooking(booking)"
-        >
+        <button class="btn-secondary" (click)="onViewBooking(booking)">
           <mat-icon>visibility</mat-icon>
           Dettagli
         </button>
 
-        <button 
-          *ngIf="canCheckIn(booking)" 
-          class="btn-primary" 
-          (click)="onCheckIn(booking)"
-        >
+        <button *ngIf="canCheckIn(booking)" class="btn-primary" (click)="onCheckIn(booking)">
           <mat-icon>flight_takeoff</mat-icon>
           Check-in
         </button>
 
-        <button 
-          *ngIf="booking.checkedIn" 
-          class="btn-primary" 
-          (click)="onViewBooking(booking)"
-        >
+        <button *ngIf="booking.checkedIn" class="btn-primary" (click)="onViewBooking(booking)">
           <mat-icon>confirmation_number</mat-icon>
           Carta d'Imbarco
         </button>
 
-        <button 
-          *ngIf="canCancel(booking)" 
-          class="btn-danger" 
-          (click)="onCancelBooking(booking)"
-        >
+        <button *ngIf="canCancel(booking)" class="btn-danger" (click)="onCancelBooking(booking)">
           <mat-icon>cancel</mat-icon>
           Cancella
         </button>

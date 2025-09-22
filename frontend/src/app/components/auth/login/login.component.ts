@@ -54,8 +54,11 @@ export class LoginComponent implements OnInit {
     this.authService.login(loginData).subscribe({
       next: (response) => {
         if (response.success) {
-          // Check if password change is required
-          if (response.user?.mustChangePassword) {
+          // Check if password change is required from backend response
+          if (
+            response.data?.requiresPasswordChange ||
+            response.data?.user.mustChangePassword
+          ) {
             this.router.navigate(['/change-password']);
           } else {
             // Redirect based on user role

@@ -19,12 +19,12 @@ export const forceChangePassword = async (
   next: NextFunction
 ) => {
   try {
-    const { email, newPassword } = req.body;
+    const { email, temporaryPassword, newPassword } = req.body;
 
-    if (!email || !newPassword) {
+    if (!email || !temporaryPassword || !newPassword) {
       return res.status(400).json({
         success: false,
-        message: "Email and new password are required",
+        message: "Email, temporary password, and new password are required",
       });
       return;
     }
@@ -46,6 +46,18 @@ export const forceChangePassword = async (
       return res.status(400).json({
         success: false,
         message: "Password change not required for this user",
+      });
+      return;
+    }
+
+    // Verify temporary password
+    const isTemporaryPasswordValid = await user.comparePassword(
+      temporaryPassword
+    );
+    if (!isTemporaryPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid temporary password",
       });
       return;
     }

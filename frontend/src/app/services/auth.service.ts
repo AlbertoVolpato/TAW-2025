@@ -61,7 +61,8 @@ export class AuthService {
       .pipe(
         tap((response) => {
           console.log('Login response:', response);
-          // Handle the actual API response structure: response.data.user and response.data.token
+
+          // Case 1: Normal successful login with token
           if (
             response.success &&
             response.data &&
@@ -73,6 +74,21 @@ export class AuthService {
             this.currentUserSubject.next(response.data.user);
             console.log('User logged in:', response.data.user);
             console.log('Token saved:', response.data.token);
+          }
+
+          // Case 2: Password change required - save user temporarily without token
+          else if (
+            response.success &&
+            response.data &&
+            response.data.user &&
+            (response.data.requiresPasswordChange ||
+              response.data.user.mustChangePassword)
+          ) {
+            // Save user info temporarily for password change process
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+            localStorage.setItem('requiresPasswordChange', 'true');
+            this.currentUserSubject.next(response.data.user);
+            console.log('User requires password change:', response.data.user);
           }
         })
       );
@@ -108,6 +124,7 @@ export class AuthService {
             if (user && token) {
               localStorage.setItem('token', token);
               localStorage.setItem('user', JSON.stringify(user));
+              localStorage.removeItem('requiresPasswordChange'); // Remove the temporary flag
               this.currentUserSubject.next(user);
             }
           }
@@ -149,6 +166,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('requiresPasswordChange'); // Clean up password change flag
     this.currentUserSubject.next(null);
     // Don't auto-navigate, let components handle navigation
   }
@@ -174,14 +192,28 @@ export class AuthService {
       }
 
       return true;
-    } catch {
+    } catch (error) {
       this.logout();
       return false;
     }
   }
 
-  getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
+  // Check if user can access change-password (either authenticated or requires password change)
+  canAccessChangePassword(): boolean {
+    const user = this.getCurrentUser();
+    const requiresChange = this.requiresPasswordChange();
+
+    // Allow access if user is fully authenticated OR if they need to change password
+    return this.isAuthenticated() || (user && requiresChange);
+  }
+
+  getCurrentUser(): any {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  }
+
+  requiresPasswordChange(): boolean {
+    return localStorage.getItem('requiresPasswordChange') === 'true';
   }
 
   hasRole(role: string): boolean {

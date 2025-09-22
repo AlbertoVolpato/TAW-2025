@@ -1,96 +1,128 @@
-<div class="invite-dialog-clean">
-    <div class="dialog-header-clean">
-        <h2>Invita Compagnia Aerea</h2>
-        <p>Crea un nuovo account per una compagnia aerea</p>
-    </div>
+<div class="dialog-overlay" *ngIf="isVisible">
+    <div class="dialog-container">
+        <div class="dialog-header">
+            <h2>Invita Compagnia Aerea</h2>
+            <p>Crea un nuovo account per una compagnia aerea con password provvisoria</p>
+        </div>
 
-    <div class="dialog-content-clean">
-        <form [formGroup]="inviteForm" (ngSubmit)="onSubmit()" class="invite-form">
-            <!-- Email -->
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-input" formControlName="email" placeholder="contatto@compagnia.com">
-                <div class="form-error"
-                    *ngIf="inviteForm.get('email')?.hasError('required') && inviteForm.get('email')?.touched">
-                    Email richiesta
-                </div>
-                <div class="form-error"
-                    *ngIf="inviteForm.get('email')?.hasError('email') && inviteForm.get('email')?.touched">
-                    Formato email non valido
-                </div>
-            </div>
-
-            <!-- Nome Compagnia -->
-            <div class="form-group">
-                <label class="form-label">Nome Compagnia</label>
-                <input type="text" class="form-input" formControlName="airlineName" placeholder="Alitalia">
-                <div class="form-error"
-                    *ngIf="inviteForm.get('airlineName')?.hasError('required') && inviteForm.get('airlineName')?.touched">
-                    Nome compagnia richiesto
-                </div>
-                <div class="form-error"
-                    *ngIf="inviteForm.get('airlineName')?.hasError('minlength') && inviteForm.get('airlineName')?.touched">
-                    Il nome deve essere di almeno 2 caratteri
-                </div>
-            </div>
-
-            <!-- Codice IATA e Paese -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Codice IATA</label>
-                    <input type="text" class="form-input" formControlName="airlineCode" placeholder="AZ" maxlength="3"
-                        style="text-transform: uppercase;" (input)="onAirlineCodeInput($event)">
-                    <div class="form-error"
-                        *ngIf="inviteForm.get('airlineCode')?.hasError('required') && inviteForm.get('airlineCode')?.touched">
-                        Codice IATA richiesto
+        <div class="dialog-body">
+            <!-- Form Section -->
+            <div *ngIf="!showSuccess">
+                <form [formGroup]="inviteForm" (ngSubmit)="onSubmit()" class="invite-form">
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" formControlName="email"
+                            placeholder="contatto@compagnia.com">
+                        <div class="form-error"
+                            *ngIf="inviteForm.get('email')?.hasError('required') && inviteForm.get('email')?.touched">
+                            Email richiesta
+                        </div>
+                        <div class="form-error"
+                            *ngIf="inviteForm.get('email')?.hasError('email') && inviteForm.get('email')?.touched">
+                            Formato email non valido
+                        </div>
                     </div>
-                    <div class="form-error"
-                        *ngIf="inviteForm.get('airlineCode')?.hasError('pattern') && inviteForm.get('airlineCode')?.touched">
-                        Il codice deve essere di 2-3 lettere maiuscole
+
+                    <!-- Nome Compagnia -->
+                    <div class="form-group">
+                        <label class="form-label">Nome Compagnia</label>
+                        <input type="text" class="form-input" formControlName="airlineName" placeholder="Alitalia">
+                        <div class="form-error"
+                            *ngIf="inviteForm.get('airlineName')?.hasError('required') && inviteForm.get('airlineName')?.touched">
+                            Nome compagnia richiesto
+                        </div>
+                        <div class="form-error"
+                            *ngIf="inviteForm.get('airlineName')?.hasError('minlength') && inviteForm.get('airlineName')?.touched">
+                            Il nome deve essere di almeno 2 caratteri
+                        </div>
                     </div>
+
+                    <!-- Codice IATA e Paese -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Codice IATA</label>
+                            <input type="text" class="form-input" formControlName="airlineCode" placeholder="AZ"
+                                maxlength="3" style="text-transform: uppercase;" (input)="onAirlineCodeInput($event)">
+                            <div class="form-error"
+                                *ngIf="inviteForm.get('airlineCode')?.hasError('required') && inviteForm.get('airlineCode')?.touched">
+                                Codice IATA richiesto
+                            </div>
+                            <div class="form-error"
+                                *ngIf="inviteForm.get('airlineCode')?.hasError('pattern') && inviteForm.get('airlineCode')?.touched">
+                                Il codice deve essere di 2-3 lettere maiuscole
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Paese</label>
+                            <select class="form-input" formControlName="country">
+                                <option value="Italy">Italia</option>
+                                <option value="France">Francia</option>
+                                <option value="Germany">Germania</option>
+                                <option value="Spain">Spagna</option>
+                                <option value="United Kingdom">Regno Unito</option>
+                                <option value="Netherlands">Paesi Bassi</option>
+                                <option value="Switzerland">Svizzera</option>
+                                <option value="Austria">Austria</option>
+                                <option value="Belgium">Belgio</option>
+                                <option value="Portugal">Portogallo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Website (opzionale) -->
+                    <div class="form-group">
+                        <label class="form-label">Sito Web (opzionale)</label>
+                        <input type="url" class="form-input" formControlName="website"
+                            placeholder="https://www.compagnia.com">
+                    </div>
+
+                    <!-- Messaggio personalizzato (opzionale) -->
+                    <div class="form-group">
+                        <label class="form-label">Messaggio di benvenuto (opzionale)</label>
+                        <textarea class="form-input" formControlName="message" rows="3"
+                            placeholder="Benvenuto nella piattaforma SkyBooker..."></textarea>
+                    </div>
+
+                    <!-- Error message -->
+                    <div class="form-error" *ngIf="showError">
+                        {{ showError }}
+                    </div>
+
+                    <!-- Submit buttons inside form -->
+                    <div class="dialog-actions-clean">
+                        <button type="button" class="btn-secondary" (click)="onCancel()">Annulla</button>
+                        <button type="submit" class="btn-primary" [disabled]="inviteForm.invalid || isSubmitting">
+                            {{ isSubmitting ? 'Invio...' : 'Invia Invito' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Success Section -->
+            <div *ngIf="showSuccess" class="success-section">
+                <div class="success-header">
+                    <h3>✅ Compagnia Creata con Successo!</h3>
+                    <p>La compagnia <strong>{{ createdAirline?.name }}</strong> ({{ createdAirline?.code }}) è stata
+                        creata.</p>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Paese</label>
-                    <select class="form-input" formControlName="country">
-                        <option value="Italy">Italia</option>
-                        <option value="France">Francia</option>
-                        <option value="Germany">Germania</option>
-                        <option value="Spain">Spagna</option>
-                        <option value="United Kingdom">Regno Unito</option>
-                        <option value="Netherlands">Paesi Bassi</option>
-                        <option value="Switzerland">Svizzera</option>
-                        <option value="Austria">Austria</option>
-                        <option value="Belgium">Belgio</option>
-                        <option value="Portugal">Portogallo</option>
-                    </select>
+
+                <div class="password-section">
+                    <h4>Password Temporanea</h4>
+                    <p>Comunica la seguente password temporanea alla compagnia:</p>
+                    <div class="password-box">
+                        <code>{{ temporaryPassword }}</code>
+                        <button class="btn-copy" (click)="copyToClipboard(temporaryPassword)"
+                            title="Copia password">📋</button>
+                    </div>
+                    <p class="password-note">
+                        ⚠️ La compagnia dovrà cambiare questa password al primo accesso.
+                    </p>
+                </div>
+
+                <div class="dialog-actions-clean">
+                    <button class="btn-primary" (click)="onClose()">Chiudi</button>
                 </div>
             </div>
-
-            <!-- Website (opzionale) -->
-            <div class="form-group">
-                <label class="form-label">Sito Web (opzionale)</label>
-                <input type="url" class="form-input" formControlName="website" placeholder="https://www.compagnia.com">
-            </div>
-
-            <!-- Messaggio personalizzato (opzionale) -->
-            <div class="form-group">
-                <label class="form-label">Messaggio di benvenuto (opzionale)</label>
-                <textarea class="form-input" formControlName="message" rows="3"
-                    placeholder="Benvenuto nella piattaforma SkyBooker..."></textarea>
-            </div>
-
-            <!-- Error message -->
-            <div class="form-error" *ngIf="showError">
-                {{ showError }}
-            </div>
-
-            <!-- Submit buttons inside form -->
-            <div class="dialog-actions-clean">
-                <button type="button" class="btn-secondary" (click)="onCancel()">Annulla</button>
-                <button type="submit" class="btn-primary" [disabled]="inviteForm.invalid || isSubmitting">
-                    {{ isSubmitting ? 'Invio...' : 'Invia Invito' }}
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
