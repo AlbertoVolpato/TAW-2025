@@ -7,7 +7,8 @@ import { Booking } from "../models/Booking";
 export const getDashboardStats = async (req: Request, res: Response) => {
   try {
     // Statistiche dashboard specifiche per admin
-    const totalUsers = await User.countDocuments();
+    // Conta solo utenti non-airline (passenger, admin) per coerenza con la gestione utenti
+    const totalUsers = await User.countDocuments({ role: { $ne: "airline" } });
     const totalAirlines = await Airline.countDocuments();
     const totalFlights = await Flight.countDocuments();
     const totalBookings = await Booking.countDocuments();
@@ -29,9 +30,10 @@ export const getDashboardStats = async (req: Request, res: Response) => {
       createdAt: { $gte: lastMonth },
     });
 
-    // Crescita utenti (ultimo mese)
+    // Crescita utenti (ultimo mese) - escludi airline per coerenza
     const newUsers = await User.countDocuments({
       createdAt: { $gte: lastMonth },
+      role: { $ne: "airline" },
     });
 
     const stats = {

@@ -32,7 +32,12 @@ export interface IBooking extends Document {
     totalPrice: number;
   };
   payment: {
-    method: "credit_card" | "debit_card" | "paypal" | "bank_transfer";
+    method:
+      | "credit_card"
+      | "debit_card"
+      | "paypal"
+      | "bank_transfer"
+      | "wallet";
     status: "pending" | "completed" | "failed" | "refunded";
     transactionId?: string;
     paidAt?: Date;
@@ -203,7 +208,13 @@ const bookingSchema = new Schema<IBooking>(
     payment: {
       method: {
         type: String,
-        enum: ["credit_card", "debit_card", "paypal", "bank_transfer"],
+        enum: [
+          "credit_card",
+          "debit_card",
+          "paypal",
+          "bank_transfer",
+          "wallet",
+        ],
         required: [true, "Payment method is required"],
       },
       status: {

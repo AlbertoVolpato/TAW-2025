@@ -1,454 +1,96 @@
-// Airline Dashboard - Admin Style
+// Dashboard con stile hero-section
 .airline-dashboard {
-  padding: 1.5rem;
+  min-height: 100vh;
   background: #f8fafc;
-  min-height: calc(100vh - 3rem);
 
-  .header {
-    margin-bottom: 2rem;
-
-    h1 {
-      font-size: 1.875rem;
-      font-weight: 600;
-      color: #1f2937;
-      margin: 0 0 0.5rem 0;
-    }
-
-    p {
-      color: #6b7280;
-      margin: 0;
-      font-size: 1rem;
-    }
-  }
-
-  .loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 4rem 2rem;
+  .hero-header {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    padding: 4rem 0 3rem;
     text-align: center;
 
-    .spinner-large {
-      width: 40px;
-      height: 40px;
-      border: 3px solid #e5e7eb;
-      border-radius: 50%;
-      border-top-color: #3b82f6;
-      animation: spin 1s linear infinite;
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
       margin-bottom: 1rem;
+      @media (max-width: 768px) {
+        font-size: 2rem;
+      }
     }
 
     p {
-      color: #6b7280;
-      font-size: 0.875rem;
+      font-size: 1.1rem;
+      opacity: 0.9;
     }
   }
 
-  .status-message {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
+  .management-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 0 2rem 2rem;
 
-    svg {
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
-    }
+    .management-card {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e5e7eb;
 
-    &.error {
-      background: #fef2f2;
-      color: #dc2626;
-      border: 1px solid #fecaca;
-
-      .btn-primary {
-        margin-left: auto;
-      }
-    }
-  }
-
-  .dashboard-content {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .actions-section {
-    margin-bottom: 2rem;
-
-    .actions-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1rem;
-
-      .action-card {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 1.25rem;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        color: inherit;
-
-        &:hover {
-          border-color: #d1d5db;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-          transform: translateY(-1px);
-        }
-
-        .action-icon {
-          width: 44px;
-          height: 44px;
-          background: #f3f4f6;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-
-          svg {
-            width: 22px;
-            height: 22px;
-            color: #6b7280;
-          }
-        }
-
-        .action-info {
-          h3 {
-            margin: 0 0 0.25rem 0;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #1f2937;
-          }
-
-          p {
-            margin: 0;
-            font-size: 0.875rem;
-            color: #6b7280;
-            line-height: 1.4;
-          }
-        }
-      }
-    }
-  }
-
-  .flights-section {
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-
-      h2 {
+      h3 {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1f2937;
-        margin: 0;
-      }
-
-      .btn-secondary {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        border-radius: 6px;
-        color: #6b7280;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: all 0.15s ease;
-
-        svg {
-          width: 16px;
-          height: 16px;
-        }
-
-        &:hover {
-          background: #f3f4f6;
-          border-color: #d1d5db;
-        }
-      }
-    }
-
-    .no-results {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 4rem 2rem;
-      text-align: center;
-      color: #6b7280;
-
-      svg {
-        width: 48px;
-        height: 48px;
         margin-bottom: 1rem;
-        color: #d1d5db;
+        color: #111827;
       }
 
       p {
-        margin: 0;
-        font-size: 0.9rem;
-      }
-    }
-
-    .flights-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-
-      .flight-card {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 1rem;
-        display: grid;
-        grid-template-columns: auto 1fr auto auto auto;
-        align-items: center;
-        gap: 1rem;
-        transition: all 0.15s ease;
-
-        &:hover {
-          border-color: #d1d5db;
-          box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .flight-icon {
-          width: 36px;
-          height: 36px;
-          background: #f3f4f6;
-          border-radius: 6px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          svg {
-            width: 18px;
-            height: 18px;
-            color: #6b7280;
-          }
-        }
-
-        .flight-info {
-          .flight-number {
-            font-weight: 600;
-            color: #1f2937;
-            font-size: 0.95rem;
-            margin-bottom: 0.125rem;
-          }
-
-          .flight-route {
-            color: #6b7280;
-            font-size: 0.875rem;
-          }
-        }
-
-        .flight-time {
-          .departure-time {
-            font-size: 0.875rem;
-            color: #374151;
-            font-weight: 500;
-          }
-        }
-
-        .flight-status {
-          .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-
-            &.scheduled {
-              background: #dbeafe;
-              color: #1d4ed8;
-            }
-
-            &.active {
-              background: #dcfce7;
-              color: #16a34a;
-            }
-
-            &.completed {
-              background: #f3f4f6;
-              color: #6b7280;
-            }
-
-            &.cancelled {
-              background: #fee2e2;
-              color: #dc2626;
-            }
-          }
-        }
-
-        .flight-actions {
-          .delete-button {
-            width: 32px;
-            height: 32px;
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 6px;
-            color: #dc2626;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            svg {
-              width: 16px;
-              height: 16px;
-            }
-
-            &:hover {
-              background: #fee2e2;
-              border-color: #fca5a5;
-            }
-          }
-        }
-      }
-    }
-
-    .pagination-container {
-      margin-top: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      align-items: center;
-
-      .pagination {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-
-        .pagination-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 36px;
-          height: 36px;
-          background: white;
-          border: 1px solid #e5e7eb;
-          border-radius: 6px;
-          color: #6b7280;
-          cursor: pointer;
-          transition: all 0.15s ease;
-
-          svg {
-            width: 16px;
-            height: 16px;
-          }
-
-          span {
-            font-size: 0.75rem;
-            font-weight: 500;
-          }
-
-          &:hover:not(.disabled) {
-            background: #f9fafb;
-            border-color: #d1d5db;
-          }
-
-          &.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-          }
-        }
-
-        .pagination-info {
-          padding: 0 0.75rem;
-          font-size: 0.875rem;
-          color: #374151;
-          font-weight: 500;
-          min-width: 60px;
-          text-align: center;
-        }
-      }
-
-      .pagination-details {
-        font-size: 0.8rem;
         color: #6b7280;
-        text-align: center;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
       }
-    }
-  }
 
-  .btn-primary {
-    padding: 0.5rem 1rem;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s ease;
+      .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
 
-    &:hover {
-      background: #2563eb;
+        .btn {
+          padding: 0.75rem 1.5rem;
+          border-radius: 8px;
+          font-weight: 500;
+          text-decoration: none;
+          transition: all 0.2s ease;
+          border: none;
+          cursor: pointer;
+          font-size: 0.875rem;
+
+          &.btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            &:hover {
+              background: linear-gradient(135deg, #2563eb, #1d4ed8);
+              transform: translateY(-1px);
+            }
+          }
+
+          &.btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            &:hover {
+              background: #e5e7eb;
+            }
+          }
+        }
+      }
     }
   }
 
   @media (max-width: 768px) {
-    padding: 1rem;
-
-    .header {
-      margin-bottom: 1.5rem;
-
-      h1 {
-        font-size: 1.5rem;
-      }
+    .management-grid {
+      grid-template-columns: 1fr;
+      padding: 1rem;
     }
-
-    .actions-section {
-      .actions-grid {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-      }
-    }
-
-    .flights-section {
-      .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-      }
-
-      .flights-list {
-        .flight-card {
-          grid-template-columns: 1fr;
-          gap: 0.75rem;
-          text-align: left;
-
-          .flight-info {
-            order: -1;
-          }
-
-          .flight-actions {
-            justify-self: end;
-          }
-        }
-      }
-
-      .pagination-container {
-        .pagination {
-          flex-wrap: wrap;
-          justify-content: center;
-        }
-      }
-    }
-  }
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
   }
 }

@@ -1,37 +1,23 @@
 import { Component, OnInit } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouteService } from '../../../../services/route.service';
+import { FlightService } from '../../../../services/flight.service';
+
+interface Airport {
+  _id: string;
+  code: string;
+  name: string;
+  city: string;
+  country: string;
+}
 
 interface AirlineRoute {
   _id: string;
   routeCode: string;
-  departureAirport: {
-    name: string;
-    code?: string;
-    city: string;
-    country: string;
-  };
-  arrivalAirport: {
-    name: string;
-    code?: string;
-    city: string;
-    country: string;
-  };
+  origin: Airport;
+  destination: Airport;
   distance: number;
   estimatedDuration: number;
-  operatingDays: {
-    monday: boolean;
-    tuesday: boolean;
-    wednesday: boolean;
-    thursday: boolean;
-    friday: boolean;
-    saturday: boolean;
-    sunday: boolean;
-  };
-  seasonality: {
-    startDate: string;
-    endDate: string;
-  };
   isActive: boolean;
   createdAt: string;
 }
@@ -42,128 +28,185 @@ interface AirlineRoute {
   styleUrls: ['./airline-route-management.component.scss'],
 })
 export class AirlineRouteManagementComponent implements OnInit {
-  displayedColumns: string[] = [
-    'routeCode',
-    'route',
-    'distance',
-    'duration',
-    'operatingDays',
-    'seasonality',
-    'status',
-    'actions',
-  ];
-  dataSource = new MatTableDataSource<AirlineRoute>();
+  // Route Form
+  routeForm: FormGroup;
+  showRouteForm = false;
 
-  isLoading = true;
-  totalRoutes = 0;
-  activeRoutes = 0;
+  // Data
   routes: AirlineRoute[] = [];
+  airports: Airport[] = [];
+
+  // State
+  isLoading = true;
+  loading = false;
   errorMessage: string = '';
+  success: string | null = null;
+  error: string | null = null;
 
-  // Dialog properties
-  showRouteDialog = false;
-  routeDialogData: any = { isEdit: false };
-
-  constructor(private routeService: RouteService) {}
+  constructor(
+    private fb: FormBuilder,
+    private routeService: RouteService,
+    private flightService: FlightService
+  ) {
+    this.routeForm = this.fb.group({
+      routeCode: [
+        '',
+        [Validators.required, Validators.pattern(/^[A-Z]{2}\d{3,4}$/)],
+      ],
+      origin: ['', Validators.required],
+      destination: ['', Validators.required],
+      distance: ['', [Validators.required, Validators.min(1)]],
+      estimatedDuration: ['', [Validators.required, Validators.min(30)]],
+      // Operating days as individual checkboxes
+      monday: [true],
+      tuesday: [true],
+      wednesday: [true],
+      thursday: [true],
+      friday: [true],
+      saturday: [true],
+      sunday: [true],
+      // Seasonality dates (required by backend)
+      startDate: ['', Validators.required],
+      endDate: ['', Validators.required],
+      isActive: [true],
+    });
+  }
 
   ngOnInit(): void {
     this.loadRoutes();
+    this.loadAirports();
   }
 
   loadRoutes(): void {
     this.isLoading = true;
-    this.errorMessage = '';
+    this.error = null;
 
-    // Use airline-specific routes API
     this.routeService.getAirlineRoutes().subscribe({
       next: (response: any) => {
         if (response.success && response.data) {
           this.routes = response.data;
-          this.dataSource.data = response.data;
-          this.totalRoutes = response.data.length;
-          this.activeRoutes = response.data.filter(
-            (route: AirlineRoute) => route.isActive
-          ).length;
           console.log(`Loaded ${response.data.length} routes for airline`);
         } else {
           console.error('Invalid API response structure:', response);
-          this.errorMessage = 'Errore nel caricamento delle rotte';
+          this.error = 'Error loading routes';
         }
         this.isLoading = false;
       },
       error: (error: any) => {
         console.error('Error loading airline routes:', error);
-        this.errorMessage = 'Errore nel caricamento delle rotte';
+        this.error = 'Error loading routes';
         this.isLoading = false;
       },
     });
   }
 
-  getOperatingDaysText(operatingDays: any): string {
-    if (!operatingDays) return 'N/A';
-
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const dayKeys = [
-      'monday',
-      'tuesday',
-      'wednesday',
-      'thursday',
-      'friday',
-      'saturday',
-      'sunday',
-    ];
-
-    const activeDays = dayKeys
-      .filter((day) => operatingDays[day])
-      .map((_, index) => days[index]);
-
-    return activeDays.join(', ') || 'None';
-  }
-
-  getSeasonalityText(seasonality: any): string {
-    if (!seasonality || !seasonality.startDate || !seasonality.endDate)
-      return 'N/A';
-
-    const start = new Date(seasonality.startDate).toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
+  loadAirports(): void {
+    this.flightService.getAirports().subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.airports = response.data.airports || [];
+        }
+      },
+      error: (error) => {
+        console.error('Error loading airports:', error);
+      },
     });
-    const end = new Date(seasonality.endDate).toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-    });
-
-    return `${start} - ${end}`;
   }
 
-  addRoute(): void {
-    this.routeDialogData = { isEdit: false };
-    this.showRouteDialog = true;
+  toggleRouteForm(): void {
+    this.showRouteForm = !this.showRouteForm;
+    if (this.showRouteForm) {
+      this.routeForm.reset();
+      this.routeForm.patchValue({ isActive: true });
+    }
   }
 
-  createRoute(): void {
-    // Redirect to create route page or open dialog
-    this.addRoute();
+  onCreateRoute(): void {
+    this.onSubmitRoute();
   }
 
-  getActiveRoutesCount(): number {
-    return this.routes.filter((route) => route.isActive).length;
+  onSubmitRoute(): void {
+    if (this.routeForm.valid) {
+      this.loading = true;
+      const formData = this.routeForm.value;
+
+      // Validate dates
+      const startDate = new Date(formData.startDate);
+      const endDate = new Date(formData.endDate);
+
+      if (endDate <= startDate) {
+        this.error = 'End date must be after start date';
+        this.loading = false;
+        return;
+      }
+
+      const routeData = {
+        routeCode: formData.routeCode.toUpperCase(),
+        origin: formData.origin, // Airport ObjectId
+        destination: formData.destination, // Airport ObjectId
+        distance: Number(formData.distance),
+        estimatedDuration: Number(formData.estimatedDuration),
+        // Backend expects operatingDays as object
+        operatingDays: {
+          monday: formData.monday,
+          tuesday: formData.tuesday,
+          wednesday: formData.wednesday,
+          thursday: formData.thursday,
+          friday: formData.friday,
+          saturday: formData.saturday,
+          sunday: formData.sunday,
+        },
+        // Backend requires seasonality with dates
+        seasonality: {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+        },
+      };
+
+      this.routeService.createAirlineRoute(routeData).subscribe({
+        next: (response: any) => {
+          if (response.success) {
+            console.log('Route created successfully');
+            this.success = 'Route created successfully';
+            this.error = null;
+            this.loadRoutes();
+            this.showRouteForm = false;
+            this.routeForm.reset();
+            // Reset to default values
+            this.routeForm.patchValue({
+              monday: true,
+              tuesday: true,
+              wednesday: true,
+              thursday: true,
+              friday: true,
+              saturday: true,
+              sunday: true,
+              isActive: true,
+            });
+
+            // Clear success message after 3 seconds
+            setTimeout(() => {
+              this.success = null;
+            }, 3000);
+          } else {
+            this.error = 'Error creating route';
+            this.success = null;
+          }
+          this.loading = false;
+        },
+        error: (error: any) => {
+          console.error('Error creating route:', error);
+          this.error = 'Error creating route';
+          this.success = null;
+          this.loading = false;
+        },
+      });
+    }
   }
 
-  getInactiveRoutesCount(): number {
-    return this.routes.filter((route) => !route.isActive).length;
-  }
-
-  formatDuration(minutes: number): string {
-    if (!minutes) return 'N/A';
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}h ${mins}m`;
-  }
-
-  editRoute(route: AirlineRoute): void {
-    this.routeDialogData = { route: route, isEdit: true };
-    this.showRouteDialog = true;
+  cancelRouteForm(): void {
+    this.showRouteForm = false;
+    this.routeForm.reset();
   }
 
   deleteRoute(routeId: string): void {
@@ -172,7 +215,7 @@ export class AirlineRouteManagementComponent implements OnInit {
         next: (response: any) => {
           if (response.success) {
             console.log('Route deleted successfully');
-            this.loadRoutes(); // Reload the routes
+            this.loadRoutes();
           }
         },
         error: (error: any) => {
@@ -182,30 +225,16 @@ export class AirlineRouteManagementComponent implements OnInit {
     }
   }
 
-  onRouteDialogClosed(result: any): void {
-    this.showRouteDialog = false;
-
-    if (result) {
-      // Reload routes after successful operation
-      this.loadRoutes();
-    }
+  onRouteCodeInput(event: any): void {
+    const input = event.target;
+    const value = input.value.toUpperCase();
+    this.routeForm.patchValue({ routeCode: value });
   }
 
-  toggleRouteStatus(route: AirlineRoute): void {
-    const updateData = {
-      isActive: !route.isActive,
-    };
-
-    this.routeService.updateAirlineRoute(route._id, updateData).subscribe({
-      next: (response: any) => {
-        if (response.success) {
-          console.log('Route status updated successfully');
-          this.loadRoutes(); // Reload the routes
-        }
-      },
-      error: (error: any) => {
-        console.error('Error updating route status:', error);
-      },
+  private markFormGroupTouched(formGroup: any): void {
+    Object.keys(formGroup.controls).forEach((field) => {
+      const control = formGroup.get(field);
+      control?.markAsTouched({ onlySelf: true });
     });
   }
 }

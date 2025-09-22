@@ -1,152 +1,226 @@
 <div class="route-management">
     <!-- Header -->
     <div class="header">
-        <h1>Gestione Rotte</h1>
-        <button class="btn-primary" (click)="createRoute()">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+        <h1>Route Management</h1>
+        <p>{{ routes.length }} routes in your network</p>
+    </div>
+
+    <!-- Actions Section -->
+    <div class="actions-section">
+        <button class="action-button primary" (click)="toggleRouteForm()" type="button">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
+                </path>
             </svg>
-            Crea Nuova Rotta
+            Add New Route
         </button>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="stats-grid" *ngIf="!isLoading && routes">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9.78 11.16L10.2 8.95l2.93.32c.58.06.98.6.92 1.18-.06.58-.6.98-1.18.92l-2.87-.31-.32 2.1z"
-                        fill="currentColor" />
-                </svg>
-            </div>
-            <div class="stat-info">
-                <div class="stat-number">{{ routes.length }}</div>
-                <div class="stat-label">Rotte Totali</div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon active">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                        fill="currentColor" />
-                </svg>
-            </div>
-            <div class="stat-info">
-                <div class="stat-number">{{ getActiveRoutesCount() }}</div>
-                <div class="stat-label">Rotte Attive</div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon inactive">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-                        fill="currentColor" />
-                </svg>
-            </div>
-            <div class="stat-info">
-                <div class="stat-number">{{ getInactiveRoutesCount() }}</div>
-                <div class="stat-label">Rotte Inattive</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Loading State -->
-    <div class="loading" *ngIf="isLoading">
-        <div class="spinner-large"></div>
-        <p>Caricamento rotte...</p>
-    </div>
-
-    <!-- Error State -->
-    <div class="error-message" *ngIf="errorMessage && !isLoading">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-                d="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                fill="currentColor" />
+    <!-- Success Message -->
+    <div class="status-message success" *ngIf="success && !loading">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
         </svg>
-        <span>{{ errorMessage }}</span>
+        <span>{{ success }}</span>
     </div>
 
-    <!-- Main Content -->
-    <div class="routes-content" *ngIf="!isLoading && !errorMessage">
-        <!-- No Routes State -->
-        <div class="no-routes" *ngIf="routes.length === 0">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9.78 11.16L10.2 8.95l2.93.32c.58.06.98.6.92 1.18-.06.58-.6.98-1.18.92l-2.87-.31-.32 2.1z"
-                    fill="currentColor" />
+    <!-- Error Message -->
+    <div class="status-message error" *ngIf="error && !loading">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>{{ error }}</span>
+    </div>
+
+    <!-- Create Route Form -->
+    <div class="form-card" *ngIf="showRouteForm">
+        <div class="form-header">
+            <h2>Create New Route</h2>
+            <p>Define route between airports</p>
+        </div>
+        <form [formGroup]="routeForm" (ngSubmit)="onCreateRoute()">
+            <div class="form-grid">
+                <!-- Route Code -->
+                <div class="form-group">
+                    <label for="routeCode">Route Code</label>
+                    <input id="routeCode" type="text" formControlName="routeCode" placeholder="e.g., AZ123, LH456"
+                        (input)="onRouteCodeInput($event)" maxlength="6"
+                        [class.error]="routeForm.get('routeCode')?.invalid && routeForm.get('routeCode')?.touched">
+                    <small class="input-hint">Format: XX123 or XX1234 (airline code + numbers)</small>
+                </div>
+
+                <!-- Origin Airport -->
+                <div class="form-group">
+                    <label for="origin">Origin Airport</label>
+                    <select id="origin" formControlName="origin"
+                        [class.error]="routeForm.get('origin')?.invalid && routeForm.get('origin')?.touched">
+                        <option value="">Select origin airport</option>
+                        <option *ngFor="let airport of airports" [value]="airport._id">{{ airport.name }} ({{
+                            airport.code }})</option>
+                    </select>
+                </div>
+
+                <!-- Destination Airport -->
+                <div class="form-group">
+                    <label for="destination">Destination Airport</label>
+                    <select id="destination" formControlName="destination"
+                        [class.error]="routeForm.get('destination')?.invalid && routeForm.get('destination')?.touched">
+                        <option value="">Select destination airport</option>
+                        <option *ngFor="let airport of airports" [value]="airport._id">{{ airport.name }} ({{
+                            airport.code }})</option>
+                    </select>
+                </div>
+
+                <!-- Distance -->
+                <div class="form-group">
+                    <label for="distance">Distance (km)</label>
+                    <input id="distance" type="number" formControlName="distance" placeholder="e.g., 480"
+                        [class.error]="routeForm.get('distance')?.invalid && routeForm.get('distance')?.touched">
+                </div>
+
+                <!-- Estimated Duration -->
+                <div class="form-group">
+                    <label for="estimatedDuration">Duration (minutes)</label>
+                    <input id="estimatedDuration" type="number" formControlName="estimatedDuration"
+                        placeholder="e.g., 75" min="30"
+                        [class.error]="routeForm.get('estimatedDuration')?.invalid && routeForm.get('estimatedDuration')?.touched">
+                </div>
+
+                <!-- Season Start Date -->
+                <div class="form-group">
+                    <label for="startDate">Season Start Date</label>
+                    <input id="startDate" type="date" formControlName="startDate"
+                        [class.error]="routeForm.get('startDate')?.invalid && routeForm.get('startDate')?.touched">
+                </div>
+
+                <!-- Season End Date -->
+                <div class="form-group">
+                    <label for="endDate">Season End Date</label>
+                    <input id="endDate" type="date" formControlName="endDate"
+                        [class.error]="routeForm.get('endDate')?.invalid && routeForm.get('endDate')?.touched">
+                </div>
+            </div>
+
+            <!-- Operating Days Section -->
+            <div class="form-section">
+                <h3>Operating Days</h3>
+                <div class="checkbox-grid">
+                    <label class="checkbox-item">
+                        <input type="checkbox" formControlName="monday">
+                        <span>Monday</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" formControlName="tuesday">
+                        <span>Tuesday</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" formControlName="wednesday">
+                        <span>Wednesday</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" formControlName="thursday">
+                        <span>Thursday</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" formControlName="friday">
+                        <span>Friday</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" formControlName="saturday">
+                        <span>Saturday</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" formControlName="sunday">
+                        <span>Sunday</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Route Status -->
+            <div class="form-section">
+                <!-- Active Status -->
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" formControlName="isActive">
+                        <span>Active Route</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" (click)="cancelRouteForm()">Cancel</button>
+                <button type="submit" class="btn-primary" [disabled]="routeForm.invalid || loading">
+                    <span *ngIf="loading">Creating...</span>
+                    <span *ngIf="!loading">Create Route</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Routes List -->
+    <div class="routes-section" *ngIf="!isLoading">
+        <!-- Loading -->
+        <div class="loading-container" *ngIf="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading routes...</p>
+        </div>
+
+        <!-- No Routes -->
+        <div class="empty-state" *ngIf="!loading && routes.length === 0">
+            <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 01.553-.894L9 2l6 3 5.447-2.724A1 1 0 0121 3.382v10.764a1 1 0 01-.553.894L15 18l-6-3z">
+                </path>
             </svg>
-            <h3>Nessuna rotta trovata</h3>
-            <p>Non hai ancora creato nessuna rotta</p>
-            <button class="btn-primary" (click)="createRoute()">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
-                </svg>
-                Crea la tua prima rotta
-            </button>
+            <h3>No routes found</h3>
+            <p>Create your first route to start building your network</p>
+            <button class="btn-primary" (click)="toggleRouteForm()">Create First Route</button>
         </div>
 
         <!-- Routes Grid -->
-        <div class="routes-grid" *ngIf="routes.length > 0">
-            <div class="route-card" *ngFor="let route of routes" [class.inactive]="!route.isActive">
+        <div class="routes-grid" *ngIf="!loading && routes.length > 0">
+            <div class="route-card" *ngFor="let route of routes">
                 <div class="route-header">
-                    <div class="route-title">
-                        <h3>{{ route.departureAirport?.name }} → {{ route.arrivalAirport?.name }}</h3>
-                        <span class="route-code">{{ route.departureAirport?.code }} - {{ route.arrivalAirport?.code
-                            }}</span>
-                    </div>
-                    <div class="route-status">
-                        <span class="status-badge" [class.active]="route.isActive" [class.inactive]="!route.isActive">
-                            {{ route.isActive ? 'Attiva' : 'Inattiva' }}
-                        </span>
+                    <div class="route-code">{{ route.routeCode }}</div>
+                    <div class="route-status" [class]="route.isActive ? 'active' : 'inactive'">
+                        {{ route.isActive ? 'Active' : 'Inactive' }}
                     </div>
                 </div>
 
-                <div class="route-details">
-                    <div class="detail-item">
-                        <span class="label">Distanza:</span>
-                        <span class="value">{{ route.distance }} km</span>
+                <div class="route-info">
+                    <div class="route-path">
+                        <div class="airport">
+                            <div class="airport-code">{{ route.origin?.code }}</div>
+                            <div class="airport-name">{{ route.origin?.name }}</div>
+                        </div>
+                        <div class="route-arrow">→</div>
+                        <div class="airport">
+                            <div class="airport-code">{{ route.destination?.code }}</div>
+                            <div class="airport-name">{{ route.destination?.name }}</div>
+                        </div>
                     </div>
-                    <div class="detail-item">
-                        <span class="label">Durata stimata:</span>
-                        <span class="value">{{ formatDuration(route.estimatedDuration) }}</span>
+
+                    <div class="route-details">
+                        <div class="detail-item">
+                            <span class="label">Distance:</span>
+                            <span class="value">{{ route.distance }} km</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Duration:</span>
+                            <span class="value">{{ route.estimatedDuration }} min</span>
+                        </div>
                     </div>
                 </div>
 
                 <div class="route-actions">
-                    <button class="btn-secondary" (click)="editRoute(route)" title="Modifica rotta">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
-                                fill="currentColor" />
+                    <button class="action-btn delete" (click)="deleteRoute(route._id)">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                            </path>
                         </svg>
-                        Modifica
-                    </button>
-
-                    <button class="btn-toggle" [class.activate]="!route.isActive" [class.deactivate]="route.isActive"
-                        (click)="toggleRouteStatus(route)"
-                        [title]="route.isActive ? 'Disattiva rotta' : 'Attiva rotta'">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" *ngIf="route.isActive">
-                            <path
-                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-                                fill="currentColor" />
-                        </svg>
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" *ngIf="!route.isActive">
-                            <path
-                                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                                fill="currentColor" />
-                        </svg>
-                        {{ route.isActive ? 'Disattiva' : 'Attiva' }}
-                    </button>
-
-                    <button class="btn-danger" (click)="deleteRoute(route)" title="Elimina rotta">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
-                                fill="currentColor" />
-                        </svg>
-                        Elimina
+                        Delete
                     </button>
                 </div>
             </div>

@@ -22,9 +22,7 @@ export class FlightManagementComponent implements OnInit {
 
   // Forms
   flightForm: FormGroup;
-  aircraftForm: FormGroup;
   showFlightForm = false;
-  showAircraftForm = false;
 
   // Aircraft types
   aircraftTypes = [
@@ -55,16 +53,6 @@ export class FlightManagementComponent implements OnInit {
       firstPrice: ['', [Validators.required, Validators.min(0)]],
       gate: [''],
       terminal: [''],
-    });
-
-    this.aircraftForm = this.fb.group({
-      model: ['', Validators.required],
-      registrationNumber: [
-        '',
-        [Validators.required, Validators.pattern(/^[A-Z]{1,2}-[A-Z0-9]{3,6}$/)],
-      ],
-      capacity: ['', [Validators.required, Validators.min(50)]],
-      type: ['', Validators.required],
     });
   }
 
@@ -114,25 +102,10 @@ export class FlightManagementComponent implements OnInit {
     }
   }
 
-  toggleAircraftForm(): void {
-    this.showAircraftForm = !this.showAircraftForm;
-    this.error = null;
-    this.success = null;
-    if (!this.showAircraftForm) {
-      this.aircraftForm.reset();
-    }
-  }
-
   onFlightNumberInput(event: any): void {
     const input = event.target;
     const value = input.value.toUpperCase();
     this.flightForm.patchValue({ flightNumber: value });
-  }
-
-  onRegistrationNumberInput(event: any): void {
-    const input = event.target;
-    const value = input.value.toUpperCase();
-    this.aircraftForm.patchValue({ registrationNumber: value });
   }
 
   onCreateFlight(): void {
@@ -162,8 +135,8 @@ export class FlightManagementComponent implements OnInit {
       flightNumber: formValue.flightNumber.toUpperCase(),
       departureAirport: formValue.departureAirport,
       arrivalAirport: formValue.arrivalAirport,
-      departureTime: formValue.departureTime,
-      arrivalTime: formValue.arrivalTime,
+      departureTime: new Date(formValue.departureTime).toISOString(),
+      arrivalTime: new Date(formValue.arrivalTime).toISOString(),
       aircraft: {
         model: selectedAircraft.model,
         capacity: selectedAircraft.capacity,
@@ -203,71 +176,6 @@ export class FlightManagementComponent implements OnInit {
         console.error('Error creating flight:', error);
       },
     });
-  }
-
-  onCreateAircraft(): void {
-    if (this.aircraftForm.invalid) {
-      this.markFormGroupTouched(this.aircraftForm);
-      return;
-    }
-
-    this.loading = true;
-    this.error = null;
-    this.success = null;
-
-    const formValue = this.aircraftForm.value;
-
-    // Build aircraft data in the format expected by backend
-    const aircraftData = {
-      registrationNumber: formValue.registrationNumber.toUpperCase(),
-      aircraftModel: formValue.model,
-      manufacturer: this.getManufacturerFromModel(formValue.model),
-      yearManufactured: new Date().getFullYear(), // Default to current year
-      seatConfiguration: [
-        {
-          class: 'economy' as const,
-          rows: Math.floor(Number(formValue.capacity) / 6),
-          seatsPerRow: 6,
-          seatLayout: '3-3',
-          totalSeats: Number(formValue.capacity),
-        },
-      ],
-      specifications: {
-        maxRange: formValue.type === 'wide-body' ? 15000 : 6000,
-        cruiseSpeed: 850,
-        fuelCapacity: formValue.type === 'wide-body' ? 320000 : 26000,
-        maxTakeoffWeight: formValue.type === 'wide-body' ? 560000 : 79000,
-      },
-      maintenance: {
-        lastMaintenanceDate: new Date(),
-        nextMaintenanceDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days from now
-        flightHours: 0,
-        cyclesCompleted: 0,
-      },
-    };
-
-    this.airlineService.createAircraft(aircraftData as any).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.success = 'Aeromobile registrato con successo!';
-          this.showAircraftForm = false;
-          this.aircraftForm.reset();
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error =
-          error.error?.message || "Errore nella registrazione dell'aeromobile";
-        this.loading = false;
-        console.error('Error creating aircraft:', error);
-      },
-    });
-  }
-
-  private getManufacturerFromModel(model: string): string {
-    if (model.includes('Boeing')) return 'Boeing';
-    if (model.includes('Airbus')) return 'Airbus';
-    return 'Unknown';
   }
 
   deleteFlight(flight: Flight): void {

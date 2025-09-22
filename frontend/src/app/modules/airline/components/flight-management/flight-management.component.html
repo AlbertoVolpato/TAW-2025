@@ -13,13 +13,6 @@
       </svg>
       Add New Flight
     </button>
-    <button class="action-button secondary" (click)="toggleAircraftForm()" type="button">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M8 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-      </svg>
-      Register Aircraft
-    </button>
   </div>
 
   <!-- Success Message -->
@@ -143,68 +136,6 @@
         <button type="submit" class="btn-submit" [disabled]="flightForm.invalid || loading">
           <span class="spinner" *ngIf="loading"></span>
           <span *ngIf="!loading">Create Flight</span>
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <!-- Create Aircraft Form -->
-  <div class="form-card" *ngIf="showAircraftForm">
-    <div class="form-header">
-      <h2>Register New Aircraft</h2>
-      <p>Add an aircraft to your fleet</p>
-    </div>
-    <form [formGroup]="aircraftForm" (ngSubmit)="onCreateAircraft()">
-      <div class="form-grid">
-        <!-- Model -->
-        <div class="form-field">
-          <label class="form-label">Aircraft Model</label>
-          <select class="form-input" formControlName="model">
-            <option value="">Select model</option>
-            <option *ngFor="let aircraft of aircraftTypes" [value]="aircraft.model">
-              {{ aircraft.model }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Registration Number -->
-        <div class="form-field">
-          <label class="form-label">Registration Number</label>
-          <input type="text" class="form-input" formControlName="registrationNumber" placeholder="I-ABCD"
-            (input)="onRegistrationNumberInput($event)">
-          <div class="form-error"
-            *ngIf="aircraftForm.get('registrationNumber')?.hasError('required') && aircraftForm.get('registrationNumber')?.touched">
-            Registration number is required
-          </div>
-          <div class="form-error"
-            *ngIf="aircraftForm.get('registrationNumber')?.hasError('pattern') && aircraftForm.get('registrationNumber')?.touched">
-            Format: 1-2 letters, hyphen, 3-6 alphanumeric characters
-          </div>
-        </div>
-
-        <!-- Capacity -->
-        <div class="form-field">
-          <label class="form-label">Passenger Capacity</label>
-          <input type="number" class="form-input" formControlName="capacity" min="50" placeholder="189">
-        </div>
-
-        <!-- Type -->
-        <div class="form-field">
-          <label class="form-label">Aircraft Type</label>
-          <select class="form-input" formControlName="type">
-            <option value="">Select type</option>
-            <option value="narrow-body">Narrow-body</option>
-            <option value="wide-body">Wide-body</option>
-            <option value="regional">Regional</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button type="button" class="btn-cancel" (click)="toggleAircraftForm()">Cancel</button>
-        <button type="submit" class="btn-submit" [disabled]="aircraftForm.invalid || loading">
-          <span class="spinner" *ngIf="loading"></span>
-          <span *ngIf="!loading">Register Aircraft</span>
         </button>
       </div>
     </form>

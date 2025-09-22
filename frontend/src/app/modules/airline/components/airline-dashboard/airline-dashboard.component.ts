@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { AirlineService } from '../../../../services/airline.service';
 import { AuthService } from '../../../../services/auth.service';
 import { Flight } from '../../../../models/flight.model';
@@ -25,6 +26,12 @@ export class AirlineDashboardComponent implements OnInit {
   totalFlights = 0;
   activeFlights = 0;
   todayFlights = 0;
+  activeRoutes = 0;
+  aircraftCount = 0;
+  totalBookings = 0;
+  recentFlights: Flight[] = [];
+  errorMessage: string | null = null;
+  isLoading = false;
 
   // Pagination properties
   currentPage = 1;
@@ -38,7 +45,8 @@ export class AirlineDashboardComponent implements OnInit {
 
   constructor(
     private airlineService: AirlineService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -50,22 +58,57 @@ export class AirlineDashboardComponent implements OnInit {
   }
 
   loadAirlineData(): void {
+    this.isLoading = true;
     this.loading = true;
     this.error = null;
+    this.errorMessage = null;
 
-    // Load airline statistics
-    this.airlineService.getGeneralStats().subscribe({
+    // Load routes to count active routes
+    this.airlineService.getAirlineRoutes().subscribe({
+      next: (response: any) => {
+        if (response.success && response.data) {
+          this.activeRoutes = response.data.filter(
+            (route: any) => route.isActive
+          ).length;
+        }
+      },
+      error: (error: any) => {
+        console.error('Error loading routes:', error);
+      },
+    });
+
+    // Load flights (this gives us the real flight count)
+    this.airlineService.getAirlineFlights().subscribe({
       next: (response: any) => {
         if (response.success) {
+          this.recentFlights = response.data || [];
+          // Use actual flights length instead of summary stats
+          this.totalFlights = this.recentFlights.length;
+        }
+        this.isLoading = false;
+        this.loading = false;
+      },
+      error: (error: any) => {
+        console.error('Error loading flights:', error);
+        this.isLoading = false;
+        this.loading = false;
+      },
+    });
+
+    // Load bookings stats (keep this for bookings count)
+    this.airlineService.getGeneralStats().subscribe({
+      next: (response: any) => {
+        console.log('Stats response:', response); // Debug log
+        if (response.success && response.data) {
           this.stats = response.data;
-          // Update template properties
-          this.totalFlights = response.data.totalFlights || 0;
-          this.activeFlights = response.data.activeFlights || 0;
-          this.todayFlights = response.data.todayFlights || 0;
+          // Access summary properties correctly
+          const summary = response.data.summary || {};
+          this.totalBookings = summary.totalBookings || 0;
         }
       },
       error: (error: any) => {
         console.error('Error loading stats:', error);
+        this.errorMessage = 'Error loading statistics';
       },
     });
 
@@ -90,22 +133,6 @@ export class AirlineDashboardComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Error loading popular routes:', error);
-      },
-    });
-
-    // Load recent flights for display
-    this.airlineService.getAirlineFlights().subscribe({
-      next: (response: any) => {
-        if (response.success) {
-          this.flights = response.data?.flights || [];
-          this.updatePagination();
-        }
-        this.loading = false;
-      },
-      error: (error: any) => {
-        this.error = 'Errore nel caricamento dei dati';
-        this.loading = false;
-        console.error('Error loading flights:', error);
       },
     });
   }
@@ -205,5 +232,13 @@ export class AirlineDashboardComponent implements OnInit {
 
   refreshData(): void {
     this.loadAirlineData();
+  }
+
+  navigateToRoutes(): void {
+    this.router.navigate(['/airline/routes']);
+  }
+
+  navigateToFlights(): void {
+    this.router.navigate(['/airline/flights']);
   }
 }

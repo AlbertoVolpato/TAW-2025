@@ -9,20 +9,14 @@ const routes: Routes = [
   {
     path: '',
     component: AirlineDashboardComponent,
-    canActivate: [RoleGuard],
-    data: { expectedRole: 'airline' },
   },
   {
     path: 'flights',
     component: FlightManagementComponent,
-    canActivate: [RoleGuard],
-    data: { expectedRole: 'airline' },
   },
   {
     path: 'routes',
     component: AirlineRouteManagementComponent,
-    canActivate: [RoleGuard],
-    data: { expectedRole: 'airline' },
   },
 ];
 
