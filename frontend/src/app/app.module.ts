@@ -22,6 +22,7 @@ import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
 import { ChangePasswordComponent } from './components/auth/change-password/change-password.component';
 import { ProfileComponent } from './components/profile/profile.component';
+import { BookingWrapperComponent } from './components/booking-wrapper/booking-wrapper.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { HeaderComponent } from './shared/header/header.component';
 import { LayoutComponent } from './shared/layout/layout.component';
@@ -34,6 +35,7 @@ import { FooterComponent } from './shared/footer/footer.component';
     RegisterComponent,
     ChangePasswordComponent,
     ProfileComponent,
+    BookingWrapperComponent,
     HeaderComponent,
     LayoutComponent,
     FooterComponent,

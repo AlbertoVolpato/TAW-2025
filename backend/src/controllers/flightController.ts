@@ -171,10 +171,51 @@ export const searchFlights = async (req: Request, res: Response) => {
       (a, b) => a.totalDuration - b.totalDuration
     );
 
-    res.json({
+    // Search for return flights if returnDate is provided
+    let returnFlights: any[] = [];
+    let returnSearchDate: Date | undefined;
+    console.log("Return date parameter:", returnDate);
+    if (returnDate) {
+      console.log("Processing return date:", returnDate);
+      returnSearchDate = new Date(returnDate as string);
+      const returnStartOfDay = new Date(returnSearchDate);
+      returnStartOfDay.setHours(0, 0, 0, 0);
+      const returnEndOfDay = new Date(returnSearchDate);
+      returnEndOfDay.setHours(23, 59, 59, 999);
+
+      // Search for direct return flights (swap origin and destination)
+      const directReturnFlights = await Flight.find({
+        departureAirport: destinationAirport._id, // Swap: destination becomes origin
+        arrivalAirport: originAirport._id, // Swap: origin becomes destination
+        departureTime: { $gte: returnStartOfDay, $lte: returnEndOfDay },
+        status: { $in: ["scheduled", "boarding"] },
+        isActive: true,
+      })
+        .populate("airline", "name code")
+        .populate("departureAirport", "name city country code")
+        .populate("arrivalAirport", "name city country code")
+        .sort({ departureTime: 1 });
+
+      // Format return flights
+      returnFlights = directReturnFlights.map((flight) => ({
+        type: "direct",
+        totalDuration: flight.duration,
+        totalPrice: flight.basePrice,
+        layovers: 0,
+        segments: [
+          {
+            flight: flight,
+            segmentType: "direct",
+          },
+        ],
+      }));
+    }
+
+    const response: any = {
       success: true,
       data: {
         flights: allFlights,
+        returnFlights: returnFlights, // Always include, even if empty
         searchCriteria: {
           origin: originAirport,
           destination: destinationAirport,
@@ -187,9 +228,17 @@ export const searchFlights = async (req: Request, res: Response) => {
           total: allFlights.length,
           direct: formattedDirectFlights.length,
           connecting: connectingFlights.length,
+          returnFlights: returnFlights.length,
         },
       },
-    });
+    };
+
+    // Add return date to searchCriteria if provided
+    if (returnDate && returnSearchDate) {
+      response.data.searchCriteria.returnDate = returnSearchDate;
+    }
+
+    res.json(response);
   } catch (error) {
     console.error("Error searching flights:", error);
     return res.status(500).json({

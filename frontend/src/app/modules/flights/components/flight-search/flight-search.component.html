@@ -173,64 +173,142 @@
   </section>
 
   <!-- Results Section -->
-  <section class="results-section" *ngIf="flights.length > 0">
+  <section class="results-section" *ngIf="flights.length > 0 || returnFlights.length > 0">
     <div class="container">
-      <h3>Risultati della ricerca</h3>
-      <div class="flights-grid">
-        <div *ngFor="let flight of flights" class="flight-card">
-          <!-- Alternative date badge -->
-          <div *ngIf="flight.isAlternativeDate" class="alternative-date-badge">
-            <small>
-              <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-              </svg>
-              {{ flight.alternativeDate ? formatSelectedDate(flight.alternativeDate) : '' }}
-              <span class="days-diff" *ngIf="flight.daysDifference !== undefined">({{ flight.daysDifference > 0 ? '+' :
-                '' }}{{ flight.daysDifference }} giorni)</span>
-            </small>
+
+      <!-- Round-trip results -->
+      <div *ngIf="isRoundTripSearch" class="round-trip-results">
+        <h3>Risultati Andata e Ritorno</h3>
+
+        <!-- Booking Summary -->
+        <div *ngIf="selectedOutbound || selectedReturn" class="booking-summary">
+          <div class="summary-content">
+            <div *ngIf="selectedOutbound">🛫 Andata: {{ getFlightNumber(selectedOutbound) }} - €{{
+              getFlightPrice(selectedOutbound) }}</div>
+            <div *ngIf="selectedReturn">🛬 Ritorno: {{ getFlightNumber(selectedReturn) }} - €{{
+              getFlightPrice(selectedReturn) }}</div>
+            <div class="total"><strong>Totale: €{{ getTotalPrice() }}</strong></div>
+            <div class="booking-info" *ngIf="canProceedToBooking() && isRoundTripSearch">
+              <small>⚠️ Verranno create due prenotazioni separate: prima il volo di andata, poi quello di ritorno.</small>
+            </div>
+            <button class="btn btn-success" [disabled]="!canProceedToBooking()" (click)="proceedToBooking()">
+              {{ canProceedToBooking() ? (isRoundTripSearch ? 'Inizia Prenotazione Andata' : 'Prenota Ora') : 'Seleziona entrambi i voli' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Flights Grid -->
+        <div class="flights-grid-round-trip">
+          <div class="flights-column">
+            <h4>🛫 Voli di Andata ({{ flights.length }})</h4>
+            <div *ngFor="let flight of flights" class="flight-card" [class.selected]="isOutboundSelected(flight)">
+              <div class="flight-content">
+                <div class="flight-route">
+                  <span>{{ getDepartureAirportCode(flight) }} → {{ getArrivalAirportCode(flight) }}</span>
+                </div>
+                <div class="flight-time">
+                  {{ getDepartureTime(flight) | date:'HH:mm' }} - {{ getArrivalTime(flight) | date:'HH:mm' }}
+                </div>
+                <div class="flight-meta">
+                  <span>{{ getFlightNumber(flight) }}</span>
+                  <span>€{{ getFlightPrice(flight) }}</span>
+                </div>
+                <button class="btn btn-sm" [class.btn-success]="isOutboundSelected(flight)"
+                  [class.btn-outline-primary]="!isOutboundSelected(flight)" (click)="selectOutboundFlight(flight)">
+                  {{ isOutboundSelected(flight) ? 'Selezionato' : 'Seleziona' }}
+                </button>
+              </div>
+            </div>
           </div>
 
-          <!-- Flight info -->
-          <div class="flight-info">
-            <div class="flight-route">
-              <div class="airport">
-                <span class="code">{{ getDepartureAirportCode(flight) }}</span>
-                <span class="city">{{ getDepartureAirportCity(flight) }}</span>
-              </div>
-              <div class="flight-path">
-                <svg class="plane-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                </svg>
-              </div>
-              <div class="airport">
-                <span class="code">{{ getArrivalAirportCode(flight) }}</span>
-                <span class="city">{{ getArrivalAirportCity(flight) }}</span>
-              </div>
-            </div>
-
-            <div class="flight-details">
-              <div class="time-info">
-                <span class="departure-time">{{ getDepartureTime(flight) | date:'HH:mm' }}</span>
-                <span class="duration">{{ formatDuration(getFlightDuration(flight)) }}</span>
-                <span class="arrival-time">{{ getArrivalTime(flight) | date:'HH:mm' }}</span>
-              </div>
-
-              <div class="flight-meta">
-                <span class="airline">{{ getAirlineName(flight) }}</span>
-                <span class="flight-number">{{ getFlightNumber(flight) }}</span>
-                <span *ngIf="isConnectingFlight(flight)" class="layovers">{{ getLayovers(flight) }} scalo/i</span>
+          <div class="flights-column">
+            <h4>🛬 Voli di Ritorno ({{ returnFlights.length }})</h4>
+            <div *ngFor="let flight of returnFlights" class="flight-card" [class.selected]="isReturnSelected(flight)">
+              <div class="flight-content">
+                <div class="flight-route">
+                  <span>{{ getDepartureAirportCode(flight) }} → {{ getArrivalAirportCode(flight) }}</span>
+                </div>
+                <div class="flight-time">
+                  {{ getDepartureTime(flight) | date:'HH:mm' }} - {{ getArrivalTime(flight) | date:'HH:mm' }}
+                </div>
+                <div class="flight-meta">
+                  <span>{{ getFlightNumber(flight) }}</span>
+                  <span>€{{ getFlightPrice(flight) }}</span>
+                </div>
+                <button class="btn btn-sm" [class.btn-success]="isReturnSelected(flight)"
+                  [class.btn-outline-primary]="!isReturnSelected(flight)" (click)="selectReturnFlight(flight)">
+                  {{ isReturnSelected(flight) ? 'Selezionato' : 'Seleziona' }}
+                </button>
               </div>
             </div>
-
-            <div class="price-info">
-              <span class="price">€{{ getFlightPrice(flight) }}</span>
-              <button class="select-btn" (click)="navigateToBooking(flight)">Seleziona</button>
+            <div *ngIf="returnFlights.length === 0" class="no-flights">
+              <p>Nessun volo di ritorno trovato.</p>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- One-way results (existing) -->
+      <div *ngIf="!isRoundTripSearch">
+        <h3>Risultati della ricerca</h3>
+        <div class="flights-grid">
+          <div *ngFor="let flight of flights" class="flight-card">
+            <!-- Alternative date badge -->
+            <div *ngIf="flight.isAlternativeDate" class="alternative-date-badge">
+              <small>
+                <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                {{ flight.alternativeDate ? formatSelectedDate(flight.alternativeDate) : '' }}
+                <span class="days-diff" *ngIf="flight.daysDifference !== undefined">({{ flight.daysDifference > 0 ? '+'
+                  :
+                  '' }}{{ flight.daysDifference }} giorni)</span>
+              </small>
+            </div>
+
+            <!-- Flight info -->
+            <div class="flight-info">
+              <div class="flight-route">
+                <div class="airport">
+                  <span class="code">{{ getDepartureAirportCode(flight) }}</span>
+                  <span class="city">{{ getDepartureAirportCity(flight) }}</span>
+                </div>
+                <div class="flight-path">
+                  <svg class="plane-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                  </svg>
+                </div>
+                <div class="airport">
+                  <span class="code">{{ getArrivalAirportCode(flight) }}</span>
+                  <span class="city">{{ getArrivalAirportCity(flight) }}</span>
+                </div>
+              </div>
+
+              <div class="flight-details">
+                <div class="time-info">
+                  <span class="departure-time">{{ getDepartureTime(flight) | date:'HH:mm' }}</span>
+                  <span class="duration">{{ formatDuration(getFlightDuration(flight)) }}</span>
+                  <span class="arrival-time">{{ getArrivalTime(flight) | date:'HH:mm' }}</span>
+                </div>
+
+                <div class="flight-meta">
+                  <span class="airline">{{ getAirlineName(flight) }}</span>
+                  <span class="flight-number">{{ getFlightNumber(flight) }}</span>
+                  <span *ngIf="isConnectingFlight(flight)" class="layovers">{{ getLayovers(flight) }} scalo/i</span>
+                </div>
+              </div>
+
+              <div class="price-info">
+                <span class="price">€{{ getFlightPrice(flight) }}</span>
+                <button class="select-btn" (click)="navigateToBooking(flight)">Seleziona</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 

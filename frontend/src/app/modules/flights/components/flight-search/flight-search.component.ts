@@ -18,11 +18,17 @@ import { AutocompleteOption } from '../../../../shared/components/custom-autocom
 })
 export class FlightSearchComponent implements OnInit {
   searchForm: FormGroup;
-  flights: any[] = []; // Using any[] to handle both direct flights and connecting flights
+  flights: any[] = []; // Outbound flights
+  returnFlights: any[] = []; // Return flights for round-trip
   loading = false;
   error: string | null = null;
   sortBy = 'price';
   classFilter = 'all';
+
+  // Round-trip selection
+  selectedOutbound: any = null;
+  selectedReturn: any = null;
+  isRoundTripSearch = false;
 
   // Cheapest flights for recommendations
   cheapestFlights: Flight[] = [];
@@ -116,8 +122,12 @@ export class FlightSearchComponent implements OnInit {
 
     this.loading = true;
     this.error = null;
+    this.selectedOutbound = null;
+    this.selectedReturn = null;
 
     const formValue = this.searchForm.value;
+    this.isRoundTripSearch = formValue.tripType === 'roundTrip';
+
     const searchRequest: FlightSearchRequest = {
       departureAirport: formValue.departureAirport?.code,
       arrivalAirport: formValue.arrivalAirport?.code,
@@ -137,14 +147,22 @@ export class FlightSearchComponent implements OnInit {
         console.log(
           'Success:',
           response.success,
-          'Count:',
-          response.data?.flights?.length || 0
+          'Outbound:',
+          response.data?.flights?.length || 0,
+          'Return:',
+          response.data?.returnFlights?.length || 0
         );
         this.loading = false;
         if (response.success) {
           this.flights = response.data?.flights || response.flights || [];
+          this.returnFlights = response.data?.returnFlights || [];
+
           console.log('✓ Search flights loaded successfully');
+          console.log(`✓ Outbound flights: ${this.flights.length}`);
+          console.log(`✓ Return flights: ${this.returnFlights.length}`);
+
           this.sortFlights();
+
           if (this.flights.length === 0) {
             // Se non ci sono voli per la data selezionata, suggerisci date alternative
             this.suggestAlternativeDates(searchRequest);
@@ -607,5 +625,89 @@ export class FlightSearchComponent implements OnInit {
       return flight.segments.length - 1;
     }
     return 0;
+  }
+
+  // Round-trip selection methods
+  selectOutboundFlight(flight: any): void {
+    this.selectedOutbound = flight;
+    console.log('Selected outbound flight:', flight);
+  }
+
+  selectReturnFlight(flight: any): void {
+    this.selectedReturn = flight;
+    console.log('Selected return flight:', flight);
+  }
+
+  isOutboundSelected(flight: any): boolean {
+    return (
+      this.selectedOutbound &&
+      this.getFlightId(this.selectedOutbound) === this.getFlightId(flight)
+    );
+  }
+
+  isReturnSelected(flight: any): boolean {
+    return (
+      this.selectedReturn &&
+      this.getFlightId(this.selectedReturn) === this.getFlightId(flight)
+    );
+  }
+
+  getTotalPrice(): number {
+    let total = 0;
+    if (this.selectedOutbound) {
+      total += this.getFlightPrice(this.selectedOutbound);
+    }
+    if (this.selectedReturn) {
+      total += this.getFlightPrice(this.selectedReturn);
+    }
+    return total;
+  }
+
+  canProceedToBooking(): boolean {
+    if (this.isRoundTripSearch) {
+      return this.selectedOutbound && this.selectedReturn;
+    }
+    return this.selectedOutbound !== null;
+  }
+
+  proceedToBooking(): void {
+    if (!this.canProceedToBooking()) {
+      return;
+    }
+
+    if (
+      this.isRoundTripSearch &&
+      this.selectedOutbound &&
+      this.selectedReturn
+    ) {
+      // Round-trip: prima prenotazione andata, poi ritorno
+      // Salva i dati del ritorno per dopo
+      const returnFlightId = this.getFlightId(this.selectedReturn);
+      const returnFlightPrice = this.getFlightPrice(this.selectedReturn);
+      
+      // Naviga alla prenotazione del volo di andata con info del ritorno
+      const outboundId = this.getFlightId(this.selectedOutbound);
+      this.router.navigate(['/booking'], {
+        queryParams: {
+          flight: outboundId,
+          passengers: this.searchForm.get('passengers')?.value,
+          class: this.searchForm.get('seatClass')?.value,
+          // Aggiungiamo i dati del volo di ritorno per gestirlo dopo
+          returnFlight: returnFlightId,
+          returnPrice: returnFlightPrice,
+          isRoundTrip: 'true'
+        },
+      });
+    } else if (this.selectedOutbound) {
+      // Navigate to booking with single flight
+      const flightId = this.getFlightId(this.selectedOutbound);
+      this.router.navigate(['/booking'], {
+        queryParams: {
+          flight: flightId,
+          passengers: this.searchForm.get('passengers')?.value,
+          class: this.searchForm.get('seatClass')?.value,
+        },
+      });
+    }
   }
 }

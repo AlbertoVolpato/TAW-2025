@@ -20,6 +20,11 @@ export class BookingComponent implements OnInit {
   flight: Flight | null = null;
   seatMap: SeatMap | null = null;
 
+  // Round-trip info
+  isRoundTrip = false;
+  returnFlightId: string | null = null;
+  returnFlightPrice = 0;
+
   // Forms
   passengersForm!: FormGroup;
 
@@ -79,18 +84,26 @@ export class BookingComponent implements OnInit {
 
   ngOnInit(): void {
     const pathFlightId = this.route.snapshot.paramMap.get('flightId');
-    const queryFlightId = this.route.snapshot.queryParamMap.get('flightId');
+    const queryFlightId = this.route.snapshot.queryParamMap.get('flight');
     const flightId = pathFlightId || queryFlightId;
 
     const passengers = parseInt(
       this.route.snapshot.queryParamMap.get('passengers') || '1'
     );
 
+    // Check for round-trip parameters
+    this.isRoundTrip = this.route.snapshot.queryParamMap.get('isRoundTrip') === 'true';
+    this.returnFlightId = this.route.snapshot.queryParamMap.get('returnFlight');
+    this.returnFlightPrice = parseFloat(this.route.snapshot.queryParamMap.get('returnPrice') || '0');
+
     console.log('BookingComponent ngOnInit:', {
       pathFlightId,
       queryFlightId,
       flightId,
       passengers,
+      isRoundTrip: this.isRoundTrip,
+      returnFlightId: this.returnFlightId,
+      returnFlightPrice: this.returnFlightPrice
     });
 
     if (flightId) {
@@ -492,14 +505,28 @@ export class BookingComponent implements OnInit {
 
         console.log('Booking confirmation set:', this.bookingConfirmation);
 
-        // Clear loading first, then set step
+        // Clear loading first
         this.loading = false;
 
-        // Use setTimeout to ensure the DOM update happens
-        setTimeout(() => {
-          this.currentStep = 5; // Success step
-          console.log('Current step set to:', this.currentStep);
-        }, 100);
+        // Check if this is a round-trip booking
+        if (this.isRoundTrip && this.returnFlightId) {
+          // Show success message with round-trip info, then navigate to return flight booking
+          setTimeout(() => {
+            this.currentStep = 5; // Success step
+            console.log('Outbound flight booked, preparing return flight booking');
+            
+            // After showing success for a moment, navigate to return flight booking
+            setTimeout(() => {
+              this.proceedToReturnBooking();
+            }, 3000); // Wait 3 seconds to show success message
+          }, 100);
+        } else {
+          // Regular single flight booking completion
+          setTimeout(() => {
+            this.currentStep = 5; // Success step
+            console.log('Current step set to:', this.currentStep);
+          }, 100);
+        }
       },
       error: (error) => {
         this.loading = false;
@@ -543,6 +570,32 @@ export class BookingComponent implements OnInit {
 
   searchNewFlight(): void {
     this.router.navigate(['/flights/search']);
+  }
+
+  // Navigate to return flight booking for round-trip
+  proceedToReturnBooking(): void {
+    if (this.returnFlightId) {
+      const passengers = this.passengersForm.get('passengers')?.value?.length || 1;
+      const seatClass = 'economy'; // Could be extracted from form if needed
+      
+      console.log('Proceeding to return flight booking:', {
+        returnFlightId: this.returnFlightId,
+        passengers: passengers,
+        seatClass: seatClass
+      });
+
+      this.router.navigate(['/booking'], {
+        queryParams: {
+          flight: this.returnFlightId,
+          passengers: passengers,
+          class: seatClass,
+          isReturnFlight: 'true' // Mark this as the return flight booking
+        },
+      });
+    } else {
+      // Fallback: go to bookings list
+      this.goToBookings();
+    }
   }
 
   // Utility methods

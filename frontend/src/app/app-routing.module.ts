@@ -4,6 +4,7 @@ import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
 import { ChangePasswordComponent } from './components/auth/change-password/change-password.component';
 import { ProfileComponent } from './components/profile/profile.component';
+import { BookingWrapperComponent } from './components/booking-wrapper/booking-wrapper.component';
 import { AuthGuard } from './guards/auth.guard';
 import { PasswordChangeGuard } from './guards/password-change.guard';
 import { ChangePasswordAccessGuard } from './guards/change-password-access.guard';
@@ -45,6 +46,12 @@ const routes: Routes = [
   {
     path: 'profile',
     component: ProfileComponent,
+    canActivate: [AuthGuard, PasswordChangeGuard],
+  },
+  // Global booking route with query parameters
+  {
+    path: 'booking',
+    component: BookingWrapperComponent,
     canActivate: [AuthGuard, PasswordChangeGuard],
   },
   { path: 'unauthorized', redirectTo: '/login' },

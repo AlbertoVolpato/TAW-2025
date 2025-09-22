@@ -118,6 +118,21 @@ export interface FlightSearchResponse {
   message?: string;
   data?: {
     flights: FlightResult[];
+    returnFlights?: FlightResult[]; // Added for round-trip
+    searchCriteria?: {
+      origin: Airport;
+      destination: Airport;
+      departureDate: string;
+      returnDate?: string;
+      passengers: number;
+      class: string;
+    };
+    summary?: {
+      total: number;
+      direct: number;
+      connecting: number;
+      returnFlights?: number;
+    };
     count?: number;
   };
   flights?: FlightResult[]; // For backward compatibility
