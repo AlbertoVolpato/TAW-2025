@@ -3,12 +3,12 @@ version: '3.8'
 services:
   mongodb:
     image: mongo:7
-    container_name: taw-mongodb
+    container_name: mongodb
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password123
-      MONGO_INITDB_DATABASE: taw_airline
+      MONGO_INITDB_DATABASE: taw-airline-system
     ports:
       - "27017:27017"
     volumes:
@@ -20,19 +20,16 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: taw-backend
+    container_name: backend
     restart: unless-stopped
     environment:
       NODE_ENV: development
       PORT: 3000
-      MONGODB_URI: mongodb://admin:password123@mongodb:27017/taw_airline?authSource=admin
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/taw-airline-system?authSource=admin
     ports:
       - "3000:3000"
     depends_on:
       - mongodb
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
     networks:
       - taw-network
 
@@ -40,7 +37,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: taw-frontend
+    container_name: frontend
     restart: unless-stopped
     environment:
       NODE_ENV: development
@@ -48,9 +45,6 @@ services:
       - "4200:4200"
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     networks:
       - taw-network
 
