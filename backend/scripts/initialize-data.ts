@@ -10,7 +10,7 @@ import { connectDatabase } from "../src/config/database";
 import { initializeDatabase } from "../src/utils/initializeDatabase";
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ override: false });
 
 async function run() {
   try {

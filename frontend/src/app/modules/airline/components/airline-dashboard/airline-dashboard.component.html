@@ -115,7 +115,8 @@
         <div class="route-item" *ngFor="let route of stats.mostDemandedRoutes.slice(0, 5)">
           <div class="route-info">
             <span class="route-name">{{ route.route || 'N/A' }}</span>
-            <span class="route-stats">{{ route.passengers || 0 }} passengers • €{{ route.revenue || 0 | number:'1.0-0'
+            <span class="route-stats">{{ route.passengers || 0 }} passengers • €{{ route.totalRevenue || 0 |
+              number:'1.0-0'
               }}</span>
           </div>
           <div class="route-bar">

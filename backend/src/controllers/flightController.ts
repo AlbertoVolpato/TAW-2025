@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Flight, IFlight } from "../models/Flight";
+import { Flight, IFlight, ISeat } from "../models/Flight";
 import { Airport } from "../models/Airport";
 import { Airline } from "../models/Airline";
 import mongoose from "mongoose";
@@ -440,43 +440,73 @@ export const createFlight = async (req: Request, res: Response) => {
         (1000 * 60)
     );
 
-    // Generate seats based on aircraft capacity
+    // Generate seats based on aircraft capacity with realistic layout
     const seats = [];
     const capacity = aircraft.capacity;
-    const economySeats = Math.floor(capacity * 0.8);
-    const businessSeats = Math.floor(capacity * 0.15);
-    const firstSeats = capacity - economySeats - businessSeats;
 
-    // Generate economy seats
-    for (let i = 1; i <= economySeats; i++) {
-      seats.push({
-        seatNumber: `${Math.ceil(i / 6)}${String.fromCharCode(
-          65 + ((i - 1) % 6)
-        )}`,
-        class: "economy",
-        isAvailable: true,
-        price: basePrice.economy,
-      });
+    // Calculate seat distribution (more realistic)
+    const firstSeats = Math.floor(capacity * 0.1); // 10% first class
+    const businessSeats = Math.floor(capacity * 0.2); // 20% business class
+    const economySeats = capacity - firstSeats - businessSeats; // 70% economy
+
+    let currentRow = 1;
+
+    // Generate first class seats (rows 1-3, 2 seats per row: A, F)
+    const firstRows = Math.ceil(firstSeats / 2);
+    for (let row = 1; row <= firstRows; row++) {
+      const seatsInRow = ["A", "F"]; // Only window seats in first class
+      for (
+        let i = 0;
+        i < seatsInRow.length && (row - 1) * 2 + i + 1 <= firstSeats;
+        i++
+      ) {
+        seats.push({
+          seatNumber: `${row}${seatsInRow[i]}`,
+          class: "first",
+          isAvailable: true,
+          price: basePrice.first,
+        });
+      }
+      currentRow = row + 1;
     }
 
-    // Generate business seats
-    for (let i = 1; i <= businessSeats; i++) {
-      seats.push({
-        seatNumber: `B${i}${String.fromCharCode(65 + ((i - 1) % 4))}`,
-        class: "business",
-        isAvailable: true,
-        price: basePrice.business,
-      });
+    // Generate business class seats (rows after first class, 4 seats per row: A, C, D, F)
+    const businessRows = Math.ceil(businessSeats / 4);
+    for (let row = 0; row < businessRows; row++) {
+      const actualRow = currentRow + row;
+      const seatsInRow = ["A", "C", "D", "F"]; // Business class layout
+      for (
+        let i = 0;
+        i < seatsInRow.length && row * 4 + i + 1 <= businessSeats;
+        i++
+      ) {
+        seats.push({
+          seatNumber: `${actualRow}${seatsInRow[i]}`,
+          class: "business",
+          isAvailable: true,
+          price: basePrice.business,
+        });
+      }
     }
+    currentRow += businessRows;
 
-    // Generate first class seats
-    for (let i = 1; i <= firstSeats; i++) {
-      seats.push({
-        seatNumber: `F${i}${String.fromCharCode(65 + ((i - 1) % 2))}`,
-        class: "first",
-        isAvailable: true,
-        price: basePrice.first,
-      });
+    // Generate economy class seats (remaining rows, 6 seats per row: A, B, C, D, E, F)
+    const economyRows = Math.ceil(economySeats / 6);
+    for (let row = 0; row < economyRows; row++) {
+      const actualRow = currentRow + row;
+      const seatsInRow = ["A", "B", "C", "D", "E", "F"]; // Full economy layout
+      for (
+        let i = 0;
+        i < seatsInRow.length && row * 6 + i + 1 <= economySeats;
+        i++
+      ) {
+        seats.push({
+          seatNumber: `${actualRow}${seatsInRow[i]}`,
+          class: "economy",
+          isAvailable: true,
+          price: basePrice.economy,
+        });
+      }
     }
 
     const newFlight = new Flight({
@@ -563,6 +593,85 @@ export const updateFlight = async (req: Request, res: Response) => {
     }
 
     const updateData = req.body;
+
+    // If regenerateSeats flag is provided, regenerate seats with proper class distribution
+    if (updateData.regenerateSeats) {
+      await flight.populate("aircraft");
+      const capacity = flight.aircraft.capacity;
+      const basePrice = flight.basePrice;
+
+      // Generate seats based on aircraft capacity with realistic layout
+      const seats: ISeat[] = [];
+
+      // Calculate seat distribution
+      const firstSeats = Math.floor(capacity * 0.1); // 10% first class
+      const businessSeats = Math.floor(capacity * 0.2); // 20% business class
+      const economySeats = capacity - firstSeats - businessSeats; // 70% economy
+
+      let currentRow = 1;
+
+      // Generate first class seats (rows 1-3, 2 seats per row: A, F)
+      const firstRows = Math.ceil(firstSeats / 2);
+      for (let row = currentRow; row < currentRow + firstRows; row++) {
+        const seatsInRow = ["A", "F"]; // Only window seats in first class
+        for (
+          let i = 0;
+          i < seatsInRow.length && (row - currentRow) * 2 + i + 1 <= firstSeats;
+          i++
+        ) {
+          seats.push({
+            seatNumber: `${row}${seatsInRow[i]}`,
+            class: "first" as const,
+            isAvailable: true,
+            price: Math.floor(basePrice.first * (0.9 + Math.random() * 0.2)), // ±10% variation
+          });
+        }
+      }
+      currentRow += firstRows;
+
+      // Generate business class seats (rows after first class, 4 seats per row: A, C, D, F)
+      const businessRows = Math.ceil(businessSeats / 4);
+      for (let row = currentRow; row < currentRow + businessRows; row++) {
+        const seatsInRow = ["A", "C", "D", "F"]; // Business class layout
+        for (
+          let i = 0;
+          i < seatsInRow.length &&
+          (row - currentRow) * 4 + i + 1 <= businessSeats;
+          i++
+        ) {
+          seats.push({
+            seatNumber: `${row}${seatsInRow[i]}`,
+            class: "business" as const,
+            isAvailable: true,
+            price: Math.floor(basePrice.business * (0.9 + Math.random() * 0.2)), // ±10% variation
+          });
+        }
+      }
+      currentRow += businessRows;
+
+      // Generate economy class seats (remaining rows, 6 seats per row: A, B, C, D, E, F)
+      const economyRows = Math.ceil(economySeats / 6);
+      for (let row = currentRow; row < currentRow + economyRows; row++) {
+        const seatsInRow = ["A", "B", "C", "D", "E", "F"]; // Full economy layout
+        for (
+          let i = 0;
+          i < seatsInRow.length &&
+          (row - currentRow) * 6 + i + 1 <= economySeats;
+          i++
+        ) {
+          seats.push({
+            seatNumber: `${row}${seatsInRow[i]}`,
+            class: "economy" as const,
+            isAvailable: true,
+            price: Math.floor(basePrice.economy * (0.9 + Math.random() * 0.2)), // ±10% variation
+          });
+        }
+      }
+
+      // Update seats in the flight
+      updateData.seats = seats;
+      delete updateData.regenerateSeats; // Remove the flag from update data
+    }
 
     // Recalculate duration if times are updated
     if (updateData.departureTime || updateData.arrivalTime) {
@@ -700,7 +809,7 @@ export const getAirlineFlights = async (req: Request, res: Response) => {
       .populate("arrivalAirport", "name city country code")
       .limit(Number(limit))
       .skip((Number(page) - 1) * Number(limit))
-      .sort({ departureTime: 1 });
+      .sort({ departureTime: -1 });
 
     const total = await Flight.countDocuments(filter);
 
@@ -761,6 +870,131 @@ export const getCheapestFlights = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error fetching cheapest flights:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// Regenerate seats for a flight with proper class distribution
+export const regenerateFlightSeats = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const flight = await Flight.findById(id).populate("aircraft");
+
+    if (!flight) {
+      return res.status(404).json({
+        success: false,
+        message: "Flight not found",
+      });
+    }
+
+    // Check if user owns the airline (for airline users)
+    if (
+      req.user &&
+      "airline" in req.user &&
+      flight.airline.toString() !== req.user.airline
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to modify this flight",
+      });
+    }
+
+    const capacity = flight.aircraft.capacity;
+
+    // Generate seats based on aircraft capacity with realistic layout
+    const seats: ISeat[] = [];
+    const basePrice = flight.basePrice;
+
+    // Calculate seat distribution
+    const firstSeats = Math.floor(capacity * 0.1); // 10% first class
+    const businessSeats = Math.floor(capacity * 0.2); // 20% business class
+    const economySeats = capacity - firstSeats - businessSeats; // 70% economy
+
+    let currentRow = 1;
+
+    // Generate first class seats (rows 1-3, 2 seats per row: A, F)
+    const firstRows = Math.ceil(firstSeats / 2);
+    for (let row = currentRow; row < currentRow + firstRows; row++) {
+      const seatsInRow = ["A", "F"]; // Only window seats in first class
+      for (
+        let i = 0;
+        i < seatsInRow.length && (row - currentRow) * 2 + i + 1 <= firstSeats;
+        i++
+      ) {
+        seats.push({
+          seatNumber: `${row}${seatsInRow[i]}`,
+          class: "first" as const,
+          isAvailable: true,
+          price: Math.floor(basePrice.first * (0.9 + Math.random() * 0.2)), // ±10% variation
+        });
+      }
+    }
+    currentRow += firstRows;
+
+    // Generate business class seats (rows after first class, 4 seats per row: A, C, D, F)
+    const businessRows = Math.ceil(businessSeats / 4);
+    for (let row = currentRow; row < currentRow + businessRows; row++) {
+      const seatsInRow = ["A", "C", "D", "F"]; // Business class layout
+      for (
+        let i = 0;
+        i < seatsInRow.length &&
+        (row - currentRow) * 4 + i + 1 <= businessSeats;
+        i++
+      ) {
+        seats.push({
+          seatNumber: `${row}${seatsInRow[i]}`,
+          class: "business" as const,
+          isAvailable: true,
+          price: Math.floor(basePrice.business * (0.9 + Math.random() * 0.2)), // ±10% variation
+        });
+      }
+    }
+    currentRow += businessRows;
+
+    // Generate economy class seats (remaining rows, 6 seats per row: A, B, C, D, E, F)
+    const economyRows = Math.ceil(economySeats / 6);
+    for (let row = currentRow; row < currentRow + economyRows; row++) {
+      const seatsInRow = ["A", "B", "C", "D", "E", "F"]; // Full economy layout
+      for (
+        let i = 0;
+        i < seatsInRow.length && (row - currentRow) * 6 + i + 1 <= economySeats;
+        i++
+      ) {
+        seats.push({
+          seatNumber: `${row}${seatsInRow[i]}`,
+          class: "economy" as const,
+          isAvailable: true,
+          price: Math.floor(basePrice.economy * (0.9 + Math.random() * 0.2)), // ±10% variation
+        });
+      }
+    }
+
+    // Update the flight with new seats
+    flight.seats = seats;
+    await flight.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Flight seats regenerated successfully",
+      data: {
+        flight: await Flight.findById(id)
+          .populate("airline", "name code")
+          .populate("departureAirport", "name code city country")
+          .populate("arrivalAirport", "name code city country")
+          .populate("aircraft", "model capacity"),
+        seatsGenerated: {
+          first: firstSeats,
+          business: businessSeats,
+          economy: economySeats,
+          total: seats.length,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error regenerating flight seats:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",

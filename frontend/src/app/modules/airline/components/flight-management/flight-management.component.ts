@@ -20,6 +20,15 @@ export class FlightManagementComponent implements OnInit {
   error: string | null = null;
   success: string | null = null;
 
+  // Make Math available in template
+  Math = Math;
+
+  // Pagination
+  currentPage = 1;
+  totalPages = 1;
+  totalFlights = 0;
+  flightsPerPage = 50;
+
   // Forms
   flightForm: FormGroup;
   showFlightForm = false;
@@ -65,19 +74,30 @@ export class FlightManagementComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.airlineService.getAirlineFlights().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.flights = response.data.flights || [];
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = error.error?.message || 'Errore nel caricamento dei voli';
-        this.loading = false;
-        console.error('Error loading flights:', error);
-      },
-    });
+    this.airlineService
+      .getAirlineFlights({
+        page: this.currentPage,
+        limit: this.flightsPerPage,
+      })
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.flights = response.data.flights || [];
+            // Update pagination info
+            if (response.data.pagination) {
+              this.totalPages = response.data.pagination.pages;
+              this.totalFlights = response.data.pagination.total;
+            }
+          }
+          this.loading = false;
+        },
+        error: (error) => {
+          this.error =
+            error.error?.message || 'Errore nel caricamento dei voli';
+          this.loading = false;
+          console.error('Error loading flights:', error);
+        },
+      });
   }
 
   loadAirports(): void {
@@ -245,5 +265,44 @@ export class FlightManagementComponent implements OnInit {
       const control = formGroup.get(key);
       control?.markAsTouched();
     });
+  }
+
+  // Pagination methods
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+      this.currentPage = page;
+      this.loadFlights();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.goToPage(this.currentPage + 1);
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage - 1);
+    }
+  }
+
+  getVisiblePages(): number[] {
+    const pages: number[] = [];
+    const maxVisible = 5;
+    const half = Math.floor(maxVisible / 2);
+
+    let start = Math.max(1, this.currentPage - half);
+    let end = Math.min(this.totalPages, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
   }
 }

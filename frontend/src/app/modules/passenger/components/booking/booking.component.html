@@ -199,8 +199,16 @@
       <div class="seat-selection">
         <div class="seat-legend">
           <div class="legend-item">
-            <div class="seat-example available"></div>
-            <span>Disponibile</span>
+            <div class="seat-example available economy"></div>
+            <span>Economy</span>
+          </div>
+          <div class="legend-item">
+            <div class="seat-example available business"></div>
+            <span>Business</span>
+          </div>
+          <div class="legend-item">
+            <div class="seat-example available first"></div>
+            <span>Prima Classe</span>
           </div>
           <div class="legend-item">
             <div class="seat-example selected"></div>
@@ -214,12 +222,15 @@
 
         <div class="aircraft-layout">
           <div class="seat-map" *ngIf="seatMap">
-            <div class="row" *ngFor="let row of seatMap.rows">
+            <div class="row" *ngFor="let row of seatMap.rows" [class]="'class-' + row.class">
               <div class="row-number">{{row.rowNumber}}</div>
+              <div class="class-label" [class]="'class-' + row.class">{{ getClassLabel(row.class) }}</div>
               <div class="seat-row">
                 <div *ngFor="let seat of row.seats" class="seat"
                   [class.available]="seat.isAvailable && !seat.isSelected" [class.selected]="seat.isSelected"
-                  [class.occupied]="!seat.isAvailable" [title]="seat.seatNumber + ' - €' + seat.price"
+                  [class.occupied]="!seat.isAvailable" [class.first-class]="seat.class === 'first'"
+                  [class.business-class]="seat.class === 'business'" [class.economy-class]="seat.class === 'economy'"
+                  [title]="seat.seatNumber + ' - ' + getClassLabel(seat.class) + ' - €' + seat.price"
                   (click)="selectSeat(seat.seatNumber)">
                   {{seat.seatNumber.slice(-1)}}
                 </div>
@@ -232,7 +243,9 @@
         <div class="selected-seats" *ngIf="selectedSeats.length > 0">
           <h3>Posti Selezionati:</h3>
           <div class="selected-seats-list">
-            <span *ngFor="let seat of selectedSeats" class="selected-seat">{{ seat }}</span>
+            <span *ngFor="let seat of selectedSeats; let i = index" class="selected-seat">
+              {{ seat }} ({{ getSeatClass(seat) }}) - €{{ getSeatPrice(seat) }}
+            </span>
           </div>
         </div>
 

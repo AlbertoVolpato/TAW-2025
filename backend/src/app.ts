@@ -21,8 +21,8 @@ import bookingsRouter from "./routes/bookings";
 import systemRouter from "./routes/system";
 import adminRouter from "./routes/admin";
 
-// Load environment variables
-dotenv.config();
+// Load environment variables (don't override existing ones)
+dotenv.config({ override: false });
 
 const app = express();
 

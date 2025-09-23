@@ -189,10 +189,12 @@
               getFlightPrice(selectedReturn) }}</div>
             <div class="total"><strong>Totale: €{{ getTotalPrice() }}</strong></div>
             <div class="booking-info" *ngIf="canProceedToBooking() && isRoundTripSearch">
-              <small>⚠️ Verranno create due prenotazioni separate: prima il volo di andata, poi quello di ritorno.</small>
+              <small>⚠️ Verranno create due prenotazioni separate: prima il volo di andata, poi quello di
+                ritorno.</small>
             </div>
             <button class="btn btn-success" [disabled]="!canProceedToBooking()" (click)="proceedToBooking()">
-              {{ canProceedToBooking() ? (isRoundTripSearch ? 'Inizia Prenotazione Andata' : 'Prenota Ora') : 'Seleziona entrambi i voli' }}
+              {{ canProceedToBooking() ? (isRoundTripSearch ? 'Inizia Prenotazione Andata' : 'Prenota Ora') : 'Seleziona
+              entrambi i voli' }}
             </button>
           </div>
         </div>

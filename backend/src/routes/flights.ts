@@ -8,6 +8,7 @@ import {
   deleteFlight,
   getAirlineFlights,
   getCheapestFlights,
+  regenerateFlightSeats,
 } from "../controllers/flightController";
 import {
   checkFlightAvailability,
@@ -33,6 +34,7 @@ router.get("/:id", getFlightById);
 router.get("/airline/my", authenticate, getAirlineFlights);
 router.post("/", authenticate, createFlight);
 router.put("/:id", authenticate, updateFlight);
+router.put("/:id/regenerate-seats", authenticate, regenerateFlightSeats);
 router.delete("/:id", authenticate, deleteFlight);
 
 export default router;

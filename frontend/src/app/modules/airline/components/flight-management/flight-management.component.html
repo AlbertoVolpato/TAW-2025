@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="header">
     <h1>Flight Management</h1>
-    <p>{{ flights.length }} flights in your schedule</p>
+    <p>{{ totalFlights > 0 ? totalFlights : flights.length }} flights in your schedule</p>
   </div>
 
   <!-- Actions Section -->
@@ -186,6 +186,28 @@
         </path>
       </svg>
       <p>No flights scheduled yet</p>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="flights.length > 0 && totalPages > 1">
+      <div class="pagination-info">
+        <span>Showing {{ ((currentPage - 1) * flightsPerPage) + 1 }} to {{ Math.min(currentPage * flightsPerPage,
+          totalFlights) }} of {{ totalFlights }} flights</span>
+      </div>
+      <div class="pagination-controls">
+        <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">
+          Previous
+        </button>
+
+        <button *ngFor="let page of getVisiblePages()" class="pagination-btn" [class.active]="page === currentPage"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+
+        <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+          Next
+        </button>
+      </div>
     </div>
   </div>
 

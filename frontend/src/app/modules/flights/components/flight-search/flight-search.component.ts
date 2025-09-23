@@ -684,7 +684,7 @@ export class FlightSearchComponent implements OnInit {
       // Salva i dati del ritorno per dopo
       const returnFlightId = this.getFlightId(this.selectedReturn);
       const returnFlightPrice = this.getFlightPrice(this.selectedReturn);
-      
+
       // Naviga alla prenotazione del volo di andata con info del ritorno
       const outboundId = this.getFlightId(this.selectedOutbound);
       this.router.navigate(['/booking'], {
@@ -695,7 +695,7 @@ export class FlightSearchComponent implements OnInit {
           // Aggiungiamo i dati del volo di ritorno per gestirlo dopo
           returnFlight: returnFlightId,
           returnPrice: returnFlightPrice,
-          isRoundTrip: 'true'
+          isRoundTrip: 'true',
         },
       });
     } else if (this.selectedOutbound) {

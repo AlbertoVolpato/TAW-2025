@@ -36,15 +36,28 @@ export interface CreateAircraftRequest {
 export interface AirlineStatsResponse {
   success: boolean;
   data: {
-    totalFlights: number;
-    activeFlights: number;
-    totalPassengers: number;
-    totalRevenue: number;
-    popularRoutes: Array<{
+    summary: {
+      totalPassengers: number;
+      totalRevenue: number;
+      totalFlights: number;
+      totalBookings: number;
+      averageRevenuePerFlight: number;
+      averagePassengersPerFlight: number;
+    };
+    mostDemandedRoutes: Array<{
+      routeId: string;
       route: string;
-      count: number;
-      revenue: number;
+      departureCode: string;
+      arrivalCode: string;
+      totalBookings: number;
+      passengers: number;
+      totalRevenue: number;
     }>;
+    monthlyStatistics: any[];
+    period: {
+      startDate: string;
+      endDate: string;
+    };
   };
   message?: string;
 }
@@ -72,7 +85,15 @@ export class AirlineService {
     status?: string;
   }): Observable<{
     success: boolean;
-    data: { flights: Flight[] };
+    data: {
+      flights: Flight[];
+      pagination?: {
+        page: number;
+        limit: number;
+        total: number;
+        pages: number;
+      };
+    };
     message?: string;
   }> {
     let httpParams = new HttpParams();
@@ -87,7 +108,15 @@ export class AirlineService {
 
     return this.http.get<{
       success: boolean;
-      data: { flights: Flight[] };
+      data: {
+        flights: Flight[];
+        pagination?: {
+          page: number;
+          limit: number;
+          total: number;
+          pages: number;
+        };
+      };
       message?: string;
     }>(`${this.apiUrl}/flights/airline/my`, {
       headers: this.getAuthHeaders(),
@@ -173,7 +202,7 @@ export class AirlineService {
   // Get airline statistics
   getAirlineStats(): Observable<AirlineStatsResponse> {
     return this.http.get<AirlineStatsResponse>(
-      `${this.apiUrl}/airlines/stats`,
+      `${this.apiUrl}/airlines/my/statistics`,
       {
         headers: this.getAuthHeaders(),
       }

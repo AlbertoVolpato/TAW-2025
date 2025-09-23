@@ -298,12 +298,13 @@
   .seat-legend {
     display: flex;
     justify-content: center;
-    gap: 32px;
+    gap: 24px;
     margin-bottom: 32px;
     padding: 20px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
     backdrop-filter: blur(10px);
+    flex-wrap: wrap;
 
     .legend-item {
       display: flex;
@@ -315,10 +316,55 @@
         height: 24px;
         border-radius: 6px;
         border: 2px solid #ddd;
+        position: relative;
 
-        &.available {
+        &.available.economy {
           background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
           border-color: #4caf50;
+        }
+
+        &.available.business {
+          background: linear-gradient(135deg, #2196f3 0%, #64b5f6 100%);
+          border-color: #2196f3;
+          width: 28px;
+          height: 28px;
+
+          &::after {
+            content: "💺";
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            font-size: 10px;
+            background: #2196f3;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+        }
+
+        &.available.first {
+          background: linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%);
+          border-color: #9c27b0;
+          width: 30px;
+          height: 30px;
+
+          &::after {
+            content: "👑";
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            font-size: 10px;
+            background: #9c27b0;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
         }
 
         &.selected {
@@ -335,6 +381,7 @@
       span {
         color: var(--text-primary);
         font-weight: 500;
+        font-size: 0.9rem;
       }
     }
   }
@@ -397,6 +444,7 @@
     transition: all 0.3s ease;
     position: relative;
 
+    // Default available state
     &.available {
       background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
       border-color: #4caf50;
@@ -405,6 +453,80 @@
       &:hover {
         transform: scale(1.1);
         box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+      }
+    }
+
+    // Economy class seats
+    &.economy {
+      &.available {
+        background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+        border-color: #4caf50;
+
+        &:hover {
+          box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+      }
+    }
+
+    // Business class seats
+    &.business {
+      width: 36px;
+      height: 36px;
+
+      &.available {
+        background: linear-gradient(135deg, #2196f3 0%, #64b5f6 100%);
+        border-color: #2196f3;
+        color: white;
+
+        &:hover {
+          box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        }
+      }
+
+      &::after {
+        content: "💺";
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        font-size: 12px;
+        background: #2196f3;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    // First class seats
+    &.first {
+      width: 40px;
+      height: 40px;
+
+      &.available {
+        background: linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%);
+        border-color: #9c27b0;
+        color: white;
+
+        &:hover {
+          box-shadow: 0 4px 12px rgba(156, 39, 176, 0.4);
+        }
+      }
+
+      &::after {
+        content: "👑";
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        font-size: 12px;
+        background: #9c27b0;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
     }
 
@@ -1205,7 +1327,8 @@
 
 // Animations
 @keyframes successPulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.2;
   }

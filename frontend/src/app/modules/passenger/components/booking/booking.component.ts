@@ -92,9 +92,12 @@ export class BookingComponent implements OnInit {
     );
 
     // Check for round-trip parameters
-    this.isRoundTrip = this.route.snapshot.queryParamMap.get('isRoundTrip') === 'true';
+    this.isRoundTrip =
+      this.route.snapshot.queryParamMap.get('isRoundTrip') === 'true';
     this.returnFlightId = this.route.snapshot.queryParamMap.get('returnFlight');
-    this.returnFlightPrice = parseFloat(this.route.snapshot.queryParamMap.get('returnPrice') || '0');
+    this.returnFlightPrice = parseFloat(
+      this.route.snapshot.queryParamMap.get('returnPrice') || '0'
+    );
 
     console.log('BookingComponent ngOnInit:', {
       pathFlightId,
@@ -103,7 +106,7 @@ export class BookingComponent implements OnInit {
       passengers,
       isRoundTrip: this.isRoundTrip,
       returnFlightId: this.returnFlightId,
-      returnFlightPrice: this.returnFlightPrice
+      returnFlightPrice: this.returnFlightPrice,
     });
 
     if (flightId) {
@@ -190,47 +193,79 @@ export class BookingComponent implements OnInit {
   }
 
   private loadSeatMap(): void {
-    if (!this.flight) return;
+    if (!this.flight || !this.flight.seats) {
+      console.error('No flight data or seats available');
+      return;
+    }
 
-    // Generate a simple seat map for demonstration
-    const rows = [];
-    const seatsPerRow = ['A', 'B', 'C', 'D', 'E', 'F'];
+    console.log('Loading real seat map from flight data:', this.flight.seats);
 
-    for (let rowNum = 1; rowNum <= 30; rowNum++) {
-      const seats = [];
-      for (let i = 0; i < seatsPerRow.length; i++) {
-        const letter = seatsPerRow[i];
+    // Group seats by row
+    const seatsByRow: { [key: number]: any[] } = {};
+
+    this.flight.seats.forEach((seat) => {
+      // Extract row number from seat number (e.g., "12A" -> row 12)
+      const rowMatch = seat.seatNumber.match(/^(\d+)([A-Z])$/);
+      if (rowMatch) {
+        const rowNum = parseInt(rowMatch[1]);
+        const letter = rowMatch[2];
+
+        if (!seatsByRow[rowNum]) {
+          seatsByRow[rowNum] = [];
+        }
+
+        // Determine seat type based on letter position
         let seatType: 'window' | 'middle' | 'aisle';
-
-        if (i === 0 || i === seatsPerRow.length - 1) {
+        if (letter === 'A' || letter === 'F') {
           seatType = 'window';
-        } else if (i === 2 || i === 3) {
+        } else if (letter === 'C' || letter === 'D') {
           seatType = 'aisle';
         } else {
           seatType = 'middle';
         }
 
-        seats.push({
-          seatNumber: `${rowNum}${letter}`,
-          isAvailable: Math.random() > 0.3,
+        seatsByRow[rowNum].push({
+          seatNumber: seat.seatNumber,
+          isAvailable: seat.isAvailable,
           isSelected: false,
-          price: this.basePrice + Math.floor(Math.random() * 50),
+          price: seat.price,
           type: seatType,
-          class: 'economy' as const,
+          class: seat.class,
         });
       }
+    });
+
+    // Convert to rows array and sort seats within each row
+    const rows = [];
+    const sortedRowNumbers = Object.keys(seatsByRow)
+      .map((n) => parseInt(n))
+      .sort((a, b) => a - b);
+
+    for (const rowNum of sortedRowNumbers) {
+      const seats = seatsByRow[rowNum];
+      // Sort seats by letter (A, B, C, D, E, F)
+      seats.sort((a, b) => {
+        const letterA = a.seatNumber.slice(-1);
+        const letterB = b.seatNumber.slice(-1);
+        return letterA.localeCompare(letterB);
+      });
 
       rows.push({
         rowNumber: rowNum,
         seats: seats,
-        class: 'economy' as const,
+        class: seats[0].class, // Use class from first seat in row
       });
     }
 
     this.seatMap = {
       rows: rows,
-      aircraft: this.flight?.aircraft || { model: 'Boeing 737', capacity: 180 },
+      aircraft: this.flight?.aircraft || {
+        model: 'Unknown',
+        capacity: this.flight.seats.length,
+      },
     };
+
+    console.log('Seat map loaded:', this.seatMap);
   }
 
   getPassengersArray(): FormArray {
@@ -272,7 +307,9 @@ export class BookingComponent implements OnInit {
         // Select this seat
         seat.isSelected = true;
         this.selectedSeats = [seatNumber];
-        this.basePrice = seat.price;
+
+        // Recalculate total price with new seat selection
+        this.calculateTotalPrice();
         break;
       }
     }
@@ -295,7 +332,38 @@ export class BookingComponent implements OnInit {
   private calculateTotalPrice(): void {
     const passengersCount = this.getPassengersArray().length;
     const baseFlightPrice = this.basePrice * passengersCount;
-    const seatPrice = this.selectedSeats.filter((s) => s !== '').length * 15;
+
+    // Calculate seat prices based on actual seat selection and prices
+    let seatPrice = 0;
+    const selectedSeatsWithPrices: {
+      seatNumber: string;
+      price: number;
+      class: string;
+    }[] = [];
+
+    for (const seatNumber of this.selectedSeats.filter((s) => s !== '')) {
+      if (this.seatMap) {
+        for (const row of this.seatMap.rows) {
+          const seat = row.seats.find((s) => s.seatNumber === seatNumber);
+          if (seat) {
+            // Calculate additional cost over base economy price
+            const baseSeatPrice = this.basePrice; // Economy base price
+            const seatUpgrade = seat.price - baseSeatPrice;
+            seatPrice += Math.max(0, seatUpgrade); // Only add upgrade cost if positive
+
+            selectedSeatsWithPrices.push({
+              seatNumber: seat.seatNumber,
+              price: seat.price,
+              class: seat.class,
+            });
+            break;
+          }
+        }
+      }
+    }
+
+    console.log('Selected seats with prices:', selectedSeatsWithPrices);
+    console.log('Total seat upgrade cost:', seatPrice);
 
     // Calculate extras
     let extrasPrice = 0;
@@ -481,13 +549,56 @@ export class BookingComponent implements OnInit {
     console.log('Flight ID:', bookingData.flightId);
     console.log('Passengers count:', bookingData.passengers.length);
     console.log('Processed passengers:', bookingData.passengers);
+    console.log('Selected seats:', this.selectedSeats);
     console.log('Contact info:', bookingData.contactInfo);
     console.log('Baggage:', bookingData.baggage);
     console.log('Special services:', bookingData.specialServices);
     console.log('Full booking data:', JSON.stringify(bookingData, null, 2));
     console.log('================================');
 
-    // Create actual booking
+    // Check seat availability before creating booking
+    const selectedSeats = this.selectedSeats.filter(
+      (seat) => seat && seat !== ''
+    );
+    if (selectedSeats.length > 0) {
+      console.log('Checking seat availability for seats:', selectedSeats);
+
+      // Refresh flight data to get current seat availability
+      this.loadFlight(this.flight?._id || '');
+
+      // Wait a moment for the flight data to refresh, then proceed
+      setTimeout(() => {
+        // Verify selected seats are still available
+        const unavailableSeats = selectedSeats.filter((seatNumber) => {
+          for (const row of this.seatMap?.rows || []) {
+            const seat = row.seats.find((s) => s.seatNumber === seatNumber);
+            if (seat && !seat.isAvailable) {
+              return true; // Seat is no longer available
+            }
+          }
+          return false;
+        });
+
+        if (unavailableSeats.length > 0) {
+          alert(
+            `I seguenti posti non sono più disponibili: ${unavailableSeats.join(
+              ', '
+            )}. Si prega di selezionare altri posti.`
+          );
+          this.loading = false;
+          return;
+        }
+
+        // Proceed with booking creation
+        this.proceedWithBookingCreation(bookingData);
+      }, 500);
+    } else {
+      // No specific seats selected, proceed with booking
+      this.proceedWithBookingCreation(bookingData);
+    }
+  }
+
+  private proceedWithBookingCreation(bookingData: any): void {
     this.bookingService.createBooking(bookingData).subscribe({
       next: (response) => {
         console.log('Booking response:', response);
@@ -513,8 +624,10 @@ export class BookingComponent implements OnInit {
           // Show success message with round-trip info, then navigate to return flight booking
           setTimeout(() => {
             this.currentStep = 5; // Success step
-            console.log('Outbound flight booked, preparing return flight booking');
-            
+            console.log(
+              'Outbound flight booked, preparing return flight booking'
+            );
+
             // After showing success for a moment, navigate to return flight booking
             setTimeout(() => {
               this.proceedToReturnBooking();
@@ -575,13 +688,14 @@ export class BookingComponent implements OnInit {
   // Navigate to return flight booking for round-trip
   proceedToReturnBooking(): void {
     if (this.returnFlightId) {
-      const passengers = this.passengersForm.get('passengers')?.value?.length || 1;
+      const passengers =
+        this.passengersForm.get('passengers')?.value?.length || 1;
       const seatClass = 'economy'; // Could be extracted from form if needed
-      
+
       console.log('Proceeding to return flight booking:', {
         returnFlightId: this.returnFlightId,
         passengers: passengers,
-        seatClass: seatClass
+        seatClass: seatClass,
       });
 
       this.router.navigate(['/booking'], {
@@ -589,7 +703,7 @@ export class BookingComponent implements OnInit {
           flight: this.returnFlightId,
           passengers: passengers,
           class: seatClass,
-          isReturnFlight: 'true' // Mark this as the return flight booking
+          isReturnFlight: 'true', // Mark this as the return flight booking
         },
       });
     } else {
@@ -617,5 +731,43 @@ export class BookingComponent implements OnInit {
 
   formatPrice(price: number): string {
     return `€${price.toFixed(2)}`;
+  }
+
+  // Seat class helper methods
+  getClassLabel(seatClass: string): string {
+    switch (seatClass) {
+      case 'first':
+        return 'Prima Classe';
+      case 'business':
+        return 'Business';
+      case 'economy':
+        return 'Economy';
+      default:
+        return 'Economy';
+    }
+  }
+
+  getSeatClass(seatNumber: string): string {
+    if (!this.seatMap) return 'Economy';
+
+    for (const row of this.seatMap.rows) {
+      const seat = row.seats.find((s) => s.seatNumber === seatNumber);
+      if (seat) {
+        return this.getClassLabel(seat.class);
+      }
+    }
+    return 'Economy';
+  }
+
+  getSeatPrice(seatNumber: string): number {
+    if (!this.seatMap) return 0;
+
+    for (const row of this.seatMap.rows) {
+      const seat = row.seats.find((s) => s.seatNumber === seatNumber);
+      if (seat) {
+        return seat.price;
+      }
+    }
+    return 0;
   }
 }
